@@ -1,0 +1,14 @@
+before_script:
+    - docker-compose down --rmi all --remove-orphans
+    - echo y | docker network prune
+
+build_staging:
+  stage: deploy
+  tags : 
+    - indico-web
+  only:
+    refs:
+      - main
+  script:
+    # - export PYTHONDONTWRITEBYTECODE=1
+    -  COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose up -d --force-recreate

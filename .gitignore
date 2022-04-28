@@ -1,0 +1,14 @@
+/app/node_modules
+.DS_Store
+/app/dist
+/app/dist-ssr
+*.local
+.env
+.vscode
+
+/api/env
+/api/database.db
+/api/__pycache__
+/api/Lib
+/api/Scripts
+/api/pyvenv.cfg
