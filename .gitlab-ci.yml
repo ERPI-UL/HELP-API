@@ -5,10 +5,10 @@ before_script:
 build_staging:
   stage: deploy
   tags : 
-    - indico-web
+    - indico-dev
   only:
     refs:
       - main
   script:
     # - export PYTHONDONTWRITEBYTECODE=1
-    -  COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose up -d --force-recreate
+    -  docker-compose up -d --force-recreate
