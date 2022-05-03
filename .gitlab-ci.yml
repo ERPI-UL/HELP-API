@@ -1,5 +1,5 @@
 before_script:
-    - docker-compose down --rmi all --remove-orphans
+    - docker compose down --rmi all --remove-orphans
     - echo y | docker network prune
 
 build_staging:
