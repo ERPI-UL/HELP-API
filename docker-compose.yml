@@ -50,4 +50,4 @@ services:
   web:
     build: ./app/
     ports:
-      - 80:80
+      - 80:8080
