@@ -10,7 +10,6 @@ import Easyconnect from "./views/Easyconnect.vue";
 
 import './index.css'
 import "flowbite"
-import FloatingVue from "floating-vue"
 
 const router = createRouter({
     history: createWebHistory(),
@@ -24,11 +23,4 @@ const router = createRouter({
     ]
 });
 
-// Init Local Storage
-if (!localStorage.getItem("formultool.emollients")) localStorage.setItem("formultool.emollients", "?")
-if (!localStorage.getItem("formultool.surfactants")) localStorage.setItem("formultool.surfactants", "?")
-
-createApp(App)
-.use(router)
-.use(FloatingVue)
-.mount('#app')
+createApp(App).use(router).mount('#app')
