@@ -1,5 +1,5 @@
 <template>
-    <div class="scenario-parent bg-white rounded-lg shadow-lg p-4 min-w-fit h-fit max-w-[25vw] m-4">
+    <div class="scenario-parent bg-white rounded-lg shadow-lg p-4 min-w-fit h-fit max-w-[25vw] m-4 hover:shadow-xl hover:scale-105 cursor-pointer">
         <div class="top">
             <div class="flex justify-between center">
                 <h2 class="text-indigo-600 font-bold text-lg">

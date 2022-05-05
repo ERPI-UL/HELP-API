@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex p-8 min-h-screen flex-col justify-center">
+    <div class="relative flex p-4 md:p-8 min-h-screen flex-col justify-center">
         <div class="bg-white p-4 md:p-8 shadow-xl mx-auto rounded-lg">
             <div class="mx-auto max-w-md">
                 <div class="flex center">
@@ -8,28 +8,29 @@
                         Se connecter
                     </h2>
                 </div>
-                <form action="/api/login" method="post">
+                <!-- <form action="/api/login" method="post"> -->
                     <div class="divide-y divide-gray-300/50">
                         <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
                             <div class="md:flex block justify-between">
                                 <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
-                                <input type="text" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                <input type="text" id="input-username" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                             </div>
                             <div class="md:flex block justify-between">
                                 <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
-                                <input type="password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                <input type="password" id="input-password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                             </div>
+                        </div>
+                        <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
+                            <p class="opacity-0 text-center text-indigo-600">Message</p>
                         </div>
                         <div class="pt-8 flex justify-between">
                             <Backbutton>Annuler</Backbutton>
-                            <input type="submit"
-                                class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                                value="Valider"
-                                href="/"
-                            />
+                            <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                                Valider
+                            </button>
                         </div>
                     </div>
-                </form>
+                <!-- </form> -->
             </div>
         </div>
     </div>
@@ -37,11 +38,83 @@
 
 <script>
 import Backbutton from "../components/Backbutton.vue";
+import User from "../script/User";
+
+function setup() {
+    window.addEventListener("keydown", ev => {
+        if (ev.key != "Enter") return;
+        const btn = document.getElementById("btn-validate");
+        if (btn) btn.click();
+    });
+}
+
+function logMessage(msg) {
+    const btn = document.getElementById("btn-validate");
+    btn.innerHTML = "Valider";
+
+    const div = document.getElementById("log-zone");
+    const txt = div.firstElementChild;
+    txt.innerHTML = msg;
+    txt.classList.add("opacity-100");
+    div.style.height = txt.getBoundingClientRect().height+"px";
+    setTimeout(() => {
+        txt.classList.remove("opacity-100");
+        div.style.height = "0px";
+    }, 3000);
+}
+
+function onValidate() {
+    const btn = document.getElementById("btn-validate");
+    btn.innerHTML = "...";
+
+    const credentials = {
+        username: document.getElementById("input-username"),
+        password: document.getElementById("input-password")
+    };
+
+    
+    if (credentials.username.value.trim() == "") {
+        logMessage("Veuillez renseigner un nom d'utilisateur.");
+        credentials.username.focus();
+        return;
+    }
+    if (credentials.password.value.trim() == "") {
+        logMessage("Veuillez renseigner un mot de passe.");
+        credentials.password.focus();
+        return;
+    }
+
+    let user = new User(
+        credentials.username.value,
+        credentials.password.value,
+        "", "", "", "", 0
+    );
+
+    /// DEBUG /// Should be a GET request to API
+    if (User.sameCredentials(user, User.USER_ADMIN)) user = User.USER_ADMIN;
+    if (User.sameCredentials(user, User.USER_TEACHER)) user = User.USER_TEACHER;
+    if (User.sameCredentials(user, User.USER_LEARNER)) user = User.USER_LEARNER;
+    /// DEBUG ///
+    
+    if (user.token == "") { // error: not a admin/teacher/learner account
+        logMessage("Identifiant ou mot de passe incorrect");
+        document.querySelector("input[name=username]").focus();
+        return;
+    }
+
+    localStorage.setItem("user", User.toJSON(user));
+    btn.innerHTML = "Valider";
+    window.history.back();
+}
 
 export default {
     name: "Login",
     components: {
         Backbutton
-    }
+    },
+    mounted() {
+        setup();
+    },
+    methods: {onValidate}
 };
 </script>

@@ -25,7 +25,7 @@
                         <div v-if="opts.elements">
                             <Popover class="relative" v-slot="{ open }">
                                 <PopoverButton
-                                    :class="[open ? 'text-gray-900' : 'text-gray-500', 'group bg-white rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500']">
+                                    :class="[open ? 'text-gray-900' : 'text-gray-500', 'group rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500']">
                                     <span> {{ opts.name }} </span>
                                     <ChevronDownIcon
                                         :class="[open ? 'text-gray-600' : 'text-gray-400', 'ml-2 h-5 w-5 group-hover:text-gray-500']"
@@ -42,8 +42,7 @@
                                             <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
                                                 <a v-for="item in opts.elements" :key="item.name" :href="item.href"
                                                     class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50">
-                                                    <component :is="item.icon" class="flex-shrink-0 h-6 w-6 text-indigo-600"
-                                                        aria-hidden="true" />
+                                                    <component :is="item.icon" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                                     <div class="ml-4">
                                                         <p class="text-base font-medium text-gray-900">
                                                             {{ item.name }}
@@ -72,7 +71,6 @@
                         </div>
                     </div>
                 </PopoverGroup>
-                
 
                 <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
                     <div v-if="!user.connected">
@@ -88,16 +86,14 @@
                             </template>
                             <template v-slot:items>
                                 <MenuItem v-slot="{ active }">
-                                    <a href="/" :class="[active ? 'bg-purple-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">Mon profil</a>
+                                    <a href="/profile" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">Mon profil</a>
                                 </MenuItem>
                                 <MenuItem v-slot="{ active }">
-                                    <a href="/easyconnect" :class="[active ? 'bg-purple-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">Connecter un appareil</a>
+                                    <a href="/easyconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">Connecter un appareil</a>
                                 </MenuItem>
-                                <form method="POST" action="/">
-                                    <MenuItem v-slot="{ active }">
-                                    <button type="submit" :class="[active ? 'bg-purple-100 text-gray-900' : 'text-gray-700', 'block w-full text-left px-4 py-2 text-sm']">Se déconnecter</button>
-                                    </MenuItem>
-                                </form>
+                                <MenuItem v-slot="{ active }">
+                                <button v-on:click="disconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block w-full text-left px-4 py-2 text-sm']">Se déconnecter</button>
+                                </MenuItem>
                             </template>
                         </Dropdown>
                     </div>
@@ -112,8 +108,14 @@
                 <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
                     <div class="pt-5 pb-6 px-5">
                         <div class="flex items-center justify-between">
-                            <div>
+                            <div v-if="!user.connected">
                                 <img class="h-8 w-auto" src="../assets/images/icons/icon_full.png" alt="Workflow" />
+                            </div>
+                            <div v-if="user.connected" class="border border-2 p-1 rounded-lg shadow-lg bg-indigo-50 cursor-pointer border-indigo-600">
+                                <a href="/profile" class="flex">
+                                    <component :is="icon.user" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
+                                    <h3 class="text-indigo-600 ml-1">{{user.username}}</h3>
+                                </a>
                             </div>
                             <div class="-mr-2">
                                 <PopoverButton
@@ -142,7 +144,7 @@
                                             class="-m-3 p-3 flex items-center rounded-md hover:bg-gray-50">
                                             <component :is="item.icon" class="flex-shrink-0 h-6 w-6 text-indigo-600"
                                                 aria-hidden="true" />
-                                            <span class="ml-3 text-base font-medium text-gray-900">
+                                            <span class="ml-3 text-base font-medium text-indigo-600">
                                                 {{ opts.name }}
                                             </span>
                                         </a>
@@ -152,13 +154,16 @@
                         </div>
                     </div>
                     <div class="py-6 px-5 space-y-6">
-                        <div>
+                        <div v-if="!user.connected">
                             <Redirectbutton href="/login" class="w-full">
                                 Se connecter
                             </Redirectbutton>
                             <p class="mt-6 text-center text-base font-medium text-gray-500">
                                 <a href="/register" class="text-indigo-600 hover:text-indigo-500">S'inscrire</a>
                             </p>
+                        </div>
+                        <div v-if="user.connected" class="text-center">
+                            <button v-on:click="disconnect" class="text-indigo-600 hover:text-indigo-500">Se déconnecter</button>
                         </div>
                     </div>
                 </div>
@@ -171,6 +176,7 @@
     import { Popover, PopoverButton, PopoverGroup, PopoverPanel, MenuItem } from '@headlessui/vue'
     import Dropdown from "./Dropdown.vue";
     import Redirectbutton from "../components/RedirectButton.vue";
+    import User from "../script/User";
 
     import {
         MenuIcon,
@@ -180,31 +186,21 @@
         LinkIcon,
         EyeIcon,
         RefreshIcon,
-        CheckIcon
+        CheckIcon,
+        PencilAltIcon,
+        TerminalIcon
     } from '@heroicons/vue/outline'
-    import { ChevronDownIcon } from '@heroicons/vue/solid'
+    import { ChevronDownIcon, UserIcon } from '@heroicons/vue/solid'
 
-    const menu = [
+    let menu = [
         {
             name: "Scénarios",
             elements: [
                 {
-                    name: 'Voir les scénarios',
+                    name: 'Tous les scénarios',
                     description: 'Voir les scénarios disponibles',
                     href: '/scenarios#all',
                     icon: EyeIcon
-                },
-                {
-                    name: 'Mes scénarios',
-                    description: 'Voir vos scénarios en cours',
-                    href: '/scenarios#pending',
-                    icon: RefreshIcon
-                },
-                {
-                    name: 'Complétés',
-                    description: 'Voir vos scénarios complétés',
-                    href: '/scenarios#completed',
-                    icon: CheckIcon
                 }
             ]
         },
@@ -252,7 +248,48 @@
             Redirectbutton
         },
         setup() {
-            return {menu, user: JSON.parse(localStorage.getItem('user')??"{}")};
+            const user = User.fromJSON(localStorage.getItem('user'));
+            if (user.canLearner()) {
+                menu[0].elements.push({
+                    name: 'En cours',
+                    description: 'Voir vos scénarios en cours',
+                    href: '/scenarios#pending',
+                    icon: RefreshIcon
+                });
+                menu[0].elements.push({
+                    name: 'Complétés',
+                    description: 'Voir vos scénarios complétés',
+                    href: '/scenarios#completed',
+                    icon: CheckIcon
+                });
+            }
+            if (user.canTeacher()) {
+                menu[0].elements.push({
+                    name: 'Modifier',
+                    description: 'Créer ou modifier un scénario',
+                    href: '/scenarios#editing',
+                    icon: PencilAltIcon
+                });
+            }
+            if (user.canAdmin()) {
+                menu[2].elements.push({
+                    name: 'Panneau administrateur',
+                    description: 'Accéder au panneau d\'administration',
+                    href: '/admin',
+                    icon: TerminalIcon
+                });
+            }
+            if (user.isVisitor()) {
+                menu.splice(1, 1);
+            }
+
+            return {menu, icon: {user: UserIcon}, user: user};
+        },
+        methods: {
+            disconnect() {
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            }
         }
     }
 </script>

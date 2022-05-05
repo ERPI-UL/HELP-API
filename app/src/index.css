@@ -46,5 +46,5 @@ input::-webkit-inner-spin-button {
 }
 
 .scenario-parent {
-    animation: slide-in 200ms ease forwards;
+    animation: slide-in 200ms ease;
 }

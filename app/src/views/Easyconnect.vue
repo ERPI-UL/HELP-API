@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex p-8 min-h-screen flex-col justify-center">
+    <div class="relative flex p-4 md:p-8 min-h-screen flex-col justify-center">
         <div class="bg-white p-4 md:p-8 shadow-xl mx-auto rounded-lg">
             <div class="mx-auto max-w-md">
                 <div class="flex center">
@@ -8,7 +8,7 @@
                         Connecter un appareil
                     </h2>
                 </div>
-                <form action="/api/login" method="post">
+                <div>
                     <div class="divide-y divide-gray-300/50">
                         <div v-if="!user.connected" class="space-y-6 py-8 text-base leading-7 text-gray-400">
                             <div class="md:flex block justify-between">
@@ -32,16 +32,15 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
+                            <p class="opacity-0 text-center text-indigo-600">Message</p>
+                        </div>
                         <div class="pt-8 flex justify-between">
                             <Backbutton>Annuler</Backbutton>
-                            <input type="submit"
-                                class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                                value="Valider"
-                                href="/"
-                            />
+                            <ValidateButton id="btn-validate" v-on:click="onValidate">Valider</ValidateButton>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -49,6 +48,9 @@
 
 <script>
 import Backbutton from "../components/Backbutton.vue";
+import ValidateButton from "../components/ValidateButton.vue";
+import Socket from "../script/Socket";
+import User from "../script/User";
 
 const setupInputs = () => {
     const inputs = document.querySelectorAll(".input-numbers");
@@ -70,19 +72,104 @@ const setupInputs = () => {
             ev.preventDefault();
         });
     }
+    window.addEventListener("keydown", ev => {
+        if (ev.key != "Enter") return;
+        const btn = document.getElementById("btn-validate");
+        if (btn) btn.click();
+    });
+}
+
+function logMessage(msg) {
+    const btn = document.getElementById("btn-validate");
+    btn.innerHTML = "Valider";
+
+    const div = document.getElementById("log-zone");
+    const txt = div.firstElementChild;
+    txt.innerHTML = msg;
+    txt.classList.add("opacity-100");
+    div.style.height = txt.getBoundingClientRect().height+"px";
+    setTimeout(() => {
+        txt.classList.remove("opacity-100");
+        div.style.height = "0px";
+    }, 3000);
+}
+
+function onValidate() {
+    const btn = document.getElementById("btn-validate");
+    btn.innerHTML = "...";
+    const credentials = {
+        username: document.querySelector("input[name=username]"),
+        password: document.querySelector("input[name=password]"),
+        number: {
+            value: document.querySelector("input[name=number1]").value +
+                document.querySelector("input[name=number2]").value +
+                document.querySelector("input[name=number3]").value +
+                document.querySelector("input[name=number4]").value +
+                document.querySelector("input[name=number5]").value,
+            focus() {document.querySelector("input[name=number1]").focus()}
+        }
+    };
+
+    if (!credentials.username) { // use user credentials here
+        const user = User.fromJSON(localStorage.getItem("user"));
+        credentials.username = {value: user.username};
+        credentials.password = {value: user.password};
+    }
+
+    if (credentials.username.value.trim() == "") {
+        logMessage("Veuillez renseigner un nom d'utilisateur.");
+        credentials.username.focus();
+        return;
+    }
+    if (credentials.password.value.trim() == "") {
+        logMessage("Veuillez renseigner un mot de passe.");
+        credentials.password.focus();
+        return;
+    }
+    if (credentials.number.value.trim().length < 5) {
+        logMessage("Veuillez renseigner un code appareil valide.");
+        credentials.number.focus();
+        return;
+    }
+
+    Socket.getInstance().send("custom/setEasyConnect", {
+        username: credentials.username.value,
+        password: credentials.password.value,
+        code: credentials.number.value
+    });
+
+    let timeoutID = setTimeout(() => {
+        logMessage("Erreur: Aucune réponse du serveur.");
+        btn.innerHTML = "Valider";
+    }, 5000);
+    Socket.getInstance().on("custom/getEasyConnect", data => {
+        if (timeoutID != -1) {
+            clearTimeout(timeoutID);
+            timeoutID = -1;
+        }
+        if (data.status == 200) {
+            logMessage("Connexion établie avec succès.");
+            btn.innerHTML = "Valider";
+            setTimeout(window.history.back, 1000);
+        } else {
+            logMessage("Erreur: " + data.message);
+        }
+    });
 }
 
 export default {
     name: "Easyconnect",
     components: {
-        Backbutton
+        Backbutton,
+        ValidateButton
     },
     setup() {
         return {user: JSON.parse(localStorage.getItem('user')??"{}")};
     },
-    mounted: [
-        setupInputs
-    ]
+    mounted() {
+        setupInputs();
+    },
+    methods: {onValidate}
     
 };
 </script>

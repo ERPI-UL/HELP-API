@@ -1,5 +1,5 @@
 <template>
-    <div class="slide-in bg-white rounded-lg shadow-lg p-2 w-fit h-fit m-4">
+    <div v-on:click="toogleFullscreen" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-fit h-fit m-4 hover:shadow-xl hover:scale-105 cursor-pointer">
         <h2 class="text-center font-bold">{{title}}</h2>
         <canvas id="chart-render"></canvas>
     </div>
@@ -20,6 +20,8 @@ export default {
     mounted: function() {
         setChart(this.$el.childNodes[1], this.chartInfos);
     },
-    methods: {}
+    methods: {
+        
+    }
 }
 </script>
