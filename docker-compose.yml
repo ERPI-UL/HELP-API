@@ -31,7 +31,7 @@ services:
   #     - "5000:5000"
   #   environment:
   #     - ENV=production
-  #     - DATABASE=postgresql://lltk:testtest12@database:5432/lltk
+  #     - DATABASE=postgresql://indico:testtest12@database:5432/indico
   #     - BASE_URL=/api/v0/
   #     - SECRET_KEY=ijhihfghqhguhqrughqhrgh_gijhighreh
   #   volumes:
