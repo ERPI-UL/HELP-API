@@ -1,5 +1,5 @@
 {
-  "name": "formutools",
+  "name": "indico",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
@@ -7,12 +7,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.6.0",
     "@heroicons/vue": "^1.0.5",
     "@j-t-mcc/vue3-chartjs": "^1.3.0",
-    "axios": "^0.26.1",
     "chart.js": "^3.7.0",
     "floating-vue": "^2.0.0-beta.8",
-    "jshint": "^2.13.4",
+    "flowbite": "^1.4.4",
     "v-tooltip": "^2.1.3",
     "vue": "^3.2.25",
     "vue-router": "^4.0.12"
