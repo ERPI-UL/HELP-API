@@ -3,6 +3,11 @@ before_script:
     - echo y | docker network prune
 
 build_staging:
+  variables:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      DB_LLTK_PW: $DB_LLTK_PW
+      SECRET_KEY: $SECRET_KEY
+      ENV: production
   stage: deploy
   tags : 
     - indico-dev
