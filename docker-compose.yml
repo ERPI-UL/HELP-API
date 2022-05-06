@@ -20,7 +20,7 @@ services:
       retries: 30
       start_period: 1s
     
-  api:
+  indico:
     build: ./api
     links:
       - database
@@ -40,7 +40,7 @@ services:
   nginx:
     image: nginx:latest
     links:
-      - api
+      - indico
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
     ports:
