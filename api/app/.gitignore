@@ -7,3 +7,6 @@ virtualenv/
 
 *.pyc
 images/
+__pycache__/
+.env
+.vscode/
