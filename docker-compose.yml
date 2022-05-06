@@ -37,15 +37,15 @@ services:
     volumes:
       - "./api/app:/opt/app"
 
-  nginx:
-    image: nginx:latest
-    links:
-      - indico
-    volumes:
-      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
-    ports:
-      - "8080:8080"
-    restart: always
+  # nginx:
+  #   image: nginx:latest
+  #   links:
+  #     - indico
+  #   volumes:
+  #     - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+  #   ports:
+  #     - "8080:8080"
+  #   restart: always
 
   web:
     build: ./app/
