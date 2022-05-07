@@ -19,3 +19,9 @@ wsproto==1.0.0
 fastapi-socketio
 asyncpg
 python-socketio
+uvicorn
+anyio
+matplotlib
+fastapi-pagination
+requests
+python-dotenv
