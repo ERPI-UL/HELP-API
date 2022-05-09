@@ -24,7 +24,7 @@
                             <p class="opacity-0 text-center text-indigo-600">Message</p>
                         </div>
                         <div class="pt-8 flex justify-between">
-                            <Backbutton>Annuler</Backbutton>
+                            <BackButton>Annuler</BackButton>
                             <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                                 Valider
                             </button>
@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import Backbutton from "../components/BackButton.vue";
+import BackButton from "../components/BackButton.vue";
 import User from "../script/User";
 import API from "../script/API";
 
@@ -141,7 +141,7 @@ function onValidate() {
 export default {
     name: "Login",
     components: {
-        Backbutton
+        BackButton
     },
     mounted() {
         setup();
