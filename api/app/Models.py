@@ -231,7 +231,10 @@ class SessionIn(BaseModel):
     userid: int
     scenarioid: int
     date: str
-
+class PasswordChange(BaseModel):
+    username: str
+    old: str
+    new: str
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)
