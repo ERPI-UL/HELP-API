@@ -17,7 +17,7 @@ WORKDIR /opt/app
 #RUN poetry install $([ "$ENV" = "production" ] && echo "--no-dev") --no-interaction
 RUN pip install -r requirements.txt
 
-RUN chmod +x docker-entrypoint.sh
-
 EXPOSE 5000
 RUN ["chmod", "+x", "/opt/app/docker-entrypoint.sh"]
+
+ENTRYPOINT ["/opt/app/docker-entrypoint.sh"]

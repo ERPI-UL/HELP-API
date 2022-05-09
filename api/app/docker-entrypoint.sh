@@ -11,5 +11,5 @@ then
     echo "PostgreSQL started"
 fi
 
-set -e
+#set -e
 uvicorn main:app --port 5000 --host 0.0.0.0
