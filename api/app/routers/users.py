@@ -19,8 +19,8 @@ router = APIRouter()
 
 @router.get("/test", tags=["users"])
 async def read_users():
-    users = await Models.User.filter(id > 0, id < 10).get()
-    print(users)
+    # users = await Models.User.filter(id > 0, id < 10).get()
+    # print(users)
     return [{"username": "Rick"}, {"username": "Morty"}]
 
 
@@ -61,6 +61,13 @@ async def get_users(page: int = 1, per_page: int = 10, res: Any = Depends(utils.
     }
 
 
+@router.get('/me', response_model=Models.UserinFront)
+async def get_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    # user = await Models.UserinFront.from_tortoise_orm(Models.User.get(id=current_user.id))
+    user = await Models.User.get(id=current_user.id)
+    return await Models.UserinFront.from_tortoise_orm(user)
+
+
 @router.get('/{id}', response_model=Models.UserinFront)
 async def read_user(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     user = await Models.User.get_or_none(id=8)
@@ -72,12 +79,6 @@ async def read_user(id: int, current_user: Models.User = Depends(utils.get_curre
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return await Models.UserinFront.from_tortoise_orm(user)
-
-
-@router.get('/me', response_model=Models.UserinFront)
-async def get_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    user = await Models.UserinFront.from_tortoise_orm(Models.User.get(id=current_user.id))
-    return {"oui": "oui"}
 
 
 @router.put('/me', response_model=Models.UserinFront)
