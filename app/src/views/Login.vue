@@ -37,8 +37,9 @@
 </template>
 
 <script>
-import Backbutton from "../components/Backbutton.vue";
+import Backbutton from "../components/BackButton.vue";
 import User from "../script/User";
+import API from "../script/API";
 
 function setup() {
     window.addEventListener("keydown", ev => {
@@ -72,7 +73,6 @@ function onValidate() {
         password: document.getElementById("input-password")
     };
 
-    
     if (credentials.username.value.trim() == "") {
         logMessage("Veuillez renseigner un nom d'utilisateur.");
         credentials.username.focus();
@@ -84,27 +84,58 @@ function onValidate() {
         return;
     }
 
-    let user = new User(
-        credentials.username.value,
-        credentials.password.value,
-        "", "", "", "", 0
-    );
-
-    /// DEBUG /// Should be a GET request to API
-    if (User.sameCredentials(user, User.USER_ADMIN)) user = User.USER_ADMIN;
-    if (User.sameCredentials(user, User.USER_TEACHER)) user = User.USER_TEACHER;
-    if (User.sameCredentials(user, User.USER_LEARNER)) user = User.USER_LEARNER;
-    /// DEBUG ///
-    
-    if (user.token == "") { // error: not a admin/teacher/learner account
-        logMessage("Identifiant ou mot de passe incorrect");
-        document.querySelector("input[name=username]").focus();
+    let debugMode = false;
+    if (debugMode) {/// DEBUG /// Should be a GET request to API
+        let user = new User(
+            credentials.username.value,
+            credentials.password.value,
+            "", "", "", "", 0
+        );
+        if (User.sameCredentials(user, User.USER_ADMIN)) user = User.USER_ADMIN;
+        if (User.sameCredentials(user, User.USER_TEACHER)) user = User.USER_TEACHER;
+        if (User.sameCredentials(user, User.USER_LEARNER)) user = User.USER_LEARNER;
+        if (user.token == "") { // error: not a admin/teacher/learner account
+            logMessage("Identifiant ou mot de passe incorrect");
+            document.querySelector("input[name=username]").focus();
+            return;
+        }
+        localStorage.setItem("user", User.toJSON(user));
+        btn.innerHTML = "Valider";
+        window.history.back();
         return;
-    }
+    } /// DEBUG ///
 
-    localStorage.setItem("user", User.toJSON(user));
-    btn.innerHTML = "Valider";
-    window.history.back();
+    //// REAL ///
+    API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {grant_type: "password", username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(data => {
+        if (data.error) logMessage(data.error);
+        else {
+            User.fromToken({token: data.access_token, type: data.token_type}).fetchInformations().then(user => {
+                User.saveUser(user);
+                logMessage("Connecté à "+user.username);
+                btn.innerHTML = "Valider";
+                setTimeout(() => {window.history.back()}, 500);
+            }).catch(err => {
+                console.error(err);
+            });
+        }
+    }).catch(err => {
+        console.error("Token request error: ", err);
+        btn.innerHTML = "Valider";
+        switch (err.status) {
+            case 401:
+                logMessage("Mot de passe invalide.");
+                break;
+            case 404:
+                logMessage("Nom d'utilisateur invalide.");
+                break;
+        
+            default:
+                logMessage("Erreur lors de la connexion au serveur");
+                break;
+        }
+    });
+    //// REAL ///
+
 }
 
 export default {

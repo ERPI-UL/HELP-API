@@ -1,24 +1,59 @@
 class API {
-    static URL = 'http://localhost/api';
-    static METHOD_GET = "GET";
-    static METHOD_PUT = "PUT";
-    static METHOD_POST = "POST";
-    static METHOD_PATCH = "PATCH";
+    static API_URL = 'http://indico-api.lf2l.fr';
+    static get METHOD_GET() {return "GET";}
+    static get METHOD_PUT() {return "PUT";}
+    static get METHOD_POST() {return "POST";}
+    static get METHOD_PATCH() {return "PATCH";}
+    static get TYPE_FORM() {return "application/x-www-form-urlencoded";}
+    static get TYPE_JSON() {return "application/json";}
+    static get TYPE_NONE() {return undefined;}
+
+    static ROUTE = {
+        LOGIN: "/auth/token",
+        PASSWORD: "/auth/password",
+        USER: "/users/me",
+        USERS: "/users/",
+        SCENARIOS: "/scenarios/"
+    };
     
-    static execute(path, method=this.METHOD_GET, body=null, headers=null) {
+    static execute(path, method=this.METHOD_GET, body=null, type=this.TYPE_NONE, headers=null) {
         return new Promise((resolve, reject) => {
-            let reqHeaders = {'Content-Type': 'application/json'};
+            let reqHeaders = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+                "Accept": "application/json",
+                "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3"
+            };
+            if (type != this.TYPE_NONE) reqHeaders["Content-Type"] = type;
+
             if (headers)
                 for (let key in headers)
                     reqHeaders[key] = headers[key];
+            let reqBody = type == this.TYPE_FORM ? "": {};
+            if (body) {
+                switch (typeof(body)) {
+                    case "string":
+                        if (body.startsWith("{") && body.endsWith("}"))
+                            body = JSON.parse(body);
+                        // pas de break, pour faire le traitement "object" suivant
+                    case "object":
+                        if (type == this.TYPE_FORM)
+                            reqBody = new URLSearchParams(body).toString();
+                        else reqBody = JSON.stringify(body);
+                        break;
+                    default: break;
+                }
+            }
 
-            fetch(API.URL + path, {
+            fetch(API.API_URL + path, {
+                credentials: "omit",
                 method: method,
-                body: (method == this.METHOD_GET)? undefined: body,
-                headers: reqHeaders
+                body: method == this.METHOD_GET? undefined: reqBody,
+                headers: reqHeaders,
+                referrer: window.location.origin,
+                mode: "cors"
             }).then(response => {
                 if (response.status != 200)
-                    reject(response.status);
+                    reject(response);
                 else {
                     response.json().then(data => {
                         resolve(data);
@@ -28,21 +63,37 @@ class API {
         });
     }
 
-    static execute_logged(path, method=this.METHOD_GET, body=null, headers=null) {
+    static execute_logged(path, method=this.METHOD_GET, credentials, body=null, type=this.TYPE_NONE, headers=null) {
         return new Promise((resolve, reject) => {
-            const user = localStorage.getItem("user");
-            if (!user) {
-                reject("User not connected");
+            if (!credentials) {
+                reject("Please provide credentials (token/type or username/password)");
                 return;
             }
-            let reqHeaders = {"token": user.token};
+            const login_mode = (credentials.password != undefined && credentials.username != undefined)
+            const token_mode = (credentials.token != undefined && credentials.type != undefined)
+
+            if (!login_mode && !token_mode) {
+                reject("Error: Invalid credentials");
+                return;
+            }
+            
+            let reqHeaders = {};
             if (headers)
                 for (let key in headers)
                     reqHeaders[key] = headers[key];
 
-            this.execute(path, method, body, reqHeaders).then(resolve).catch(reject);
+            if (token_mode) {
+                reqHeaders.Authorization = credentials.type+" "+credentials.token;
+                this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
+            } else {
+                API.execute("/token", this.METHOD_POST, {username: credentials.username, password: credentials.password}, this.TYPE_FORM).then(data => {
+                    reqHeaders.Authorization = data.token_type+" "+data.access_token;
+                    this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
+                }).catch(reject);
+            }
         });
     }
 }
 
+window.API = API; // for debug purposes
 export default API;

@@ -23,7 +23,7 @@
             </div>
             <div class="m-4 grow">
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit md:flex block">
-                    <div class="flex">
+                    <div class="flex md:mr-6" v-if="user.canTeacher()">
                         <h2 class="m-1 p-1">Utilisateurs: </h2>
                         <select name="username" id="user-select" class="border-none rounded bg-indigo-50 p-1 m-1">
                             <option value="all">Tous</option>
@@ -32,7 +32,7 @@
                         </select>
                     </div>
                     <div class="flex">
-                        <h2 class="md:ml-6 ml-1 m-1 p-1">Scénarios: </h2>
+                        <h2 class="m-1 p-1">Scénarios: </h2>
                         <select name="username" id="user-select" class="border-none rounded bg-indigo-50 p-1 m-1">
                             <option value="all">Tous</option>
                             <option value="user1">Scénario 1</option>
@@ -94,15 +94,14 @@ function addElement() {
 export default {
     name: "Statistics",
     data: () => {
-        return {charts}
+        return {charts, user: User.currentUser}
     },
     components: {
         Topbar,
         Chart
     },
     setup() {
-        const user = User.fromJSON(localStorage.getItem("user"));
-        if (user.isVisitor()) window.history.back();
+        if (!User.currentUser.canLearner()) window.history.back();
         return {window};
     },
     mounted() {

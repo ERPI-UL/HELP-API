@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import Backbutton from "../components/Backbutton.vue";
+import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from "../script/API";
 
@@ -122,17 +122,18 @@ function register() {
         return;
     }
 
-    API.execute("/users", "POST", {
+    API.execute(API.ROUTE.USERS, API.METHOD_POST, {
         username: credentials.username.value.trim(),
         email: credentials.email.value.trim(),
         firstname: credentials.givenName.value.trim(),
         lastname: credentials.familyName.value.trim(),
-        password: credentials.newPassword.value.trim()
-    }).then(() => {
+        password_hash: credentials.newPassword.value.trim()
+    }, API.TYPE_JSON).then(() => {
         logMessage("Compte créé avec succès.");
         btn.innerHTML = "S'inscrire";
-        setTimeout(window.history.back, 1000);
+        setTimeout(() => {window.history.back()}, 500);
     }).catch(err => {
+        console.error("Register error: ", err);
         logMessage("Erreur lors de la création du compte.");
         btn.innerHTML = "S'inscrire";
     });

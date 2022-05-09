@@ -10,14 +10,28 @@
                 </div>
                 <div>
                     <div class="divide-y divide-gray-300/50">
-                        <div v-if="!user.connected" class="space-y-6 py-8 text-base leading-7 text-gray-400">
-                            <div class="md:flex block justify-between">
-                                <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
-                                <input type="text" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                        <div class="border-none">
+                            <div id="login-credentials" v-show="!User.isConnected(User.currentUser)" >
+                                <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
+                                    <div class="md:flex block justify-between">
+                                        <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
+                                        <input type="text" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    </div>
+                                    <div class="md:flex block justify-between">
+                                        <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
+                                        <input type="password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    </div>
+                                </div>
+                                <div v-show="User.isConnected(User.currentUser)" class="md:flex block justify-left">
+                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1">Connecté à {{ User.currentUser.username }} : </p>
+                                    <a v-on:click="useUserinfos" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Utiliser</a>
+                                </div>
                             </div>
-                            <div class="md:flex block justify-between">
-                                <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
-                                <input type="password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                            <div id="login-userinfos" v-show="User.isConnected(User.currentUser)">
+                                <div class="md:flex block justify-left">
+                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1">Connecté à {{ User.currentUser.username }} : </p>
+                                    <a v-on:click="useCredentials" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Changer</a>
+                                </div>
                             </div>
                         </div>
                         <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
@@ -47,8 +61,9 @@
 </template>
 
 <script>
-import Backbutton from "../components/Backbutton.vue";
+import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
+import API from '../script/API';
 import Socket from "../script/Socket";
 import User from "../script/User";
 
@@ -77,6 +92,19 @@ const setupInputs = () => {
         const btn = document.getElementById("btn-validate");
         if (btn) btn.click();
     });
+}
+
+let usingCredentials = !User.isConnected(User.currentUser);
+function useCredentials() {
+    usingCredentials = true;
+    document.getElementById("login-userinfos").style.display = "none";
+    document.getElementById("login-credentials").style.display = "inherit";
+}
+
+function useUserinfos() {
+    usingCredentials = false;
+    document.getElementById("login-credentials").style.display = "none";
+    document.getElementById("login-userinfos").style.display = "inherit";
 }
 
 function logMessage(msg) {
@@ -110,33 +138,42 @@ function onValidate() {
         }
     };
 
-    if (!credentials.username) { // use user credentials here
-        const user = User.fromJSON(localStorage.getItem("user"));
-        credentials.username = {value: user.username};
-        credentials.password = {value: user.password};
+    if (usingCredentials) { // check for user credentials
+        if (credentials.username.value.trim() == "") {
+            logMessage("Veuillez renseigner un nom d'utilisateur.");
+            credentials.username.focus();
+            return;
+        }
+        if (credentials.password.value.trim() == "") {
+            logMessage("Veuillez renseigner un mot de passe.");
+            credentials.password.focus();
+            return;
+        }
     }
 
-    if (credentials.username.value.trim() == "") {
-        logMessage("Veuillez renseigner un nom d'utilisateur.");
-        credentials.username.focus();
-        return;
-    }
-    if (credentials.password.value.trim() == "") {
-        logMessage("Veuillez renseigner un mot de passe.");
-        credentials.password.focus();
-        return;
-    }
     if (credentials.number.value.trim().length < 5) {
         logMessage("Veuillez renseigner un code appareil valide.");
         credentials.number.focus();
         return;
     }
 
-    Socket.getInstance().send("custom/setEasyConnect", {
-        username: credentials.username.value,
-        password: credentials.password.value,
-        code: credentials.number.value
-    });
+    if (credentials.username) {
+        API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(res => {
+            Socket.getInstance().send("custom/setEasyConnect", {
+            token: res.token_type+" "+res.access_token,
+            code: credentials.number.value
+        });
+        }).catch(err => {
+            console.error(err);
+            logMessage("Nom d'utilisateur ou mot de passe incorrect.");
+        });
+        
+    } else {
+        Socket.getInstance().send("custom/setEasyConnect", {
+            token: User.currentUser.token.type + " " + User.currentUser.token.token,
+            code: credentials.number.value
+        });
+    }
 
     let timeoutID = setTimeout(() => {
         logMessage("Erreur: Aucune réponse du serveur.");
@@ -164,12 +201,12 @@ export default {
         ValidateButton
     },
     setup() {
-        return {user: JSON.parse(localStorage.getItem('user')??"{}")};
+        return {User, usingCredentials};
     },
     mounted() {
         setupInputs();
     },
-    methods: {onValidate}
+    methods: {onValidate, useCredentials, useUserinfos}
     
 };
 </script>

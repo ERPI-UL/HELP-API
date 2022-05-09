@@ -9,6 +9,7 @@ import Statistics from "./views/Statistics.vue";
 import Easyconnect from "./views/Easyconnect.vue";
 import Admin from "./views/Admin.vue";
 import Profile from "./views/Profile.vue";
+import CreateScenario from "./views/CreateScenario.vue";
 
 import './index.css'
 import "flowbite"
@@ -24,7 +25,8 @@ const router = createRouter({
         { path: '/statistics', name: 'Statistics', component: Statistics },
         { path: '/easyconnect', name: 'Easyconnect', component: Easyconnect },
         { path: '/profile', name: 'Profile', component: Profile },
-        { path: '/admin', name: 'Admin', component: Admin }
+        { path: '/admin', name: 'Admin', component: Admin },
+        { path: '/scenarios/create', name: 'CreateScenario', component: CreateScenario }
     ]
 });
 

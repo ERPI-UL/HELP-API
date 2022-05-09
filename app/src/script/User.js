@@ -1,3 +1,5 @@
+import API from "./API";
+
 class User {
     static PERMISSIONS = {
         VISITOR: 0,
@@ -6,9 +8,46 @@ class User {
         ADMIN: 3
     }
 
-    static USER_ADMIN = new User("FurAdmin", "Pawsword", "fur.admin@indico.fr", "Fur", "Admin", "fur4dm1nt0k3nuwu", User.PERMISSIONS.ADMIN);
-    static USER_TEACHER = new User("FurTeacher", "Pawsword", "fur.teacher@indico.fr", "Fur", "Teacher", "furt34ch3rt0k3nuwu", User.PERMISSIONS.TEACHER);
-    static USER_LEARNER = new User("FurLearner", "Pawsword", "fur.learner@indico.fr", "Fur", "Learner", "furl34rn3rt0k3nuwu", User.PERMISSIONS.LEARNER);
+    static currentUser = User.fromLocalStorage();
+
+    static get USER_ADMIN() {return new User("FurAdmin", "Pawsword", "fur.admin@indico.fr", "Fur", "Admin", {type: "Bearer", token: "fur4dm1nt0k3nuwu"}, User.PERMISSIONS.ADMIN);}
+    static get USER_TEACHER() {return new User("FurTeacher", "Pawsword", "fur.teacher@indico.fr", "Fur", "Teacher", {type: "Bearer", token: "furt34ch3rt0k3nuwu"}, User.PERMISSIONS.TEACHER);}
+    static get USER_LEARNER() {return new User("FurLearner", "Pawsword", "fur.learner@indico.fr", "Fur", "Learner", {type: "Bearer", token: "furl34rn3rt0k3nuwu"}, User.PERMISSIONS.LEARNER);}
+
+    static fromToken(token) {
+        if (token == null) return new User();
+        if (typeof token === 'string') token = JSON.parse(token);
+        if (!token.type || !token.token) {
+            console.error("Error gettings user from token: missing token fields (type, token)");
+            return new User();
+        }
+        try {
+            const tokenInfos = JSON.parse(atob(token.token.split(".")[1]));
+            return new User(tokenInfos.username??"", "", "", "", "", {type: token.type, token: token.token}, tokenInfos.adminLevel??User.PERMISSIONS.VISITOR);
+        } catch(e) {
+            console.error("Error getting user from token"+e);
+            return new User();
+        }
+    }
+
+    static forgetUser() {
+        localStorage.removeItem("user");
+        User.curUser = null;
+    }
+
+    static fromLocalStorage() {
+        const localData = localStorage.getItem("user");
+        return localData? User.fromJSON(localData) : new User();
+    }
+
+    static refreshUser() {
+        User.curUser = User.fromLocalStorage();
+    }
+
+    static saveUser(user) {
+        localStorage.setItem("user", User.toJSON(user));
+        User.curUser = user;
+    }
 
     static fromJSON(json) {
         if (json == null) return new User();
@@ -24,7 +63,11 @@ class User {
         return user1.username === user2.username && user1.password === user2.password;
     }
 
-    connected = false;
+    static isConnected(user) {
+        return !(user == null || user.username == null || user.username == "");
+    }
+
+    verified = false;
     username = "";
     password = "";
     email = "";
@@ -33,7 +76,7 @@ class User {
     token = "";
     permissions = 0;
 
-    constructor(username="", password="", email="", firstname="", lastname="", token="", permissions=User.PERMISSIONS.VISITOR) {
+    constructor(username="", password="", email="", firstname="", lastname="", token=null, permissions=User.PERMISSIONS.VISITOR) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -41,44 +84,45 @@ class User {
         this.lastname = lastname;
         this.token = token;
         this.permissions = permissions;
-        this.connected = this.username != "";
     }
 
-    isVisitor() {
-        return this.permissions == User.PERMISSIONS.VISITOR;
+    fetchInformations() {
+        return new Promise((resolve, reject) => {
+            console.log(this);
+            if (!this.token && !(this.username && this.password)) {
+                    reject("User not connected");
+                    return;
+            }
+            API.execute_logged(API.ROUTE.USER, API.METHOD_GET, this.getCredentials()).then(data => {
+                try {
+                    this.username = data.username;
+                    this.email = data.email;
+                    this.firstname = data.firstname;
+                    this.lastname = data.lastname;
+                    this.permissions = data.adminLevel;
+                    this.verified = true;
+                    resolve(this);
+                } catch (e) {reject(e);}
+            }).catch(reject);
+        });
     }
 
-    isTeacher() {
-        return this.permissions == User.PERMISSIONS.TEACHER;
+    getCredentials() {
+        return this.token ?? {username: this.username, password: this.password}
     }
 
-    isLearner() {
-        return this.permissions == User.PERMISSIONS.LEARNER;
-    }
+    isVisitor() {return this.permissions == User.PERMISSIONS.VISITOR;}
+    isTeacher() {return this.permissions == User.PERMISSIONS.TEACHER;}
+    isLearner() {return this.permissions == User.PERMISSIONS.LEARNER;}
+    isAdmin() {return this.permissions == User.PERMISSIONS.ADMIN;}
 
-    isAdmin() {
-        return this.permissions == User.PERMISSIONS.ADMIN;
-    }
+    canVisitor() {return this.permissions >= User.PERMISSIONS.VISITOR;}
+    canTeacher() {return this.permissions >= User.PERMISSIONS.TEACHER;}
+    canLearner() {return this.permissions >= User.PERMISSIONS.LEARNER;}
+    canAdmin() {return this.permissions >= User.PERMISSIONS.ADMIN;}
 
-    canVisitor() {
-        return this.permissions >= User.PERMISSIONS.VISITOR;
-    }
-
-    canTeacher() {
-        return this.permissions >= User.PERMISSIONS.TEACHER;
-    }
-
-    canLearner() {
-        return this.permissions >= User.PERMISSIONS.LEARNER;
-    }
-
-    canAdmin() {
-        return this.permissions >= User.PERMISSIONS.ADMIN;
-    }
-
-    equals(user) {
-        return this.token == user.token;
-    }
+    equals(user) {return this.token.token == user.token.token;}
 }
 
+window.User = User; // for debug purposes
 export default User;

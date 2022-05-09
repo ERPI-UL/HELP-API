@@ -73,16 +73,16 @@
                 </PopoverGroup>
 
                 <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-                    <div v-if="!user.connected">
+                    <div v-if="!User.isConnected(User.currentUser)">
                         <a href="/register" class="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900"> S'inscrire </a>
                         <Redirectbutton href="/login" class="ml-3">
                             Se connecter
                         </Redirectbutton>
                     </div>
-                    <div v-if="user.connected">
+                    <div v-if="User.isConnected(User.currentUser)">
                         <Dropdown>
                             <template v-slot:label>
-                                <p class="text-indigo-600 font-bold py-[2px] pr-2">{{ user.username }}</p>
+                                <p class="text-indigo-600 font-bold py-[2px] pr-2">{{ User.currentUser.firstname + " " + User.currentUser.lastname }}</p>
                             </template>
                             <template v-slot:items>
                                 <MenuItem v-slot="{ active }">
@@ -108,10 +108,10 @@
                 <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
                     <div class="pt-5 pb-6 px-5">
                         <div class="flex items-center justify-between">
-                            <div v-if="!user.connected">
+                            <div v-if="!User.isConnected(User.currentUser)">
                                 <img class="h-8 w-auto" src="../assets/images/icons/icon_full.png" alt="Workflow" />
                             </div>
-                            <div v-if="user.connected" class="border border-2 p-1 rounded-lg shadow-lg bg-indigo-50 cursor-pointer border-indigo-600">
+                            <div v-if="User.isConnected(User.currentUser)" class="border border-2 p-1 rounded-lg shadow-lg bg-indigo-50 cursor-pointer border-indigo-600">
                                 <a href="/profile" class="flex">
                                     <component :is="icon.user" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                     <h3 class="text-indigo-600 ml-1">{{user.username}}</h3>
@@ -154,7 +154,7 @@
                         </div>
                     </div>
                     <div class="py-6 px-5 space-y-6">
-                        <div v-if="!user.connected">
+                        <div v-if="!User.isConnected(User.currentUser)">
                             <Redirectbutton href="/login" class="w-full">
                                 Se connecter
                             </Redirectbutton>
@@ -162,7 +162,7 @@
                                 <a href="/register" class="text-indigo-600 hover:text-indigo-500">S'inscrire</a>
                             </p>
                         </div>
-                        <div v-if="user.connected" class="text-center">
+                        <div v-if="User.isConnected(User.currentUser)" class="text-center">
                             <button v-on:click="disconnect" class="text-indigo-600 hover:text-indigo-500">Se déconnecter</button>
                         </div>
                     </div>
@@ -248,8 +248,7 @@
             Redirectbutton
         },
         setup() {
-            const user = User.fromJSON(localStorage.getItem('user'));
-            if (user.canLearner()) {
+            if (User.currentUser.canLearner()) {
                 menu[0].elements.push({
                     name: 'En cours',
                     description: 'Voir vos scénarios en cours',
@@ -263,7 +262,7 @@
                     icon: CheckIcon
                 });
             }
-            if (user.canTeacher()) {
+            if (User.currentUser.canTeacher()) {
                 menu[0].elements.push({
                     name: 'Modifier',
                     description: 'Créer ou modifier un scénario',
@@ -271,7 +270,7 @@
                     icon: PencilAltIcon
                 });
             }
-            if (user.canAdmin()) {
+            if (User.currentUser.canAdmin()) {
                 menu[2].elements.push({
                     name: 'Panneau administrateur',
                     description: 'Accéder au panneau d\'administration',
@@ -279,15 +278,15 @@
                     icon: TerminalIcon
                 });
             }
-            if (user.isVisitor()) {
+            if (User.currentUser.isVisitor()) {
                 menu.splice(1, 1);
             }
 
-            return {menu, icon: {user: UserIcon}, user: user};
+            return {menu, icon: {user: UserIcon}, User};
         },
         methods: {
             disconnect() {
-                localStorage.removeItem('user');
+                User.forgetUser();
                 window.location.href = '/';
             }
         }

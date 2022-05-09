@@ -31,26 +31,32 @@
                     </div>
                 </div>
             </div>
+            <div v-if="window.location.href.split('#')[1] == 'editing'" class="m-4 w-fit h-fit">
+                <RedirectButton href="/scenarios/create">
+                    <component :is="icon.plus" class="flex-shrink-0 h-5 text-white mr-2" aria-hidden="true" />
+                    Nouveau scénario
+                </RedirectButton>
+            </div>
             <div class="m-2 ml-4 flex grow flex-wrap justify-evenly"> <!-- Scenario -->
                 <Scenario v-if="window.location.href.split('#')[1] == 'all'" v-for="item in scenarios.all">
                     <template v-slot:title>{{item.title}}</template>
                     <template v-slot:machine>{{item.machine}}</template>
                     <template v-slot:description>{{item.description}}</template>
-                    <template v-if="!user.isVisitor()" v-slot:href><Redirectbutton :href="item.href">Démarrer</Redirectbutton></template>
+                    <template v-if="!user.isVisitor()" v-slot:href><RedirectButton :href="item.href">Démarrer</RedirectButton></template>
                 </Scenario>
                 <Scenario v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in scenarios.editing">
                     <template v-slot:title>{{item.title}}</template>
                     <template v-slot:machine>{{item.machine}}</template>
                     <template v-slot:description>{{item.description}}</template>
                     <template v-slot:progress>{{item.progress}}</template>
-                    <template v-slot:href><Redirectbutton :href="item.href">Editer</Redirectbutton></template>
+                    <template v-slot:href><RedirectButton :href="item.href">Editer</RedirectButton></template>
                 </Scenario>
                 <Scenario v-if="window.location.href.split('#')[1] == 'pending'" v-for="item in scenarios.pending">
                     <template v-slot:title>{{item.title}}</template>
                     <template v-slot:machine>{{item.machine}}</template>
                     <template v-slot:description>{{item.description}}</template>
                     <template v-slot:progress>{{item.progress}}</template>
-                    <template v-slot:href><Redirectbutton :href="item.href">Continuer</Redirectbutton></template>
+                    <template v-slot:href><RedirectButton :href="item.href">Continuer</RedirectButton></template>
                 </Scenario>
                 <Scenario v-if="window.location.href.split('#')[1] == 'completed'" v-for="item in scenarios.completed">
                     <template v-slot:title>{{item.title}}</template>
@@ -66,11 +72,14 @@
 <script>
 import Topbar from "../components/Topbar.vue";
 import Scenario from "../components/Scenario.vue";
-import Redirectbutton from "../components/RedirectButton.vue";
+import RedirectButton from "../components/RedirectButton.vue";
 import User from "../script/User";
 
+import {
+    PlusIcon
+} from "@heroicons/vue/solid";
+
 let dom = null;
-const user = User.fromJSON(localStorage.getItem("user"));
 
 const scenarios = {
     all: [
@@ -106,10 +115,10 @@ export default {
     components: {
         Topbar,
         Scenario,
-        Redirectbutton
+        RedirectButton
     },
     setup() {
-        return {window, scenarios, user}
+        return {window, scenarios, user: User.currentUser, icon: {plus: PlusIcon}}
     },
     mounted() {
         dom = this;
