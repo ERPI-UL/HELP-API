@@ -16,4 +16,5 @@ build_staging:
       - master
   script:
     # - export PYTHONDONTWRITEBYTECODE=1
+    - chmod +x ./api/app/docker-entrypoint.sh
     -  docker-compose up -d --force-recreate
