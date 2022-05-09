@@ -12,7 +12,7 @@ load_dotenv()
 
 JWT_SECRET = os.getenv('SECRET_KEY')
 DB_URL = os.getenv('DB_HOST')
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
