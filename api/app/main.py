@@ -175,7 +175,9 @@ async def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
 @app.get('/testdoitetreco')
 async def test(token: str = Depends(utils.oauth2_scheme)):
     return {'ok': 'ok'}
-
+@app.get('/ping')
+async def ping():
+    return {'ping': 'pong'}
 register_tortoise(
     app,
     db_url=utils.DB_URL,
