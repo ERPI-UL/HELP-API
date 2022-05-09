@@ -2,6 +2,7 @@ from http.client import INTERNAL_SERVER_ERROR
 from anyio import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from passlib.hash import bcrypt
+import tortoise
 from tortoise.contrib.pydantic import pydantic_model_creator
 from fastapi_pagination import Page, add_pagination, paginate
 from typing import List
@@ -83,5 +84,9 @@ async def update_user(user: Models.UserinPut, current_user: Models.User = Depend
         user_obj.lastname = user.lastname
     if(len(user.email) > 0):
         user_obj.email = user.email
-    await user_obj.save()
+    try:
+        await user_obj.save()
+    except tortoise.exceptions.IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Adresse déjà utilisée.")
     return await Models.UserinFront.from_tortoise_orm(user_obj)
