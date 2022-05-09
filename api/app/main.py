@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
-from routers import users
+from routers import admin, users
 from routers import scenarios
 from routers import sessions
 
@@ -74,6 +74,7 @@ app.add_middleware(
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"])
 app.include_router(sessions.router, prefix="/stats", tags=["stats"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 easyAuth = {
     '1234': {"sid": "rehetjhnepjohn", "token": 'tokenbidon'},
 }

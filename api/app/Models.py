@@ -166,7 +166,7 @@ UserNew = pydantic_model_creator(
     User, name='UserNew', exclude_readonly=True, exclude=['adminLevel'])
 # User à envoyer au front sans le mot de passe
 UserinFront = pydantic_model_creator(
-    User, name='UserinFront', exclude_readonly=True, exclude=['password_hash'])
+    User, name='UserinFront', exclude=['password_hash'])
 UserinPut = pydantic_model_creator(
     User, name='UserinPut', exclude_readonly=True, exclude=['password_hash', 'adminLevel', 'id', 'username'])
 UserinToken = pydantic_model_creator(User, name='UserinToken', exclude=[

@@ -48,8 +48,12 @@ async def getAdminLevel(user: Models.UserinFront = Depends(get_current_user)) ->
 
 async def isAdmin(user: Models.UserinFront = Depends(get_current_user)) -> bool:
     return user.adminLevel == Permission.ADMIN.value
-
-
+async def AdminRequired(user: bool = Depends(isAdmin)):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous n'avez pas les droits nécessaires"
+        )
 async def isInstructorOrAbove(user: Models.UserinFront = Depends(get_current_user_in_token)):
     return user.adminLevel >= Permission.INSTRUCTOR.value
 
