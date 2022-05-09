@@ -172,6 +172,10 @@ async def test(token: str = Depends(utils.oauth2_scheme)):
 @app.get('/ping')
 async def ping():
     return {'ping': 'pong'}
+@app.get('/init')
+async def init():
+    await utils.initAdmin()
+    return {'init': 'ok'}
 register_tortoise(
     app,
     db_url=utils.DB_URL,
