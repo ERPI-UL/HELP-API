@@ -17,13 +17,6 @@ from pydantic import parse_obj_as, BaseModel
 router = APIRouter()
 
 
-@router.get("/test", tags=["users"])
-async def read_users():
-    # users = await Models.User.filter(id > 0, id < 10).get()
-    # print(users)
-    return [{"username": "Rick"}, {"username": "Morty"}]
-
-
 @router.post('/', response_model=Models.UserinFront)
 async def create_user(user: Models.UserNew):
     user_obj = Models.User(username=user.username,
