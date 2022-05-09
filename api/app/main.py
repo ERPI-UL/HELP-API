@@ -153,14 +153,12 @@ async def easy_login(code: Models.Easy, form: OAuth2PasswordRequestForm = Depend
     print(code.token)
     return {'ok'}
 
-@app.get('/testdoitetreco')
-async def test(token: str = Depends(utils.oauth2_scheme)):
-    return {'ok': 'ok'}
-
 
 @app.get('/ping')
 async def ping():
     return {'ping': 'pong'}
+
+
 @app.get('/init')
 async def init():
     await utils.initAdmin()
@@ -172,4 +170,3 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
-Models.UserinToken(id=9, username='furwaz', adminLevel=1)

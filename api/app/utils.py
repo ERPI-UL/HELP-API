@@ -48,12 +48,16 @@ async def getAdminLevel(user: Models.UserinFront = Depends(get_current_user)) ->
 
 async def isAdmin(user: Models.UserinFront = Depends(get_current_user)) -> bool:
     return user.adminLevel == Permission.ADMIN.value
+
+
 async def AdminRequired(user: bool = Depends(isAdmin)):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Vous n'avez pas les droits nécessaires"
         )
+
+
 async def isInstructorOrAbove(user: Models.UserinFront = Depends(get_current_user_in_token)):
     return user.adminLevel >= Permission.INSTRUCTOR.value
 
@@ -82,17 +86,19 @@ async def authenticate_user(username: str, password: str):
         return False
     return user
 
+
 async def initAdmin():
     try:
         user = await Models.User.get(username='toxicbloud')
         if not user:
-            user = await Models.User.create(username='toxicbloud', email='truc@gmail.com',adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),firstname='Antonin',lastname='Rousseau')
+            user = await Models.User.create(username='toxicbloud', email='truc@gmail.com', adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET), firstname='Antonin', lastname='Rousseau')
         else:
             user.adminLevel = Permission.ADMIN.value
             await user.save()
     except tortoise.exceptions.DoesNotExist:
-        user = await Models.User.create(username='toxicbloud', email='truc@gmail.com',adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),firstname='Antonin',lastname='Rousseau')
-    
+        user = await Models.User.create(username='toxicbloud', email='truc@gmail.com', adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET), firstname='Antonin', lastname='Rousseau')
+
+
 class Permission(Enum):
     VISITOR = 0
     APPRENTICE = 1

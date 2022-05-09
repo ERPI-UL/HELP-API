@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post('/', response_model=Models.UserinFront)
 async def create_user(user: Models.UserNew):
     user_obj = Models.User(username=user.username,
-                           password_hash=bcrypt.hash(user.password_hash), firstname=user.firstname, lastname=user.lastname, email=user.email,adminLevel=1)
+                           password_hash=bcrypt.hash(user.password_hash), firstname=user.firstname, lastname=user.lastname, email=user.email, adminLevel=1)
     await user_obj.save()
     return await Models.UserinFront.from_tortoise_orm(user_obj)
 
