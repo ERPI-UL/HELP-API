@@ -3,22 +3,14 @@ import jwt
 from fastapi import FastAPI, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
-from passlib.hash import bcrypt
-from tortoise import fields
-import tortoise
 from tortoise.contrib.fastapi import register_tortoise
-from tortoise.contrib.pydantic import pydantic_model_creator
-from tortoise.models import Model
-
 from fastapi.middleware.cors import CORSMiddleware
 from routers import users
 from routers import scenarios
 from routers import sessions
 
 import Models
-from pydantic import BaseModel
 import random
-import string
 import utils
 
 import socketio
@@ -175,6 +167,8 @@ async def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
 @app.get('/testdoitetreco')
 async def test(token: str = Depends(utils.oauth2_scheme)):
     return {'ok': 'ok'}
+
+
 @app.get('/ping')
 async def ping():
     return {'ping': 'pong'}
