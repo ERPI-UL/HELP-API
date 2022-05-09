@@ -1,9 +1,12 @@
+from email import utils
 from enum import Enum
 import os
+from passlib.hash import bcrypt
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+import tortoise
 import Models
 load_dotenv()
 
@@ -75,7 +78,17 @@ async def authenticate_user(username: str, password: str):
         return False
     return user
 
-
+async def initAdmin():
+    try:
+        user = await Models.User.get(username='toxicbloud')
+        if not user:
+            user = await Models.User.create(username='toxicbloud', email='truc@gmail.com',adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),firstname='Antonin',lastname='Rousseau')
+        else:
+            user.adminLevel = Permission.ADMIN.value
+            await user.save()
+    except tortoise.exceptions.DoesNotExist:
+        user = await Models.User.create(username='toxicbloud', email='truc@gmail.com',adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),firstname='Antonin',lastname='Rousseau')
+    
 class Permission(Enum):
     VISITOR = 0
     APPRENTICE = 1
