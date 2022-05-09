@@ -20,4 +20,4 @@ RUN pip install -r requirements.txt
 EXPOSE 5000
 RUN ["chmod", "+x", "/opt/app/docker-entrypoint.sh"]
 
-ENTRYPOINT ["/opt/app/docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "/opt/app/docker-entrypoint.sh"]
