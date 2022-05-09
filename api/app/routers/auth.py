@@ -27,6 +27,6 @@ async def change_password(data: Models.PasswordChange):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Nom d'utiliateur ou mot de passe incorrect"
         )
-    user.password = data.new
+    user.password_hash = Models.User.encrypt_password(data.new)
     await user.save()
     return {'ok'}
