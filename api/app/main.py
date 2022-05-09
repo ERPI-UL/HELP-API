@@ -162,6 +162,17 @@ async def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user_obj = await Models.UserinToken.from_tortoise_orm(user)
     token = jwt.encode(user_obj.dict(), utils.JWT_SECRET)
     return {'access_token': token, 'token_type': 'bearer'}
+@app.post("/password", tags=["auth"])
+async def change_password(data: Models.PasswordChange):
+    user = await utils.authenticate_user(data.username, data.old)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Nom d'utiliateur ou mot de passe incorrect"
+        )
+    user.password = data.new
+    await user.save()
+    return {'ok'}
 
 
 @app.get('/testdoitetreco')
