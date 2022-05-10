@@ -26,12 +26,12 @@ def getEasyCode():
 async def easy_login(code: Models.Easy):
     if not code.token:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Token manquant"
         )
     if code.code not in easyAuth:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Code appareil invalide",
         )
     easyAuth[code.code] = code.token
@@ -54,11 +54,12 @@ async def getToken(code: str):
 
 
 @router.delete("/{code}")
-async def deleteEasy(code: str, current_user: Models.User = Depends(utils.get_current_user)):
-    if easyAuth[code] != current_user.token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token incorrect"
-        )
+async def deleteEasy(code: str, token: str = Depends(utils.get_token)):
+    if easyAuth[code]:
+        if easyAuth[code] != token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token incorrect"
+            )
     easyAuth.pop(code)
     return {'ok'}

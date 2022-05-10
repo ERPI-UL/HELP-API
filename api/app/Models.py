@@ -163,7 +163,7 @@ class Session(Model):
 
 
 class Easy(BaseModel):
-    code: int
+    code: str
     token: str
 
     class Config:

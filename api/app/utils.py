@@ -42,6 +42,17 @@ async def get_current_user_in_token(token: str = Depends(oauth2_scheme)):
     return user
 
 
+async def get_token(token: str = Depends(oauth2_scheme)):
+    try:
+        jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token invalide"
+        )
+    return token
+
+
 async def getAdminLevel(user: Models.UserinFront = Depends(get_current_user)) -> int:
     return user.adminLevel
 
