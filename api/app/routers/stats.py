@@ -1,5 +1,7 @@
+from time import process_time_ns
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import parse_obj_as
+import tortoise
 import utils
 import Models
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -67,7 +69,12 @@ async def sessionToJSON(session):
         'scenario': await scenarioToJSON(session.scenario),
         'playedSteps': [await playedStepToJSON(playedStep) for playedStep in session.playedSteps],
     }
-
+@router.get('/scenarios/averageTime')
+async def averageTime(idScenario:int,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    conn = tortoise.Tortoise.get_connection("default")
+    scenario  = await Models.Scenario.get(id=idScenario)
+    res = await conn.execute_query_dict('select avg(time),step_id,s2.name from "playedSteps" inner join session s on "playedSteps".session_id = s.id inner join steps s2 on "playedSteps".step_id = s2.id where s.scenario_id = ($1) group by step_id,s2.name;', [idScenario])
+    return {'scenario':scenario,'data': res}
 
 async def userToJSON(user):
     return {
