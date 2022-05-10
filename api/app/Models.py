@@ -154,6 +154,7 @@ class Session(Model):
         'models.User', related_name='sessions')
     scenario = fields.ForeignKeyField(
         'models.Scenario', related_name='sessions')
+    evaluation = fields.BooleanField()
     date = fields.DatetimeField(auto_now_add=True)
 # class UserinFront(BaseModel):
 #     id: int
@@ -235,9 +236,9 @@ class playedStepPost(BaseModel):
 
 
 class SessionIn(BaseModel):
-    userid: int
     scenarioid: int
     date: str
+    evaluation: bool
 
 
 class PasswordChange(BaseModel):
