@@ -97,7 +97,7 @@ class Step(Model):
     name = fields.TextField()
     description = fields.TextField()
     scenario = fields.ForeignKeyField('models.Scenario', related_name='steps')
-
+    targets = fields.ManyToManyField('models.Target', related_name='steps')
     class Meta:
         table = "steps"
 
@@ -121,7 +121,7 @@ class Choice(Model):
     class Meta:
         table = "choices"
 
-
+#FIXME: think about associations
 class Target(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
