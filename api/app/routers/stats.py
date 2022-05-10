@@ -75,6 +75,21 @@ async def averageTime(idScenario:int,current_user: Models.User = Depends(utils.g
     scenario  = await Models.Scenario.get(id=idScenario)
     res = await conn.execute_query_dict('select avg(time),step_id,s2.name from "playedSteps" inner join session s on "playedSteps".session_id = s.id inner join steps s2 on "playedSteps".step_id = s2.id where s.scenario_id = ($1) group by step_id,s2.name;', [idScenario])
     return {'scenario':scenario,'data': res}
+@router.get('/scenarios/skipRate')
+async def skipRate(idScenario:int,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    conn = tortoise.Tortoise.get_connection("default")
+    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    print(scenario)
+    list = []
+    #FIXME: make this with full SQL query not 2 queries for each step
+    for step in scenario.steps:
+        skipped = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where skipped = true and step_id = ($1) and session.scenario_id = ($2);', [step.id,idScenario])
+        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where step_id = ($1) and session.scenario_id = ($2);', [step.id,idScenario])
+        if total[0]['count'] != 0:
+            list.append({'id':step.id,'name':step.name,'skipRate':skipped[0]['count']/total[0]['count']})
+        else:
+            list.append({'id':step.id,'name':step.name,'skipRate':-1})
+    return {'scenario':scenario.id,'data': list}
 
 async def userToJSON(user):
     return {
