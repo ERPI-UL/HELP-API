@@ -21,7 +21,7 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
     if id_scenario:
         sessions = await Models.Session.filter(user__id=id, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
     else:
-        sessions = await Models.Session.filter(user__id=id).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
+        sessions = await Models.Session.filter(user__id=id).prefetch_related('user', 'scenario__steps__targets', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
     lastPage = session_count // per_page
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
@@ -34,12 +34,14 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
     }
 
 
-@router.post('/users/{id}/sessions', response_model=Models.SessioninFront)
+@router.post('/users/{id}/sessions')
 async def createSession(id: int, session: Models.SessionIn):
     user = await Models.User.get(id=id)
-    scenario = await Models.Scenario.get(id=session.scenario)
+    scenario = await Models.Scenario.get(id=session.scenarioid)
     session = await Models.Session.create(user=user, scenario=scenario)
-    return await sessionToJSON(session)
+    return {
+        'id': session.id,
+    }
 
 
 @router.post('/sessions/{sessionid}/playedSteps', response_model=Models.playedStepIn)

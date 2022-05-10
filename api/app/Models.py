@@ -231,11 +231,9 @@ class playedStepPost(BaseModel):
     skipped: bool
     record: str
     stepid: int
-    sessionid: int
 
 
 class SessionIn(BaseModel):
-    userid: int
     scenarioid: int
     date: str
 
