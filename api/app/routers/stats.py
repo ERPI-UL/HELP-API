@@ -61,14 +61,15 @@ async def deletePlayedSteps(sessionid: int, current_user: Models.User = Depends(
         await step.delete()
     return {'message': f"{steps.__len__()} étapes de progressions ont été supprimés"}
 
-
 @router.delete('/sessions/playedSteps/{id}')
 async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    step = await Models.playedStep.filter(id=id).prefetch_related('session').first()
+    step = await Models.playedStep.filter(id=id).prefetch_related('session__user').first()
+    if not step:
+        raise HTTPException(status_code=404, detail="Step non trouvé")
     if step.session.user.id != current_user.id:
         raise HTTPException(
             status_code=403, detail="Vous n'avez pas les droits pour supprimer cet objet")
-    step = step.delete()
+    step = await step.delete()
     return {'message': 'deleted'}
 
 
