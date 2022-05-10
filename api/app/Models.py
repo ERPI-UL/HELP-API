@@ -166,6 +166,14 @@ class Easy(BaseModel):
     code: int
     token: str
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "code": "56328",
+                "token": "jwttoken.5aze5ezfezf.jwtoken"
+            }
+        }
+
 
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(
@@ -244,6 +252,7 @@ class PasswordChange(BaseModel):
     username: str
     old: str
     new: str
+
 
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(
