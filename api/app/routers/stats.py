@@ -43,53 +43,68 @@ async def createSession(id: int, session: Models.SessionIn):
 
 
 @router.post('/sessions/{sessionid}/playedSteps', response_model=Models.playedStepIn)
-async def createPlayedStep(sessionid:int,playedStep: Models.playedStepPost):
-    step = Models.playedStep(progressNumber=playedStep.progressNumber, missed=playedStep.missed, skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid,session_id=sessionid)
+async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost):
+    step = Models.playedStep(progressNumber=playedStep.progressNumber, missed=playedStep.missed,
+                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid)
     await step.save()
     return step
+
+
 @router.delete('/sessions/{sessionid}/playedSteps')
-async def deletePlayedSteps(sessionid:int,current_user:Models.User = Depends(utils.get_current_user_in_token)):
+async def deletePlayedSteps(sessionid: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     session = await Models.Session.get(id=sessionid).prefetch_related('user')
     if session.user.id != current_user.id:
-        raise HTTPException(status_code=403, detail="Vous n'avez pas le droit de supprimer ces objets")
+        raise HTTPException(
+            status_code=403, detail="Vous n'avez pas le droit de supprimer ces objets")
     steps = await Models.playedStep.filter(session__id=sessionid).all()
     for step in steps:
         await step.delete()
     return {'message': f"{steps.__len__()} étapes de progressions ont été supprimés"}
+
+
 @router.delete('/sessions/playedSteps/{id}')
-async def deletePlayedStep(id: int,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     step = await Models.playedStep.filter(id=id).prefetch_related('session').first()
     if step.session.user.id != current_user.id:
-        raise HTTPException(status_code=403, detail="Vous n'avez pas les droits pour supprimer cet objet")
+        raise HTTPException(
+            status_code=403, detail="Vous n'avez pas les droits pour supprimer cet objet")
     step = step.delete()
     return {'message': 'deleted'}
+
+
 async def sessionToJSON(session):
     return {
         'id': session.id,
         'scenario': await scenarioToJSON(session.scenario),
         'playedSteps': [await playedStepToJSON(playedStep) for playedStep in session.playedSteps],
     }
+
+
 @router.get('/scenarios/averageTime')
-async def averageTime(idScenario:int,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def averageTime(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     conn = tortoise.Tortoise.get_connection("default")
-    scenario  = await Models.Scenario.get(id=idScenario)
+    scenario = await Models.Scenario.get(id=idScenario)
     res = await conn.execute_query_dict('select avg(time),step_id,s2.name from "playedSteps" inner join session s on "playedSteps".session_id = s.id inner join steps s2 on "playedSteps".step_id = s2.id where s.scenario_id = ($1) group by step_id,s2.name;', [idScenario])
-    return {'scenario':scenario,'data': res}
+    return {'scenario': scenario, 'data': res}
+
+
 @router.get('/scenarios/skipRate')
-async def skipRate(idScenario:int,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def skipRate(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     conn = tortoise.Tortoise.get_connection("default")
     scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
     print(scenario)
     list = []
-    #FIXME: make this with full SQL query not 2 queries for each step
+    # FIXME: make this with full SQL query not 2 queries for each step
     for step in scenario.steps:
-        skipped = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where skipped = true and step_id = ($1) and session.scenario_id = ($2);', [step.id,idScenario])
-        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where step_id = ($1) and session.scenario_id = ($2);', [step.id,idScenario])
+        skipped = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where skipped = true and step_id = ($1) and session.scenario_id = ($2);', [step.id, idScenario])
+        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where step_id = ($1) and session.scenario_id = ($2);', [step.id, idScenario])
         if total[0]['count'] != 0:
-            list.append({'id':step.id,'name':step.name,'skipRate':skipped[0]['count']/total[0]['count']})
+            list.append({'id': step.id, 'name': step.name,
+                        'skipRate': skipped[0]['count']/total[0]['count']})
         else:
-            list.append({'id':step.id,'name':step.name,'skipRate':-1})
-    return {'scenario':scenario.id,'data': list}
+            list.append({'id': step.id, 'name': step.name, 'skipRate': -1})
+    return {'scenario': scenario.id, 'data': list}
+
 
 async def userToJSON(user):
     return {

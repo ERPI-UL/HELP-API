@@ -7,7 +7,7 @@ import utils
 router = APIRouter()
 
 
-@router.get("/",response_model=Models.pagination)
+@router.get("/", response_model=Models.pagination)
 async def read_scenarios(page: int = 1, per_page: int = 10):
     scenario_count = await Models.Scenario.all().count()
     if scenario_count < per_page:
@@ -26,6 +26,7 @@ async def read_scenarios(page: int = 1, per_page: int = 10):
         'last_page': lastPage,
         'data': [await scenarioToJSON(scenario) for scenario in scenarios]
     }
+
 
 @router.get('/{id}')
 async def getScenario(id: int):
