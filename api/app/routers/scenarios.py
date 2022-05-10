@@ -7,10 +7,25 @@ import utils
 router = APIRouter()
 
 
-@router.get("/")
-async def read_scenarios():
-    return [await scenarioToJSON(scenario) for scenario in await Models.Scenario.all().prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets')]
-
+@router.get("/",response_model=Models.pagination)
+async def read_scenarios(page: int = 1, per_page: int = 10):
+    scenario_count = await Models.Scenario.all().count()
+    if scenario_count < per_page:
+        per_page = scenario_count
+    # check for zero per_page
+    if per_page == 0:
+        per_page = 1
+    lastPage = scenario_count // per_page
+    if(page > lastPage):
+        raise HTTPException(status_code=404, detail="Page not found")
+    scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('steps__type').prefetch_related('steps__targets')
+    return {
+        'total': scenario_count,
+        'per_page': per_page,
+        'current_page': page,
+        'last_page': lastPage,
+        'data': [await scenarioToJSON(scenario) for scenario in scenarios]
+    }
 
 @router.get('/{id}')
 async def getScenario(id: int):
