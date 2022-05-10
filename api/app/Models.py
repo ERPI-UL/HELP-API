@@ -59,6 +59,7 @@ class User(Model):
 
     def verify_password(self, password):
         return bcrypt.verify(password, self.password_hash)
+
     def encrypt_password(password):
         return bcrypt.hash(password)
 
@@ -96,6 +97,7 @@ class Step(Model):
     name = fields.TextField()
     description = fields.TextField()
     scenario = fields.ForeignKeyField('models.Scenario', related_name='steps')
+    targets = fields.ManyToManyField('models.Target', related_name='steps')
 
     class Meta:
         table = "steps"
@@ -120,6 +122,8 @@ class Choice(Model):
     class Meta:
         table = "choices"
 
+# FIXME: think about associations
+
 
 class Target(Model):
     id = fields.IntField(pk=True)
@@ -138,6 +142,7 @@ class playedStep(Model):
     missed = fields.BooleanField(default=False)
     skipped = fields.BooleanField(default=False)
     record = fields.TextField()  # json
+    time = fields.IntField(default=0)
 
     class Meta:
         table = "playedSteps"
@@ -233,10 +238,13 @@ class SessionIn(BaseModel):
     userid: int
     scenarioid: int
     date: str
+
+
 class PasswordChange(BaseModel):
     username: str
     old: str
     new: str
+
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)
