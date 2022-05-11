@@ -156,7 +156,7 @@ function onValidate() {
         return;
     }
 
-    if (credentials.username) {
+    if (usingCredentials) {
         API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(res => {
             sendEasyConnectRequest({
                 token: res.token_type + " " + res.access_token,
