@@ -159,7 +159,7 @@ function onValidate() {
     if (credentials.username) {
         API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(res => {
             sendEasyConnectRequest({
-                token: User.currentUser.token.type + " " + User.currentUser.token.token,
+                token: res.token_type + " " + res.access_token,
                 code: credentials.number.value
             });
         }).catch(err => {
