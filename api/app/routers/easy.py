@@ -8,8 +8,9 @@ import asyncio
 from datetime import datetime, timedelta
 router = APIRouter()
 
-#dictionnaire de code et de token
+# dictionnaire de code et de token
 easyAuth = {}
+
 
 def getEasyCode():
     """
@@ -25,9 +26,19 @@ def getEasyCode():
     easyAuth[x] = {}
     easyAuth[x]['expires'] = datetime.now() + timedelta(minutes=10)
     easyAuth[x]['token'] = 'tokenbidon'
-    print(easyAuth)
-    print(type(easyAuth))
     return x
+
+
+async def RemoveExpired():
+    """
+    Supprime les codes expirés
+    """
+    # on créé une copie de la liste pour ne pas
+    # modifier la liste originale cette opération
+    # est en concurencence avec d'autres opérations
+    for key in list(easyAuth):
+        if easyAuth[key]['expires'] < datetime.now():
+            del easyAuth[key]
 
 
 @router.post("/connect")
@@ -48,6 +59,7 @@ async def easy_login(code: Models.Easy, current_user: Models.User = Depends(util
 
 @router.get("/generate")
 async def get_easy_code():
+    await RemoveExpired()
     return {'code': getEasyCode()}
 
 
