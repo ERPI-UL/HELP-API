@@ -25,19 +25,18 @@
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit md:flex block">
                     <div class="flex md:mr-6" v-if="user.canTeacher()">
                         <h2 class="m-1 p-1">Utilisateurs: </h2>
-                        <select name="username" id="user-select" class="border-none rounded bg-indigo-50 p-1 m-1">
-                            <option value="all">Tous</option>
-                            <option value="user1">Utilisateur 1</option>
-                            <option value="user1">Utilisateur 2</option>
+                        <select name="username" id="user-select" class="border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                            <option value="<loading>">Chargement ...</option>
+                        </select>
+                    </div>
+                    <div class="flex md:mr-6">
+                        <h2 class="m-1 p-1">Scénarios: </h2>
+                        <select name="username" id="scenario-select" class="border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                            <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>
                     <div class="flex">
-                        <h2 class="m-1 p-1">Scénarios: </h2>
-                        <select name="username" id="user-select" class="border-none rounded bg-indigo-50 p-1 m-1">
-                            <option value="all">Tous</option>
-                            <option value="user1">Scénario 1</option>
-                            <option value="user1">Scénario 2</option>
-                        </select>
+                        <ValidateButton>Chercher</ValidateButton>
                     </div>
                 </div>
                 <div class="m-2 ml-4 flex flex-wrap justify-evenly grow"> <!-- Statistiques -->
@@ -55,12 +54,59 @@
 <script>
 import Topbar from "../components/Topbar.vue";
 import Chart from "../components/Chart.vue";
+import ValidateButton from "../components/ValidateButton.vue";
 import User from "../script/User";
+import API from '../script/API';
 
 const charts = [];
 var dom = null;
 
-var counter = 0;
+function setup() {
+    let userSelect = document.getElementById("user-select");
+    let scenarioSelect = document.getElementById("scenario-select");
+
+    // fill the user select with all the available users 
+    userSelect.innerHTML = "";
+    API.execute_logged(API.ROUTE.USERS+API.createPagination(1, 10), API.METHOD_GET, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
+        if (!res.data) {
+            console.error("Error loading users: no data found");
+            let option = document.createElement("option");
+            option.value = "<error>";
+            option.innerHTML = "Error: no data found";
+            userSelect.appendChild(option);
+            return;
+        }
+        res.data.splice(0, 0, {id: 0, firstname: "Tous", lastname: ""});
+        res.data.forEach(user => {
+            let option = document.createElement("option");
+            option.value = user.id;
+            option.innerHTML = user.firstname + " " + user.lastname;
+            userSelect.appendChild(option);
+        });
+    }).catch(console.error);
+
+    // fill the scenario select with all the available scenarios 
+    scenarioSelect.innerHTML = "";
+    API.execute_logged(API.ROUTE.SCENARIOS+API.createPagination(1, 10), API.METHOD_GET, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
+        if (!res.data) {
+            console.error("Error loading scenarios: no data found");
+            let option = document.createElement("option");
+            option.value = "<error>";
+            option.innerHTML = "Error: no data found";
+            scenarioSelect.appendChild(option);
+            return;
+        }
+        res.data.splice(0, 0, {id: 0, name: "Tous"});
+        res.data.forEach(scenario => {
+            let option = document.createElement("option");
+            option.value = scenario.id;
+            option.innerHTML = scenario.name;
+            scenarioSelect.appendChild(option);
+        });
+    }).catch(console.error);
+}
+
+// DEMO DATA
 function addElement() {
     const len = Math.round(Math.random()*8)+2;
     fetch("https://random-word-api.herokuapp.com/word?number="+(len+1)).then(text => text.json().then( words => {
@@ -83,11 +129,6 @@ function addElement() {
             }
         });
     }));
-    if (counter++ < Math.random()*2+4) {
-        setTimeout(addElement, 300);
-    } else setTimeout(() => {
-        if (dom != null) dom.$forceUpdate();
-    }, 1000);
     if (dom != null) dom.$forceUpdate();
 }
 
@@ -98,7 +139,8 @@ export default {
     },
     components: {
         Topbar,
-        Chart
+        Chart,
+        ValidateButton
     },
     setup() {
         if (!User.currentUser.canLearner()) window.history.back();
@@ -106,9 +148,7 @@ export default {
     },
     mounted() {
         dom = this;
-        setTimeout(() => {
-            addElement();
-        }, 600);
+        setup();
     }
 };
 </script>

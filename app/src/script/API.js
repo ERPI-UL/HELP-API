@@ -13,7 +13,8 @@ class API {
         PASSWORD: "/auth/password",
         USER: "/users/me",
         USERS: "/users/",
-        SCENARIOS: "/scenarios/"
+        SCENARIOS: "/scenarios/",
+        EASY_CONNECT: "/easy/connect"
     };
     
     static execute(path, method=this.METHOD_GET, body=null, type=this.TYPE_NONE, headers=null) {
@@ -92,6 +93,24 @@ class API {
                 }).catch(reject);
             }
         });
+    }
+
+    static createParameters(params) {
+        switch (typeof(params)) {
+            case "string":
+                if (params.startsWith("?")) return params;
+                if (params.startsWith("{") && params.endsWith("}"))
+                    params = JSON.parse(params);
+            case "object":
+                return "?" + new URLSearchParams(params).toString();
+            default:
+                console.error("API Error: Error while creating parameters with argument: ", params);
+                return "";
+        }
+    }
+
+    static createPagination(page, per_page) {
+        return this.createParameters({page: page, per_page: per_page});
     }
 }
 

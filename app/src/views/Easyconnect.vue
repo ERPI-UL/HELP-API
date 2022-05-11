@@ -64,7 +64,6 @@
 import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
-import Socket from "../script/Socket";
 import User from "../script/User";
 
 const setupInputs = () => {
@@ -159,37 +158,35 @@ function onValidate() {
 
     if (credentials.username) {
         API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(res => {
-            Socket.getInstance().send("custom/setEasyConnect", {
-            token: res.token_type+" "+res.access_token,
-            code: credentials.number.value
-        });
+            sendEasyConnectRequest({
+                token: User.currentUser.token.type + " " + User.currentUser.token.token,
+                code: credentials.number.value
+            });
         }).catch(err => {
             console.error(err);
             logMessage("Nom d'utilisateur ou mot de passe incorrect.");
         });
         
     } else {
-        Socket.getInstance().send("custom/setEasyConnect", {
+        sendEasyConnectRequest({
             token: User.currentUser.token.type + " " + User.currentUser.token.token,
             code: credentials.number.value
         });
     }
+}
 
-    let timeoutID = setTimeout(() => {
-        logMessage("Erreur: Aucune réponse du serveur.");
-        btn.innerHTML = "Valider";
-    }, 5000);
-    Socket.getInstance().on("custom/getEasyConnect", data => {
-        if (timeoutID != -1) {
-            clearTimeout(timeoutID);
-            timeoutID = -1;
-        }
-        if (data.status == 200) {
-            logMessage("Connexion établie avec succès.");
-            btn.innerHTML = "Valider";
-            setTimeout(window.history.back, 1000);
-        } else {
-            logMessage("Erreur: " + data.message);
+function sendEasyConnectRequest(data) {
+    API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, User.currentUser.getCredentials(), data, API.TYPE_JSON).then(res => {
+        logMessage("Appareil connecté au compte.");
+    }).catch(err => {
+        console.error(err);
+        switch (err.status) {
+            case 404:
+                logMessage("Erreur: Appareil inconnu.");
+                break;
+            default:
+                logMessage("Erreur lors de la connexion.");
+                break;
         }
     });
 }
