@@ -1,20 +1,14 @@
-import jwt
-
-from fastapi import FastAPI, Depends, HTTPException, status, Response
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 from routers import admin, users
 from routers import scenarios
-from routers import sessions
+from routers import stats
 from routers import auth
+from routers import easy
 
-import Models
-import random
 import utils
-
-import socketio
 
 tags_metadata = [
     {
@@ -59,12 +53,6 @@ app = FastAPI(
     tags_metadata=tags_metadata
 )
 
-sio = socketio.AsyncServer(
-    async_mode="asgi", cors_allowed_origins='*', cors_credentials=True)
-socket_app = socketio.ASGIApp(sio)
-
-app.mount("/socketio/", socket_app)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -74,84 +62,17 @@ app.add_middleware(
 )
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"])
-app.include_router(sessions.router, prefix="/stats", tags=["stats"])
+app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-easyAuth = {
-    '1234': {"sid": "rehetjhnepjohn", "token": 'tokenbidon'},
-}
-
-
-def getEasyCode():
-    run = True
-    while(run):
-        x = ''.join(random.choices('123456789', k=5))
-        run = x in easyAuth
-    easyAuth[x] = 'tokenbidon'
-    return x
+app.include_router(easy.router, prefix="/easy", tags=["easy"])
 
 
 # redirect root to docs
-
-
 @app.get("/")
 async def root():
     response = RedirectResponse(url='/docs')
     return response
-
-
-@sio.on('join')
-async def join(sid, *args, **kwargs):
-    await app.sio.emit('lobby', 'User joined')
-
-
-@sio.on('easy/getCode')
-async def getEasy(sid, *args, **kwargs):
-    code = getEasyCode()
-    easyAuth[code] = sid
-    await app.sio.emit('easy/setCode', code)
-
-
-@sio.on("connect")
-async def connect(sid, env):
-    print("on connect")
-
-
-@sio.on('easy/login')
-async def login(sid, *args, **kwargs):
-    code = kwargs['code']
-    if code in easyAuth:
-        await app.sio.emit('easy/loginSuccess', easyAuth[code])
-    else:
-        await app.sio.emit('easy/loginFailed', 'Code not found')
-# @app.get("/easy")
-# async def get_easy():
-#     return {'code': getEasyCode()}
-
-
-# @app.get("/easy/{code}")
-# async def get_easy_code(code: str):
-#     return {'token': easyAuth[code]}
-
-
-@app.post("/easy")
-async def easy_login(code: Models.Easy, form: OAuth2PasswordRequestForm = Depends()):
-    user = await utils.authenticate_user(form.username, form.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Nom d'utiliateur ou mot de passe incorrect",
-        )
-    if code.code not in easyAuth:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Code appareil invalide",
-        )
-    easyAuth[code.code] = code.token
-    # await app.sio.emit('easy/setToken', code.token,to=easyAuth[code.code].sid)
-    easyAuth.pop(code.code)
-    print(code.token)
-    return {'ok'}
 
 
 @app.get('/ping')

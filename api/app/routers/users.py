@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from passlib.hash import bcrypt
 import tortoise
 from tortoise.contrib.pydantic import pydantic_model_creator
-from fastapi_pagination import Page, add_pagination, paginate
 from typing import List
 import Models
 import utils

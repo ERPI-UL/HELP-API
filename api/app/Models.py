@@ -59,6 +59,7 @@ class User(Model):
 
     def verify_password(self, password):
         return bcrypt.verify(password, self.password_hash)
+
     def encrypt_password(password):
         return bcrypt.hash(password)
 
@@ -96,6 +97,7 @@ class Step(Model):
     name = fields.TextField()
     description = fields.TextField()
     scenario = fields.ForeignKeyField('models.Scenario', related_name='steps')
+    targets = fields.ManyToManyField('models.Target', related_name='steps')
 
     class Meta:
         table = "steps"
@@ -120,6 +122,8 @@ class Choice(Model):
     class Meta:
         table = "choices"
 
+# FIXME: think about associations
+
 
 class Target(Model):
     id = fields.IntField(pk=True)
@@ -138,6 +142,7 @@ class playedStep(Model):
     missed = fields.BooleanField(default=False)
     skipped = fields.BooleanField(default=False)
     record = fields.TextField()  # json
+    time = fields.IntField(default=0)
 
     class Meta:
         table = "playedSteps"
@@ -149,6 +154,7 @@ class Session(Model):
         'models.User', related_name='sessions')
     scenario = fields.ForeignKeyField(
         'models.Scenario', related_name='sessions')
+    evaluation = fields.BooleanField()
     date = fields.DatetimeField(auto_now_add=True)
 # class UserinFront(BaseModel):
 #     id: int
@@ -157,8 +163,16 @@ class Session(Model):
 
 
 class Easy(BaseModel):
-    code: int
+    code: str
     token: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "code": "56328",
+                "token": "jwttoken.5aze5ezfezf.jwtoken"
+            }
+        }
 
 
 User_Pydantic = pydantic_model_creator(User, name='User')
@@ -226,17 +240,20 @@ class playedStepPost(BaseModel):
     skipped: bool
     record: str
     stepid: int
-    sessionid: int
 
 
 class SessionIn(BaseModel):
-    userid: int
     scenarioid: int
     date: str
+    evaluation: bool
+
+
 class PasswordChange(BaseModel):
     username: str
     old: str
     new: str
+
+
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)

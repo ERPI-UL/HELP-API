@@ -16,11 +16,8 @@ toml==0.10.2
 tortoise-orm==0.16.19
 typing-extensions==3.7.4.3
 wsproto==1.0.0
-fastapi-socketio
 asyncpg
-python-socketio
 uvicorn
 anyio
-fastapi-pagination
 requests
 python-dotenv
