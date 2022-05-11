@@ -23,15 +23,15 @@
             </div>
             <div class="m-4 grow">
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit md:flex block">
-                    <div class="flex md:mr-6" v-if="user.canTeacher()">
+                    <div class="flex md:justify-left justify-between md:mr-6" v-if="user.canTeacher()">
                         <h2 class="m-1 p-1">Utilisateurs: </h2>
-                        <select name="username" id="user-select" class="border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                        <select name="username" id="user-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
                             <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>
-                    <div class="flex md:mr-6">
+                    <div class="flex md:justify-left justify-between md:mr-6">
                         <h2 class="m-1 p-1">Scénarios: </h2>
-                        <select name="username" id="scenario-select" class="border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                        <select name="username" id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
                             <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>

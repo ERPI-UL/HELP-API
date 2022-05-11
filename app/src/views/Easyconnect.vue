@@ -12,29 +12,29 @@
                     <div class="divide-y divide-gray-300/50">
                         <div class="border-none">
                             <div id="login-credentials" v-show="!User.isConnected(User.currentUser)" >
-                                <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
+                                <div class="md:space-y-6 md:py-8 text-base leading-7 text-gray-400">
                                     <div class="md:flex block justify-between">
                                         <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
-                                        <input type="text" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                        <input type="text" name="username" class="md:w-fit w-full box-border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     </div>
                                     <div class="md:flex block justify-between">
                                         <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
-                                        <input type="password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                        <input type="password" name="password" class="md:w-fit w-full box-border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     </div>
                                 </div>
-                                <div v-show="User.isConnected(User.currentUser)" class="md:flex block justify-left">
-                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1">Connecté à {{ User.currentUser.username }} : </p>
+                                <div v-show="User.isConnected(User.currentUser)" class="flex justify-left">
+                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">Connecté à {{ User.currentUser.username }} : </p>
                                     <a v-on:click="useUserinfos" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Utiliser</a>
                                 </div>
                             </div>
                             <div id="login-userinfos" v-show="User.isConnected(User.currentUser)">
-                                <div class="md:flex block justify-left">
-                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1">Connecté à {{ User.currentUser.username }} : </p>
+                                <div class="flex justify-left">
+                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">Connecté à {{ User.currentUser.username }} : </p>
                                     <a v-on:click="useCredentials" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Changer</a>
                                 </div>
                             </div>
                         </div>
-                        <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
+                        <div class="md:space-y-6 md:py-8 py-4 text-base md:leading-7 text-gray-400">
                             <div class="md:flex block justify-between">
                                 <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2 text-center">Code appareil: </p>
                                 <div class="flex justify-center">

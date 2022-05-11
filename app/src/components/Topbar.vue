@@ -114,7 +114,7 @@
                             <div v-if="User.isConnected(User.currentUser)" class="border border-2 p-1 rounded-lg shadow-lg bg-indigo-50 cursor-pointer border-indigo-600">
                                 <a href="/profile" class="flex">
                                     <component :is="icon.user" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
-                                    <h3 class="text-indigo-600 ml-1">{{user.username}}</h3>
+                                    <h3 class="text-indigo-600 mx-1">{{User.currentUser.username}}</h3>
                                 </a>
                             </div>
                             <div class="-mr-2">
