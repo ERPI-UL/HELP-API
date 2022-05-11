@@ -65,6 +65,11 @@ async def get_easy_code():
 
 @router.get("/{code}")
 async def getToken(code: str):
+    if code not in easyAuth:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Code appareil invalide",
+        )
     run = True
     while(run):
         if easyAuth[code]['token'] != 'tokenbidon':
