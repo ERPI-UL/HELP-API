@@ -52,6 +52,7 @@
 import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from "../script/API";
+import { redirectHome } from "../script/common";
 
 function setup() {
     window.addEventListener("keydown", ev => {
@@ -131,7 +132,7 @@ function register() {
     }, API.TYPE_JSON).then(() => {
         logMessage("Compte créé avec succès.");
         btn.innerHTML = "S'inscrire";
-        setTimeout(() => {window.history.back()}, 500);
+        redirectHome();
     }).catch(err => {
         console.error("Register error: ", err);
         logMessage("Erreur lors de la création du compte.");

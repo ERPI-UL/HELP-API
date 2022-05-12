@@ -40,6 +40,7 @@
 import BackButton from "../components/BackButton.vue";
 import User from "../script/User";
 import API from "../script/API";
+import { redirectHome } from "../script/common";
 
 function setup() {
     window.addEventListener("keydown", ev => {
@@ -113,7 +114,7 @@ function onValidate() {
                 User.saveUser(user);
                 logMessage("Connecté à "+user.username);
                 btn.innerHTML = "Valider";
-                setTimeout(() => {window.history.back()}, 500);
+                redirectHome();
             }).catch(err => {
                 console.error(err);
             });
