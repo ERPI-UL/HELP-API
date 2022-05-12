@@ -1,5 +1,5 @@
 class API {
-    static API_URL = 'http://indico-api.lf2l.fr';
+    static API_URL = window.location.protocol+'//indico-api.lf2l.fr';
     static get METHOD_GET() {return "GET";}
     static get METHOD_PUT() {return "PUT";}
     static get METHOD_POST() {return "POST";}
