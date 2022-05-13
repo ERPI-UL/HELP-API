@@ -58,6 +58,13 @@ async def get_user(current_user: Models.User = Depends(utils.get_current_user_in
     return await Models.UserinFront.from_tortoise_orm(user)
 
 
+@router.delete('/me', response_model=Models.UserinFront)
+async def delete_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    user = await Models.User.get(id=current_user.id)
+    await user.delete()
+    return {'message': 'Votre compte a été supprimée'}
+
+
 @router.get('/{id}', response_model=Models.UserinFront)
 async def read_user(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     user = await Models.User.get_or_none(id=8)
