@@ -35,7 +35,9 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
 
 
 @router.post('/users/{id}/sessions')
-async def createSession(id: int, session: Models.SessionIn):
+async def createSession(id: int, session: Models.SessionIn,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    if id != current_user.id:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas les droits pour créer une session sur cette utilisateur")
     user = await Models.User.get(id=id)
     scenario = await Models.Scenario.get(id=session.scenarioid)
     session = await Models.Session.create(user=user, scenario=scenario)
@@ -45,7 +47,10 @@ async def createSession(id: int, session: Models.SessionIn):
 
 
 @router.post('/sessions/{sessionid}/playedSteps', response_model=Models.playedStepIn)
-async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost):
+async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost,current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    session = await Models.Session.get(id=sessionid).prefetch_related('user')
+    if session.user.id != current_user.id:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas les droits pour créer une étape sur cette session")
     step = Models.playedStep(progressNumber=playedStep.progressNumber, missed=playedStep.missed,
                              skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid)
     await step.save()
