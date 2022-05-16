@@ -109,6 +109,11 @@ async def initAdmin():
     except tortoise.exceptions.DoesNotExist:
         user = await Models.User.create(username='toxicbloud', email='truc@gmail.com', adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET), firstname='Antonin', lastname='Rousseau')
 
+def htmlspecialchars(html):
+        return html.replace("<", "&lt;")\
+            .replace(">", "&gt;")\
+            .replace('"', "&quot;")\
+            .replace("'", "&#039;")
 
 class Permission(Enum):
     VISITOR = 0

@@ -1,3 +1,4 @@
+from ctypes import util
 from http.client import INTERNAL_SERVER_ERROR
 from anyio import Any
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -16,8 +17,8 @@ router = APIRouter()
 
 @router.post('/', response_model=Models.UserinFront)
 async def create_user(user: Models.UserNew):
-    user_obj = Models.User(username=user.username,
-                           password_hash=bcrypt.hash(user.password_hash), firstname=user.firstname, lastname=user.lastname, email=user.email, adminLevel=1)
+    user_obj = Models.User(username=utils.htmlspecialchars(user.username),
+                           password_hash=bcrypt.hash(user.password_hash), firstname=utils.htmlspecialchars(user.firstname), lastname=utils.htmlspecialchars(user.lastname), email=utils.htmlspecialchars(user.email), adminLevel=1)
     await user_obj.save()
     return await Models.UserinFront.from_tortoise_orm(user_obj)
 
@@ -85,11 +86,11 @@ async def update_user(user: Models.UserinPut, current_user: Models.User = Depend
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if(len(user.firstname) > 0):
-        user_obj.firstname = user.firstname
+        user_obj.firstname = utils.htmlspecialchars(user.firstname)
     if(len(user.lastname) > 0):
-        user_obj.lastname = user.lastname
+        user_obj.lastname = utils.htmlspecialchars(user.lastname)
     if(len(user.email) > 0):
-        user_obj.email = user.email
+        user_obj.email = utils.htmlspecialchars(user.email)
     try:
         await user_obj.save()
     except tortoise.exceptions.IntegrityError:
