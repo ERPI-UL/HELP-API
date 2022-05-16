@@ -37,6 +37,7 @@ async def getScenario(id: int):
 
 @router.post("/machines")
 async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
+    machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -45,6 +46,7 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
 
 @router.put('/machine/{id}')
 async def update_machine(id: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
+    machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
@@ -62,6 +64,7 @@ async def getScenarioSteps(idScenario: int, idStep: int):
 
 @router.post('/')
 async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depends(utils.getAdminLevel)):
+    scenario = utils.sanitizer(scenario)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
@@ -71,6 +74,7 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
 
 @router.put('/steps/{id}')
 async def updateStep(id: int, step: pydantic_model_creator(Models.Step), adminLevel: int = Depends(utils.getAdminLevel)):
+    step = utils.sanitizer(step)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
