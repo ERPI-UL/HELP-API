@@ -4,6 +4,7 @@ class API {
     static get METHOD_PUT() {return "PUT";}
     static get METHOD_POST() {return "POST";}
     static get METHOD_PATCH() {return "PATCH";}
+    static get METHOD_DELETE() {return "DELETE";}
     static get TYPE_FORM() {return "application/x-www-form-urlencoded";}
     static get TYPE_JSON() {return "application/json";}
     static get TYPE_NONE() {return undefined;}
@@ -14,7 +15,16 @@ class API {
         USER: "/users/me",
         USERS: "/users/",
         SCENARIOS: "/scenarios/",
-        EASY_CONNECT: "/easy/connect"
+        EASY_CONNECT: "/easy/connect",
+        MACHINES: "/scenarios/machines/",
+        STATS: {
+            SCENARIOS: {
+                AVERAGE_TIME: "/stats/scenarios/averageTime",
+                SKIP_RATE: "/stats/scenarios/skipRate",
+            },
+            USERS: "/stats/users/",
+            __SESSIONS: "/sessions/"
+        }
     };
     
     static execute(path, method=this.METHOD_GET, body=null, type=this.TYPE_NONE, headers=null) {
@@ -92,6 +102,31 @@ class API {
                     this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
                 }).catch(reject);
             }
+        });
+    }
+
+    static retreiveAll(route, progressCallback, logged=true, pageIndex=1, data=[]) {
+        console.log("retreiveAll: "+(logged? "logged": "not logged"));
+        return new Promise((resolve, reject) => {
+            if (logged) {
+                API.execute_logged(route + API.createParameters({ page: pageIndex }), API.METHOD_GET, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
+                    if (!res.data) reject("No data found");
+                    progressCallback(pageIndex/res.last_page);
+                    let dataRetreived = res.current_page == res.last_page;
+                    if (!dataRetreived)
+                        retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);
+                    else resolve(data.concat(res.data));
+                }).catch(reject);
+            }
+            else API.execute(route + API.createParameters({ page: pageIndex }), API.METHOD_GET, undefined, API.TYPE_JSON).then(res => {
+                if (!res.data) reject("No data found");
+                progressCallback(pageIndex/res.last_page);
+                let data = data.concat(res.data);
+                let dataRetreived = res.current_page >= res.last_page;
+                if (!dataRetreived)
+                    retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);
+                else resolve(data.concat(res.data));
+            }).catch(reject);
         });
     }
 

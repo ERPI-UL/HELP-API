@@ -5,16 +5,10 @@
                 <h2 class="text-indigo-600 font-bold text-lg">
                     <slot name="title"></slot>
                 </h2>
-                <h2 class="ml-10 text-indigo-400 font-base text-base">
-                    <slot name="machine"></slot>
-                </h2>
             </div>
-            <p class="text-gray-400 text-base text-sm">
+            <p class="text-gray-400 text-base text-sm mr-4">
                 <slot name="description"></slot>
             </p>
-        </div>
-        <div class="pt-8 flex justify-between">
-            <slot name="progress"></slot>
         </div>
         <div class="pt-8 flex justify-between">
             <div></div>
@@ -26,7 +20,7 @@
 <script>
 
 export default {
-    name: "Scenario",
+    name: "MachineCard",
     components: {
         
     },

@@ -44,7 +44,7 @@ class User {
         User.curUser = User.fromLocalStorage();
     }
 
-    static saveUser(user) {
+    static saveUser(user=User.currentUser) {
         localStorage.setItem("user", User.toJSON(user));
         User.curUser = user;
     }
@@ -88,21 +88,20 @@ class User {
 
     fetchInformations() {
         return new Promise((resolve, reject) => {
-            console.log(this);
             if (!this.token && !(this.username && this.password)) {
                     reject("User not connected");
                     return;
             }
             API.execute_logged(API.ROUTE.USER, API.METHOD_GET, this.getCredentials()).then(data => {
-                try {
-                    this.username = data.username;
-                    this.email = data.email;
-                    this.firstname = data.firstname;
-                    this.lastname = data.lastname;
-                    this.permissions = data.adminLevel;
-                    this.verified = true;
-                    resolve(this);
-                } catch (e) {reject(e);}
+                this.username = data.username;
+                this.email = data.email;
+                this.firstname = data.firstname;
+                this.lastname = data.lastname;
+                this.permissions = data.adminLevel;
+                this.verified = true;
+                User.forgetUser();
+                User.saveUser(this);
+                resolve(this);
             }).catch(reject);
         });
     }

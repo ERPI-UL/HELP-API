@@ -205,6 +205,17 @@
             ]
         },
         {
+            name: "Machines",
+            elements: [
+                {
+                    name: 'Toutes les machines',
+                    description: 'Voir les machines disponibles',
+                    href: '/machines#all',
+                    icon: EyeIcon
+                }
+            ]
+        },
+        {
             name: "Statistiques",
             elements: [
                 {
@@ -267,6 +278,12 @@
                     name: 'Modifier',
                     description: 'Créer ou modifier un scénario',
                     href: '/scenarios#editing',
+                    icon: PencilAltIcon
+                });
+                menu[1].elements.push({
+                    name: 'Modifier',
+                    description: 'Créer ou modifier une machine',
+                    href: '/machines#editing',
                     icon: PencilAltIcon
                 });
             }

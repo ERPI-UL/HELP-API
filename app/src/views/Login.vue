@@ -85,27 +85,6 @@ function onValidate() {
         return;
     }
 
-    let debugMode = false;
-    if (debugMode) {/// DEBUG /// Should be a GET request to API
-        let user = new User(
-            credentials.username.value,
-            credentials.password.value,
-            "", "", "", "", 0
-        );
-        if (User.sameCredentials(user, User.USER_ADMIN)) user = User.USER_ADMIN;
-        if (User.sameCredentials(user, User.USER_TEACHER)) user = User.USER_TEACHER;
-        if (User.sameCredentials(user, User.USER_LEARNER)) user = User.USER_LEARNER;
-        if (user.token == "") { // error: not a admin/teacher/learner account
-            logMessage("Identifiant ou mot de passe incorrect");
-            document.querySelector("input[name=username]").focus();
-            return;
-        }
-        localStorage.setItem("user", User.toJSON(user));
-        btn.innerHTML = "Valider";
-        window.history.back();
-        return;
-    } /// DEBUG ///
-
     //// REAL ///
     API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {grant_type: "password", username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(data => {
         if (data.error) logMessage(data.error);
