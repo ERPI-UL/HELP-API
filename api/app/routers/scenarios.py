@@ -1,5 +1,6 @@
 from email import utils
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import parse_obj_as
 from tortoise.contrib.pydantic import pydantic_model_creator
 import Models
 import utils
@@ -25,6 +26,35 @@ async def read_scenarios(page: int = 1, per_page: int = 10):
         'last_page': lastPage,
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
+
+
+@router.get('/machines', response_model=Models.pagination)
+async def getMachines(page: int = 1, per_page: int = 10):
+    machine_count = await Models.Machine.all().count()
+    if machine_count < per_page:
+        per_page = machine_count
+    # check for zero per_page
+    if per_page == 0:
+        per_page = 1
+    lastPage = machine_count // per_page
+    if(page > lastPage):
+        raise HTTPException(status_code=404, detail="Page non trouvée")
+    machines = await Models.Machine.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('scenarios')
+    return {
+        'total': machine_count,
+        'per_page': per_page,
+        'current_page': page,
+        'last_page': lastPage,
+        'data': parse_obj_as(list[Models.MachineOut], machines)
+    }
+
+
+@router.get('/machines/{machine_id}')
+async def getMachine(machine_id: int):
+    machine = await Models.Machine.get(id=machine_id).prefetch_related('targets')
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine not found")
+    return await machineToJSON(machine)
 
 
 @router.get('/{id}')
@@ -65,7 +95,7 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
         if step.type.name == 'choice':
             step.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         step.targets = [await Models.Target.get(id=target) for target in step.targets]
-    scenario = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))    
+    scenario = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
     return {'id': scenario.id}
 
 
@@ -152,3 +182,15 @@ async def positionToJSON(position: Models.Position):
     if not position:
         return None
     return {'x': position.x, 'y': position.y, 'z': position.z}
+
+
+async def machineToJSON(machine):
+    targets = []
+    for target in machine.targets:
+        targets.append({'id': target.id, 'name': target.name})
+    return {
+        'id': machine.id,
+        'name': machine.name,
+        'description': machine.description,
+        'targets': targets
+    }
