@@ -88,6 +88,7 @@ async def InstructorRequired(user: Models.UserinFront = Depends(isInstructorOrAb
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Vous n'avez pas les droits suffisants"
         )
+    return user
 
 
 async def authenticate_user(username: str, password: str):

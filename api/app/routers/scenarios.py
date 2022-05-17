@@ -27,7 +27,13 @@ async def read_scenarios(page: int = 1, per_page: int = 10):
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
 
-
+@router.delete('/machines/{machine_id}')
+async def delete_machine(machine_id: int, user: Models.User = Depends(utils.InstructorRequired)):
+    machine = await Models.Machine.get(id=machine_id)
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine introuvable")
+    await machine.delete()
+    return {'ok': 'machine supprimée'}
 @router.get('/machines', response_model=Models.pagination)
 async def getMachines(page: int = 1, per_page: int = 10):
     machine_count = await Models.Machine.all().count()

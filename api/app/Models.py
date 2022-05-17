@@ -138,6 +138,14 @@ class Easy(BaseModel):
             }
         }
 
+class IncidentLogs(Model):
+    id = fields.IntField(pk=True)
+    user = fields.ForeignKeyField('models.User', related_name='logs')
+    date = fields.DatetimeField(auto_now_add=True)
+    action = fields.TextField()
+    class Meta:
+        table = "logs"
+
 
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(
