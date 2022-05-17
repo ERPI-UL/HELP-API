@@ -79,6 +79,20 @@ async def read_user(id: int, current_user: Models.User = Depends(utils.get_curre
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return await Models.UserinFront.from_tortoise_orm(user)
 
+@router.get('/{id}/scenarios', response_model=List[Models.ScenarioOut])
+async def get_user_scenarios(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    user = await Models.User.get_or_none(id=id)
+    if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    sessions = await Models.Session.filter(user=user).prefetch_related('scenario').all()
+    scenarios = set()
+    for session in sessions:
+        scenarios.add(session.scenario)
+    return scenarios
 
 @router.put('/me', response_model=Models.UserinFront)
 async def update_user(user: Models.UserinPut, current_user: Models.User = Depends(utils.get_current_user_in_token)):

@@ -155,6 +155,8 @@ Machinein = pydantic_model_creator(
     Machine, name='Machinein', exclude_readonly=True)
 MachineOut = pydantic_model_creator(
     Machine, name='MachineOut')
+ScenarioOut = pydantic_model_creator(
+    Scenario, name='ScenarioOut')
 # type = Type(name="test")
 # type.save()
 # step = Step(label="test",type=type,name="test",description="test")
