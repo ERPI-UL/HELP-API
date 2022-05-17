@@ -20,11 +20,11 @@
                         <input disabled="disabled" type="text" id="input-username" name="username" :value="User.currentUser.username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md shadow-sm text-base font-medium text-gray-500 bg-gray-50">
                     </div>
                     <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Nom: </p>
+                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Prénom: </p>
                         <input type="text" id="input-firstname" name="given-name" :value="User.currentUser.firstname" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Prénom: </p>
+                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Nom: </p>
                         <input type="text" id="input-lastname" name="family-name" :value="User.currentUser.lastname" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <div class="flex justify-between m-2">
@@ -33,11 +33,12 @@
                     </div>
                 </div>
                 <div class="flex justify-between h-fit pt-2 pb-4">
-                    <span></span>
+                    <DangerousButton id="delete-btn" v-on:click="removeAccount">Supprimer</DangerousButton>
                     <ValidateButton v-on:click="onAccountSave">
                         Mettre à jour
                     </ValidateButton>
                 </div>
+                <ValidatePopup ref="delete-popup"></ValidatePopup>
             </div>
             <div>
                 <div class="flex flex-col grow h-full">
@@ -71,8 +72,21 @@ import Topbar from "../components/Topbar.vue";
 import { UserIcon } from "@heroicons/vue/solid";
 import User from "../script/User";
 import Backbutton from "../components/BackButton.vue";
-import ValidateButton from "../components/ValidateButton.vue"
+import ValidateButton from "../components/ValidateButton.vue";
+import DangerousButton from "../components/DangerousButton.vue";
+import ValidatePopup from "../components/ValidatePopup.vue";
 import API from '../script/API';
+
+function removeAccount() {
+    const el = this.$refs["delete-popup"];
+    el.show("Supprimer mon compte", "Voulez-vous supprimer "+User.currentUser.username+" ?", "Annuler", "Supprimer");
+    el.setPosition(document.getElementById("delete-btn"));
+    el.setCallback(() => {
+        API.execute_logged(API.ROUTE.USER, API.METHOD_DELETE, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
+            console.log("User deleted");
+        }).catch(console.error);
+    });
+}
 
 function onAccountSave(ev) {
     const updateBtn = ev.target;
@@ -90,6 +104,10 @@ function onAccountSave(ev) {
         infos.firstname.value = data.firstname;
         infos.lastname.value = data.lastname;
         infos.email.value = data.email;
+        User.currentUser.firstname = data.firstname;
+        User.currentUser.lastname = data.lastname;
+        User.currentUser.email = data.email;
+        User.saveUser();
         updateBtn.innerHTML = "Mettre à jour";
     }).catch(err => {
         console.log(err);
@@ -131,13 +149,15 @@ export default {
     components: {
         Topbar,
         Backbutton,
-        ValidateButton
+        ValidateButton,
+        DangerousButton,
+        ValidatePopup
     },
     setup() {
         if (!User.isConnected(User.currentUser)) {window.location.href = "/login";}
         return {icon: {user: UserIcon}, User};
     },
-    methods: {onAccountSave, onMDPChange}
+    methods: {onAccountSave, onMDPChange, removeAccount}
 };
 </script>
 

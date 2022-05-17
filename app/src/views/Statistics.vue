@@ -36,18 +36,29 @@
                         </select>
                     </div>
                     <div class="flex">
-                        <ValidateButton>Chercher</ValidateButton>
+                        <ValidateButton v-on:click="search">Chercher</ValidateButton>
                     </div>
                 </div>
                 <div class="m-2 ml-4 flex flex-wrap justify-evenly grow"> <!-- Statistiques -->
-                    <div class="center mt-10 overflow-hidden" id="loadzone">
+                    <div class="center mt-10 overflow-hidden" id="loadzone" style="display: none;">
                         <p class="text-center text-4xl text-gray-500">Chargement ...</p>
                         <p class="text-center text-2xl text-gray-400">Chargement des données</p>
                     </div>
+                    <InfoBox v-for="box in infoBoxes" :boxTitle="box.title" :boxInfos="box.infos"></InfoBox>
                     <Chart v-for="chart in charts" :title="chart.title" :chartInfos="chart.data"></Chart>
                 </div>
             </div>
         </div>
+        <PaginationChoice
+            ref="userPagination" :title="'Sélection utilisateurs'"
+            :selectID="'#user-select'" :callback="addUserSelection" :route="API.ROUTE.USERS"
+            :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsers.map(el => el.id)">
+        </PaginationChoice>
+        <PaginationChoice
+            ref="scenarioPagination" :title="'Sélection scénarios'"
+            :selectID="'#scenario-select'" :callback="addScenarioSelection" :route="API.ROUTE.SCENARIOS"
+            :displayAttribute="el => el.name" :identifier="el => el.id" :selectedValues="availableScenarios.map(el => el.id)">
+        </PaginationChoice>
     </div>
 </template>
 
@@ -57,90 +68,129 @@ import Chart from "../components/Chart.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import User from "../script/User";
 import API from '../script/API';
+import Statistics from "../script/Statistics";
+import InfoBox from "../components/InfoBox.vue";
+import PaginationChoice from "../components/PaginationChoice.vue";
+
+let availableUsers = [];
+let availableScenarios = [];
 
 const charts = [];
+const infoBoxes = [];
 var dom = null;
+
+function updateUserSelect() {
+    const userSelect = document.getElementById("user-select");
+    let val = userSelect.value;
+    userSelect.innerHTML = "";
+    const userOptions = [{value: "<all>", text: "Tous"}];
+    availableUsers.forEach(user => userOptions.push(user));
+    userOptions.push({value: "<select>", text: "Selectionner ..."});
+
+    userOptions.forEach(option => {
+        let optionElement = document.createElement("option");
+        optionElement.value = option.value;
+        optionElement.text = option.text;
+        userSelect.appendChild(optionElement);
+    });
+    userSelect.value = (val == "" || val == "<loading>" || val == "<select>") ? '<all>': val;
+}
+
+function updateScenarioSelect() {
+    const scenarioSelect = document.getElementById("scenario-select");
+    let val = scenarioSelect.value;
+    scenarioSelect.innerHTML = "";
+    const scenarioOptions = [{value: "<all>", text: "Tous"}];
+    availableScenarios.forEach(scenario => scenarioOptions.push(scenario));
+    scenarioOptions.push({value: "<select>", text: "Selectionner ..."});
+
+    scenarioOptions.forEach(option => {
+        let optionElement = document.createElement("option");
+        optionElement.value = option.value;
+        optionElement.text = option.text;
+        scenarioSelect.appendChild(optionElement);
+    });
+    scenarioSelect.value = (val == "" || val == "<loading>" || val == "<select>") ? '<all>': val;
+}
 
 function setup() {
     let userSelect = document.getElementById("user-select");
     let scenarioSelect = document.getElementById("scenario-select");
 
-    // fill the user select with all the available users 
-    userSelect.innerHTML = "";
-    API.execute_logged(API.ROUTE.USERS+API.createPagination(1, 10), API.METHOD_GET, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
-        if (!res.data) {
-            console.error("Error loading users: no data found");
-            let option = document.createElement("option");
-            option.value = "<error>";
-            option.innerHTML = "Error: no data found";
-            userSelect.appendChild(option);
-            return;
+    // fill the user select with all the available users and attach listener
+    updateUserSelect();
+    userSelect.addEventListener("change", ev => {
+        if (ev.target.value == "<select>") {
+            displayUserPagination();
         }
-        res.data.splice(0, 0, {id: 0, firstname: "Tous", lastname: ""});
-        res.data.forEach(user => {
-            let option = document.createElement("option");
-            option.value = user.id;
-            option.innerHTML = user.firstname + " " + user.lastname;
-            userSelect.appendChild(option);
-        });
-    }).catch(console.error);
+    });
 
-    // fill the scenario select with all the available scenarios 
-    scenarioSelect.innerHTML = "";
-    API.execute_logged(API.ROUTE.SCENARIOS+API.createPagination(1, 10), API.METHOD_GET, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
-        if (!res.data) {
-            console.error("Error loading scenarios: no data found");
-            let option = document.createElement("option");
-            option.value = "<error>";
-            option.innerHTML = "Error: no data found";
-            scenarioSelect.appendChild(option);
-            return;
+    // fill the scenario select with all the available scenarios for the current user
+    updateScenarioSelect();
+    scenarioSelect.addEventListener("change", ev => {
+        if (ev.target.value == "<select>") {
+            displayScenarioPagination();
         }
-        res.data.splice(0, 0, {id: 0, name: "Tous"});
-        res.data.forEach(scenario => {
-            let option = document.createElement("option");
-            option.value = scenario.id;
-            option.innerHTML = scenario.name;
-            scenarioSelect.appendChild(option);
-        });
-    }).catch(console.error);
+    });
 }
 
-// DEMO DATA
-function addElement() {
-    const len = Math.round(Math.random()*8)+2;
-    fetch("https://random-word-api.herokuapp.com/word?number="+(len+1)).then(text => text.json().then( words => {
-        document.getElementById("loadzone").style.display = "none";
-        charts.push({
-            title: words[0],
-            data: {
-                type: Math.random() > 0.5 ? "bar" : "line",
-                data: {
-                    labels: words.splice(1, len),
-                    datasets: [{
-                        label: "Some data",
-                        backgroundColor: '#4F46E5',
-                        borderColor: '#4F46E5',
-                        data: Array.from({length: len}, () => Math.random()), // two last ones for scale hehe
-                        tension: 0.5,
-                        fill: Math.random() > 0.5
-                    }]
-                }
-            }
-        });
-    }));
+function addUserSelection(content) {
+    availableUsers = availableUsers.filter(el => el.id in content.map(el => el.id));
+    content.forEach(el => {
+        if (!(el.id in availableUsers.map(el => el.id))) 
+            availableUsers.push({value: el.id, text: el.firstname+" "+el.lastname});
+    });
+    updateUserSelect();
+}
+
+function addScenarioSelection(content) {
+    availableScenarios = availableScenarios.filter(el => el.id in content.map(el => el.id));
+    content.forEach(el => {
+        if (!(el.id in availableScenarios.map(el => el.id))) 
+            availableScenarios.push({value: el.id, text: el.name});
+    });
+    updateScenarioSelect();
+}
+
+function search() {
+    const selectedUser = document.getElementById("user-select").value;
+    const selectedScenario = document.getElementById("scenario-select").value;
+
+    if (selectedUser == "<error>" || selectedScenario == "<error>") {
+        console.error("Error loading data: no data found");
+        return;
+    }
+
+    console.log("SelectedUser: "+selectedUser+", selectedScenario: "+selectedScenario);
+    if (selectedUser == "<all>") { // selected all users, get average informations
+        if (selectedScenario == "<all>")
+            Statistics.generateStatistics(charts, infoBoxes);
+        else
+            Statistics.generateScenarioStatistics(charts, infoBoxes, selectedScenario);
+    } else { // one user selected, get user informations
+        if (selectedScenario == "<all>") // selected all scenarios, get average informations
+            Statistics.generateUserStatistics(charts, infoBoxes, selectedUser);
+        else // one scenario selected, get scenario informations
+            Statistics.generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser);
+    }
+
     if (dom != null) dom.$forceUpdate();
 }
+
+let displayUserPagination;
+let displayScenarioPagination;
 
 export default {
     name: "Statistics",
     data: () => {
-        return {charts, user: User.currentUser}
+        return {charts, infoBoxes, user: User.currentUser, API, availableUsers, availableScenarios}
     },
     components: {
         Topbar,
         Chart,
-        ValidateButton
+        ValidateButton,
+        InfoBox,
+        PaginationChoice
     },
     setup() {
         if (!User.currentUser.canLearner()) window.history.back();
@@ -148,7 +198,14 @@ export default {
     },
     mounted() {
         dom = this;
+        displayUserPagination = () => {
+            this.$refs["userPagination"].show();
+        };
+        displayScenarioPagination = () => {
+            this.$refs["scenarioPagination"].show();
+        };
         setup();
-    }
+    },
+    methods: {search, addUserSelection, addScenarioSelection}
 };
 </script>

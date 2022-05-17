@@ -2,7 +2,7 @@
   "name": "indico",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --host --port=80",
+    "test": "vite --host --port=80",
     "build": "vite build",
     "preview": "vite preview"
   },
