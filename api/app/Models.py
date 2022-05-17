@@ -178,7 +178,8 @@ class ScenarioCreate(BaseModel):
 
 
 class MachinePost(BaseModel):
-    name: str
+    name: str = None
+    id: int = None
 
 
 class PositionPost(BaseModel):
@@ -206,7 +207,7 @@ class StepPost(BaseModel):
     position : PositionPost
     type: TypePost
     targets: list[int]
-    choice: ChoicePost
+    choice: ChoicePost = None
 
 class ScenarioPost(BaseModel):
     name: str
