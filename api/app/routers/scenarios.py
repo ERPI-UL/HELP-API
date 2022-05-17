@@ -81,6 +81,15 @@ async def createTarget(machine_id: int, targets: list, user: Models.User = Depen
     return parse_obj_as(list[Models.TargetOut], front)
 
 
+@router.delete('/machines/targets/{target_id}')
+async def deleteTarget(target_id: int, user: Models.User = Depends(utils.InstructorRequired)):
+    target = await Models.Target.get(id=target_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="Target introuvable")
+    await target.delete()
+    return {'ok': 'target supprimée'}
+
+
 @router.get('/{id}')
 async def getScenario(id: int):
     scenario = await Models.Scenario.get(id=id).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
