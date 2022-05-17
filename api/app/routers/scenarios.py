@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=Models.pagination)
-async def read_scenarios(page: int = 1, per_page: int = 10):
+async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10):
     scenario_count = await Models.Scenario.all().count()
     if scenario_count < per_page:
         per_page = scenario_count
@@ -18,7 +18,10 @@ async def read_scenarios(page: int = 1, per_page: int = 10):
     lastPage = scenario_count // per_page
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
-    scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
+    if idMachine:
+        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
+    else:
+        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
     return {
         'total': scenario_count,
         'per_page': per_page,
@@ -27,6 +30,7 @@ async def read_scenarios(page: int = 1, per_page: int = 10):
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
 
+
 @router.delete('/machines/{machine_id}')
 async def delete_machine(machine_id: int, user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
@@ -34,6 +38,8 @@ async def delete_machine(machine_id: int, user: Models.User = Depends(utils.Inst
         raise HTTPException(status_code=404, detail="Machine introuvable")
     await machine.delete()
     return {'ok': 'machine supprimée'}
+
+
 @router.get('/machines', response_model=Models.pagination)
 async def getMachines(page: int = 1, per_page: int = 10):
     machine_count = await Models.Machine.all().count()
@@ -60,7 +66,7 @@ async def getMachine(machine_id: int):
     machine = await Models.Machine.get(id=machine_id).prefetch_related('targets')
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
-    return await machineToJSON(machine)
+    return await machineWithTargetsToJSON(machine)
 
 
 @router.get('/{id}')
@@ -190,7 +196,7 @@ async def positionToJSON(position: Models.Position):
     return {'x': position.x, 'y': position.y, 'z': position.z}
 
 
-async def machineToJSON(machine):
+async def machineWithTargetsToJSON(machine):
     targets = []
     for target in machine.targets:
         targets.append({'id': target.id, 'name': target.name})
