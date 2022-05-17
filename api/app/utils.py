@@ -1,4 +1,3 @@
-from email import utils
 from enum import Enum
 import os
 from passlib.hash import bcrypt
@@ -111,13 +110,16 @@ async def initAdmin():
     except tortoise.exceptions.DoesNotExist:
         user = await Models.User.create(username='toxicbloud', email='truc@gmail.com', adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET), firstname='Antonin', lastname='Rousseau')
 
-def htmlspecialchars(html):
-        return html.replace("<", " ")\
-            .replace(">", " ")\
-            .replace('"', " ")\
-            .replace("'", " ")\
 
-#sanitize string to be used in html in a pydantic model
+def htmlspecialchars(html):
+    return html.replace("<", " ")\
+        .replace(">", " ")\
+        .replace('"', " ")\
+        .replace("'", " ")\
+
+# sanitize string to be used in html in a pydantic model
+
+
 def sanitizer(obj):
     if isinstance(obj, str):
         return htmlspecialchars(obj)
@@ -127,10 +129,12 @@ def sanitizer(obj):
         return {k: sanitizer(v) for k, v in obj.items()}
     elif isinstance(obj, BaseModel):
         for attr in obj.dict():
-            setattr(obj,attr,sanitizer(getattr(obj,attr))) 
+            setattr(obj, attr, sanitizer(getattr(obj, attr)))
         return obj
     else:
         return obj
+
+
 class Permission(Enum):
     VISITOR = 0
     APPRENTICE = 1

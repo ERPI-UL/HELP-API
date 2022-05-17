@@ -40,7 +40,8 @@ class Scenario(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
     description = fields.TextField(null=True)
-    machine = fields.ForeignKeyField('models.Machine', related_name='scenarios')
+    machine = fields.ForeignKeyField(
+        'models.Machine', related_name='scenarios')
 
     class Meta:
         table = "scenarios"
@@ -54,21 +55,29 @@ class Step(Model):
     name = fields.TextField()
     description = fields.TextField()
     scenario = fields.ForeignKeyField('models.Scenario', related_name='steps')
-    targets = fields.ManyToManyField('models.Target', related_name='steps',null=True)
-    position = fields.ForeignKeyField('models.Position', related_name='steps',null=True)
-    choice = fields.ForeignKeyField('models.Choice', related_name='steps',null=True)
+    targets = fields.ManyToManyField(
+        'models.Target', related_name='steps', null=True)
+    position = fields.ForeignKeyField(
+        'models.Position', related_name='steps', null=True)
+    choice = fields.ForeignKeyField(
+        'models.Choice', related_name='steps', null=True)
     ordernumber = fields.IntField()
+
     class Meta:
         table = "steps"
         unique_together = ('scenario_id', 'ordernumber')
         ordering = ['ordernumber']
+
+
 class Position(Model):
     id = fields.IntField(pk=True)
     x = fields.FloatField()
     y = fields.FloatField()
     z = fields.FloatField()
+
     class Meta:
         table = "positions"
+
 
 class Type(Model):
     id = fields.IntField(pk=True)
@@ -89,10 +98,12 @@ class Choice(Model):
     class Meta:
         table = "choices"
 
+
 class Target(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
     machine = fields.ForeignKeyField('models.Machine', related_name='targets')
+
     class Meta:
         table = "targets"
 
@@ -138,11 +149,13 @@ class Easy(BaseModel):
             }
         }
 
+
 class IncidentLogs(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField('models.User', related_name='logs')
     date = fields.DatetimeField(auto_now_add=True)
     action = fields.TextField()
+
     class Meta:
         table = "logs"
 
@@ -165,12 +178,6 @@ MachineOut = pydantic_model_creator(
     Machine, name='MachineOut')
 ScenarioOut = pydantic_model_creator(
     Scenario, name='ScenarioOut')
-# type = Type(name="test")
-# type.save()
-# step = Step(label="test",type=type,name="test",description="test")
-# step.save()
-# scenario = Scenario(name="test",description="test",steps=[step,step])
-# scenario.save()
 
 
 class pagination(BaseModel):
@@ -196,28 +203,37 @@ class PositionPost(BaseModel):
     x: float
     y: float
     z: float
+
+
 class TypePost(BaseModel):
     name: str
+
     @validator('name')
     def name_validator(cls, v):
-        if v not in ['choice', 'step','action']:
+        if v not in ['choice', 'step', 'action']:
             raise ValueError('Name must be choice, step or action')
         return v
+
+
 class ChoiceOptions(BaseModel):
-    label:str
-    redirect:str
+    label: str
+    redirect: str
+
+
 class ChoicePost(BaseModel):
-    option_left:ChoiceOptions
-    option_right:ChoiceOptions
+    option_left: ChoiceOptions
+    option_right: ChoiceOptions
+
 
 class StepPost(BaseModel):
     name: str
     label: str
     description: str
-    position : PositionPost
+    position: PositionPost
     type: TypePost
     targets: list[int]
     choice: ChoicePost = None
+
 
 class ScenarioPost(BaseModel):
     name: str
@@ -244,7 +260,6 @@ class PasswordChange(BaseModel):
     username: str
     old: str
     new: str
-
 
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(

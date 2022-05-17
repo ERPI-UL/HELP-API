@@ -1,6 +1,3 @@
-from ctypes import util
-from http.client import INTERNAL_SERVER_ERROR
-from anyio import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from passlib.hash import bcrypt
 import tortoise
@@ -31,7 +28,7 @@ async def create_user(user: Models.UserNew):
 # list all users
 @transactions.atomic()
 @router.get('/', response_model=Models.pagination)
-async def get_users(page: int = 1, per_page: int = 10, res: Any = Depends(utils.InstructorRequired)):
+async def get_users(page: int = 1, per_page: int = 10, res: any = Depends(utils.InstructorRequired)):
     users_count = await Models.User.all().count()
     if users_count < per_page:
         per_page = users_count
@@ -79,6 +76,7 @@ async def read_user(id: int, current_user: Models.User = Depends(utils.get_curre
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return await Models.UserinFront.from_tortoise_orm(user)
 
+
 @router.get('/{id}/scenarios', response_model=List[Models.ScenarioOut])
 async def get_user_scenarios(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     user = await Models.User.get_or_none(id=id)
@@ -93,6 +91,7 @@ async def get_user_scenarios(id: int, current_user: Models.User = Depends(utils.
     for session in sessions:
         scenarios.add(session.scenario)
     return scenarios
+
 
 @router.put('/me', response_model=Models.UserinFront)
 async def update_user(user: Models.UserinPut, current_user: Models.User = Depends(utils.get_current_user_in_token)):
