@@ -1,4 +1,3 @@
-from ctypes import util
 from email import utils
 from fastapi import APIRouter, Depends, HTTPException, status
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -18,19 +17,19 @@ async def read_scenarios(page: int = 1, per_page: int = 10):
     lastPage = scenario_count // per_page
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
-    scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('steps__type').prefetch_related('steps__targets')
+    scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
     return {
         'total': scenario_count,
         'per_page': per_page,
         'current_page': page,
         'last_page': lastPage,
-        'data': [await scenarioToJSON(scenario) for scenario in scenarios]
+        'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
 
 
 @router.get('/{id}')
 async def getScenario(id: int):
-    scenario = await Models.Scenario.get(id=id).prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets')
+    scenario = await Models.Scenario.get(id=id).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     return await scenarioToJSON(scenario)
 
@@ -41,7 +40,7 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    return await Models.Machinein.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
+    return await Models.MachineOut.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
 
 
 @router.put('/machine/{id}')
@@ -52,14 +51,6 @@ async def update_machine(id: int, machine: Models.Machinein, adminLevel: int = D
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
     await Models.Machine.filter(id=id).update(name=machine.name, description=machine.description)
     return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=id))
-
-
-@router.get('/{idScenario}/step/{idStep}')
-async def getScenarioSteps(idScenario: int, idStep: int):
-    step = await Models.Step.filter(scenario_id=idScenario, id=idStep).prefetch_related('type').prefetch_related('targets').first()
-    if not step:
-        raise HTTPException(status_code=404, detail="Step not found")
-    return await stepToJSON(step)
 
 
 @router.post('/')
@@ -85,19 +76,29 @@ async def updateStep(id: int, step: pydantic_model_creator(Models.Step), adminLe
 
 @router.get('/{idScenario}/step/{idStep}/target/{idTarget}')
 async def getScenarioStepTargets(idScenario: int, idStep: int, idTarget: int):
-    target = await Models.Target.filter(step_id=idStep, id=idTarget).prefetch_related('type').prefetch_related('targets').first()
+    target = await Models.Target.filter(steps=idStep, id=idTarget).first()
     if not target:
         raise HTTPException(status_code=404, detail="Target not found")
     return await targetToJSON(target)
 
 
 async def scenarioToJSON(scenario):
+    scenario.machine = await scenario.machine.get()
     return {
         'id': scenario.id,
         'name': scenario.name,
-        'machine': 'ML-w960',
         'description': scenario.description,
+        'machine': await machineToJSON(scenario.machine),
         'steps': [await stepToJSON(step) for step in scenario.steps]
+    }
+
+
+async def shortScenarioToJSON(scenario):
+    return {
+        'id': scenario.id,
+        'name': scenario.name,
+        'description': scenario.description,
+        'machine': await machineToJSON(scenario.machine)
     }
 
 
@@ -107,27 +108,30 @@ async def stepToJSON(step):
         'description': step.description,
         'label': step.label,
         'name': step.name,
+        'position': await positionToJSON(step.position),
         'type': (await step.type.values('name'))[0]['name'],
-        'choice': "choix bidon",
+        'choice': await choiceToJSON(step.choice),
         'targets': [await targetToJSON(target) for target in step.targets]
     }
 
 
 async def targetToJSON(target):
-    return {
-        'id': target.id,
-        'label': target.label,
-        'name': target.name
-    }
+    return target.name
 
 
-async def choiceToJSON(choice):
-    return {
-        'id': choice.id,
-        'label': choice.label,
-        'name': choice.name,
-        'target': choice.target.name
-    }
+async def choiceToJSON(choice: Models.Choice):
+    if choice:
+        return {
+            'id': choice.id,
+            'option_left': {
+                'label': choice.labelleft,
+                'redirect': choice.redirectleft
+            },
+            'option_right': {
+                'label': choice.labelright,
+                'redirect': choice.redirectright
+            },
+        }
 
 
 async def machineToJSON(machine):
@@ -136,3 +140,9 @@ async def machineToJSON(machine):
         'name': machine.name,
         'description': machine.description
     }
+
+
+async def positionToJSON(position: Models.Position):
+    if not position:
+        return None
+    return {'x': position.x, 'y': position.y, 'z': position.z}

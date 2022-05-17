@@ -1,49 +1,8 @@
-# from sqlalchemy.orm import declarative_base
-# from sqlalchemy import Column, Integer, String
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-
-# SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://root:root@localhost/indico"
-# engine = create_engine(
-#     SQLALCHEMY_DATABASE_URL
-# )
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
-
-
-# engine.connect()
-
-
-# class User(Base):
-#     __tablename__ = 'users'
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     username = Column(String(50), unique=True)
-#     password_hash = Column(String(60))
-#     fullname = Column(String(200))
-#     email = Column(String(254))
-#     adminLevel = Column(Integer, default=0)
-
-#     class Config:
-#         orm_mode = True
-
-#     def __repr__(self):
-#         return "<User(name='%s', fullname='%s', nickname='%s')>" % (self.name, self.fullname, self.nickname)
-
-# Base.metadata.create_all(bind=engine)
-
-# user = User(username='test', password_hash='test')
-
-# # save user
-# session = SessionLocal()
-# session.add(user)
-# session.commit()
-from secrets import choice
-from requests import session
 from tortoise import OneToOneFieldInstance, Tortoise, fields, run_async
-from tortoise.contrib.pydantic import pydantic_model_creator, pydantic_queryset_creator
+from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
 from passlib.hash import bcrypt
-from pydantic import BaseModel, validate_arguments
+from pydantic import BaseModel, validator
 
 import typing
 
@@ -71,8 +30,7 @@ class Machine(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(50, unique=True)
     description = fields.TextField()
-    scenarios: fields.ReverseRelation["Scenario"]
-    targets = fields.ManyToManyField('models.Target', related_name='machine')
+    # scenarios: fields.ReverseRelation["Scenario"]
 
     class Meta:
         table = "machines"
@@ -82,8 +40,7 @@ class Scenario(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
     description = fields.TextField(null=True)
-    machine: fields.ForeignKeyField(
-        model_name="models.Machine", related_name="scenarios")
+    machine = fields.ForeignKeyField('models.Machine', related_name='scenarios')
 
     class Meta:
         table = "scenarios"
@@ -97,11 +54,21 @@ class Step(Model):
     name = fields.TextField()
     description = fields.TextField()
     scenario = fields.ForeignKeyField('models.Scenario', related_name='steps')
-    targets = fields.ManyToManyField('models.Target', related_name='steps')
-
+    targets = fields.ManyToManyField('models.Target', related_name='steps',null=True)
+    position = fields.ForeignKeyField('models.Position', related_name='steps',null=True)
+    choice = fields.ForeignKeyField('models.Choice', related_name='steps',null=True)
+    ordernumber = fields.IntField()
     class Meta:
         table = "steps"
-
+        unique_together = ('scenario_id', 'ordernumber')
+        ordering = ['ordernumber']
+class Position(Model):
+    id = fields.IntField(pk=True)
+    x = fields.FloatField()
+    y = fields.FloatField()
+    z = fields.FloatField()
+    class Meta:
+        table = "positions"
 
 class Type(Model):
     id = fields.IntField(pk=True)
@@ -122,15 +89,12 @@ class Choice(Model):
     class Meta:
         table = "choices"
 
-# FIXME: think about associations
-
-
 class Target(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
-
+    machine = fields.ForeignKeyField('models.Machine', related_name='targets')
     class Meta:
-        table = "steps_target"
+        table = "targets"
 
 
 class playedStep(Model):
@@ -189,6 +153,8 @@ UserinToken = pydantic_model_creator(User, name='UserinToken', exclude=[
                                      'password_hash', 'email', 'firstname', 'lastname'])
 Machinein = pydantic_model_creator(
     Machine, name='Machinein', exclude_readonly=True)
+MachineOut = pydantic_model_creator(
+    Machine, name='MachineOut')
 # type = Type(name="test")
 # type.save()
 # step = Step(label="test",type=type,name="test",description="test")
@@ -215,21 +181,36 @@ class MachinePost(BaseModel):
     name: str
 
 
+class PositionPost(BaseModel):
+    x: float
+    y: float
+    z: float
+class TypePost(BaseModel):
+    name: str
+    @validator('name')
+    def name_validator(cls, v):
+        if v not in ['choice', 'step','action']:
+            raise ValueError('Name must be choice, step or action')
+        return v
+class ChoiceOptions(BaseModel):
+    label:str
+    redirect:str
+class ChoicePost(BaseModel):
+    option_left:ChoiceOptions
+    option_right:ChoiceOptions
+
 class StepPost(BaseModel):
     name: str
-    title: str
+    label: str
     description: str
-    type: str
-    targets: list[str]
-    choices: list[str] = None
-
-
-class ChoicePost(BaseModel):
-    option_left: str
-
+    position : PositionPost
+    type: TypePost
+    targets: list[int]
+    choice: ChoicePost
 
 class ScenarioPost(BaseModel):
-    title: str
+    name: str
+    description: str
     machine: MachinePost
     steps: list[StepPost]
 
