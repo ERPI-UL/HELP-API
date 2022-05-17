@@ -1,4 +1,3 @@
-from email import utils
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import parse_obj_as
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -67,6 +66,19 @@ async def getMachine(machine_id: int):
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
     return await machineWithTargetsToJSON(machine)
+
+
+@router.post('/machines/{machine_id}/targets', response_model=list[Models.TargetOut])
+async def createTarget(machine_id: int, targets: list, user: Models.User = Depends(utils.InstructorRequired)):
+    machine = await Models.Machine.get(id=machine_id)
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine introuvable")
+    front = []
+    for target in targets:
+        target = Models.Target(name=target, machine=machine)
+        await target.save()
+        front.append(target)
+    return parse_obj_as(list[Models.TargetOut], front)
 
 
 @router.get('/{id}')

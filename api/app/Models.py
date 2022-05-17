@@ -106,6 +106,7 @@ class Target(Model):
 
     class Meta:
         table = "targets"
+        unique_together = ('name', 'machine_id')
 
 
 class playedStep(Model):
@@ -178,6 +179,8 @@ MachineOut = pydantic_model_creator(
     Machine, name='MachineOut')
 ScenarioOut = pydantic_model_creator(
     Scenario, name='ScenarioOut')
+TargetOut = pydantic_model_creator(
+    Target, name='TargetOut', include=['id', 'name'])
 
 
 class pagination(BaseModel):
@@ -197,6 +200,10 @@ class ScenarioCreate(BaseModel):
 class MachinePost(BaseModel):
     name: str = None
     id: int = None
+
+
+class TargetPost(BaseModel):
+    name: str
 
 
 class PositionPost(BaseModel):
