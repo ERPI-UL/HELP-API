@@ -6,7 +6,7 @@ import utils
 import Models
 from tortoise.contrib.pydantic import pydantic_model_creator
 from typing import List
-from .scenarios import scenarioToJSON
+from .scenarios import scenarioToJSON, shortScenarioToJSON
 router = APIRouter()
 
 
@@ -40,7 +40,7 @@ async def createSession(id: int, session: Models.SessionIn,current_user: Models.
         raise HTTPException(status_code=403, detail="Vous n'avez pas les droits pour créer une session sur cette utilisateur")
     user = await Models.User.get(id=id)
     scenario = await Models.Scenario.get(id=session.scenarioid)
-    session = await Models.Session.create(user=user, scenario=scenario)
+    session = await Models.Session.create(user=user, scenario=scenario,date=session.date,evaluation=session.evaluation)
     return {
         'id': session.id,
     }
@@ -83,7 +83,9 @@ async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.ge
 async def sessionToJSON(session):
     return {
         'id': session.id,
-        'scenario': await scenarioToJSON(session.scenario),
+        'scenario':{
+            "id": session.scenario.id,
+        },
         'playedSteps': [await playedStepToJSON(playedStep) for playedStep in session.playedSteps],
     }
 
