@@ -90,6 +90,16 @@ async def deleteTarget(target_id: int, user: Models.User = Depends(utils.Instruc
     return {'ok': 'target supprimée'}
 
 
+@router.put('/machines/targets/{target_id}')
+async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.User = Depends(utils.InstructorRequired)):
+    targetInDB = await Models.Target.get(id=target_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="Cible introuvable")
+    targetInDB.name = target.name
+    await targetInDB.save()
+    return {'ok': 'Cible mise à jour'}
+
+
 @router.get('/{id}')
 async def getScenario(id: int):
     scenario = await Models.Scenario.get(id=id).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
