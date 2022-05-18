@@ -115,6 +115,22 @@ async def skipRate(idScenario: int, current_user: Models.User = Depends(utils.ge
     return {'scenario': scenario.id, 'data': list}
 
 
+@router.get('/scenarios/backwardRate')
+async def backwardRate(idScenario: int, idUser: int = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    conn = tortoise.Tortoise.get_connection("default")
+    if idUser:
+        distinct = await conn.execute_query_dict('select  count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1) and user_id=($2);', [idScenario, idUser])
+        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1) and user_id=($2);', [idScenario, idUser])
+    else:
+        distinct = await conn.execute_query_dict('select  count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1);', [idScenario])
+        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1);', [idScenario])
+    if total[0]['count'] == 0:
+        raise HTTPException(
+            status_code=404, detail="Aucune donnée trouvée")
+    backwardRate = 1-(distinct[0]['count']/total[0]['count'])
+    return {'scenario': idScenario, 'data': backwardRate}
+
+
 async def userToJSON(user):
     return {
         'id': user.id,
