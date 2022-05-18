@@ -107,6 +107,15 @@ async def getScenario(id: int):
     return await scenarioToJSON(scenario)
 
 
+@router.delete('/{scenario_id}')
+async def delete_scenario(scenario_id: int, user: Models.User = Depends(utils.InstructorRequired)):
+    scenario = await Models.Scenario.get(id=scenario_id)
+    if not scenario:
+        raise HTTPException(status_code=404, detail="Scenario introuvable")
+    await scenario.delete()
+    return {'ok': 'scenario et objets référencés supprimés'}
+
+
 @router.post("/machines")
 async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     machine = utils.sanitizer(machine)
@@ -136,7 +145,8 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
     for step in scenario.steps:
         position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
         type = await Models.Type.get(name=step.type.name).first()
-        stepDB = Models.Step(scenario=scenarioDB,type=type, label=step.label,position=position,name=step.name, description=step.description,ordernumber=step.ordernumber)
+        stepDB = Models.Step(scenario=scenarioDB, type=type, label=step.label, position=position,
+                             name=step.name, description=step.description, ordernumber=step.ordernumber)
         if step.type.name == 'choice':
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         await stepDB.save()

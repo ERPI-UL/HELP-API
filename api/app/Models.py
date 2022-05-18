@@ -41,7 +41,7 @@ class Scenario(Model):
     name = fields.TextField()
     description = fields.TextField(null=True)
     machine = fields.ForeignKeyField(
-        'models.Machine', related_name='scenarios')
+        'models.Machine', related_name='scenarios',on_delete=fields.CASCADE)
 
     class Meta:
         table = "scenarios"
@@ -54,13 +54,13 @@ class Step(Model):
     type = fields.ForeignKeyField('models.Type', related_name='steps')
     name = fields.TextField()
     description = fields.TextField()
-    scenario = fields.ForeignKeyField('models.Scenario', related_name='steps')
+    scenario = fields.ForeignKeyField('models.Scenario', related_name='steps',on_delete=fields.CASCADE)
     targets = fields.ManyToManyField(
         'models.Target', related_name='steps', null=True)
     position = fields.ForeignKeyField(
-        'models.Position', related_name='steps', null=True)
+        'models.Position', related_name='steps', null=True,on_delete=fields.CASCADE)
     choice = fields.ForeignKeyField(
-        'models.Choice', related_name='steps', null=True)
+        'models.Choice', related_name='steps', null=True,on_delete=fields.CASCADE)
     ordernumber = fields.IntField()
 
     class Meta:
