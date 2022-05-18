@@ -139,9 +139,9 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
         stepDB = Models.Step(scenario=scenarioDB,type=type, label=step.label,position=position,name=step.name, description=step.description,ordernumber=step.ordernumber)
         if step.type.name == 'choice':
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
-        for target in step.targets:
-            stepDB.targets.add(await Models.Target.get(id=target))
         await stepDB.save()
+        for target in step.targets:
+            await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': scenarioDB.id}
 
 
