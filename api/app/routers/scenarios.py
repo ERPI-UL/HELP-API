@@ -195,7 +195,10 @@ async def stepToJSON(step):
 
 
 async def targetToJSON(target):
-    return target.name
+    return {
+        'id': target.id,
+        'name': target.name,
+    }
 
 
 async def choiceToJSON(choice: Models.Choice):
