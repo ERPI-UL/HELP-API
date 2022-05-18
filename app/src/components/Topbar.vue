@@ -227,7 +227,7 @@
                 {
                     name: 'Évalutation',
                     description: 'Voir les statistiques dans le mode évaluation',
-                    href: 'statistics#testing',
+                    href: '/statistics#testing',
                     icon: AcademicCapIcon,
                 }
             ]
@@ -288,7 +288,7 @@
                 });
             }
             if (User.currentUser.canAdmin()) {
-                menu[2].elements.push({
+                menu[3].elements.push({
                     name: 'Panneau administrateur',
                     description: 'Accéder au panneau d\'administration',
                     href: '/admin',
@@ -296,7 +296,7 @@
                 });
             }
             if (User.currentUser.isVisitor()) {
-                menu.splice(1, 1);
+                menu.splice(2, 1);
             }
 
             return {menu, icon: {user: UserIcon}, User};

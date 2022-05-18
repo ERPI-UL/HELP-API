@@ -161,20 +161,25 @@ function search() {
         return;
     }
 
-    console.log("SelectedUser: "+selectedUser+", selectedScenario: "+selectedScenario);
+    let promise = null;
     if (selectedUser == "<all>") { // selected all users, get average informations
         if (selectedScenario == "<all>")
-            Statistics.generateStatistics(charts, infoBoxes);
+            promise = Statistics.generateStatistics(charts, infoBoxes);
         else
-            Statistics.generateScenarioStatistics(charts, infoBoxes, selectedScenario);
+            promise = Statistics.generateScenarioStatistics(charts, infoBoxes, selectedScenario);
     } else { // one user selected, get user informations
         if (selectedScenario == "<all>") // selected all scenarios, get average informations
-            Statistics.generateUserStatistics(charts, infoBoxes, selectedUser);
+            promise = Statistics.generateUserStatistics(charts, infoBoxes, selectedUser);
         else // one scenario selected, get scenario informations
-            Statistics.generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser);
+            promise = Statistics.generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser);
     }
 
-    if (dom != null) dom.$forceUpdate();
+    if (promise != null)
+        promise.then(() => {
+            if (dom != null) dom.$forceUpdate();
+        }).catch(err => {
+            console.error(err);
+        });
 }
 
 let displayUserPagination;

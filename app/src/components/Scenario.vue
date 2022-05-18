@@ -1,5 +1,5 @@
 <template>
-    <div class="scenario-parent bg-white rounded-lg shadow-lg p-4 min-w-fit h-fit max-w-[25vw] m-4 hover:shadow-xl">
+    <div id="scenario-parent" class="bg-white rounded-lg shadow-lg p-4 min-w-fit h-fit max-w-[25vw] m-4 hover:shadow-xl">
         <div class="top">
             <div class="flex justify-between center">
                 <h2 class="text-indigo-600 font-bold text-lg">
@@ -17,7 +17,7 @@
             <slot name="progress"></slot>
         </div>
         <div class="pt-8 flex justify-between">
-            <div></div>
+            <div class="pr-10"><slot name="remove"></slot></div>
             <slot name="href"></slot>
         </div>
     </div>
