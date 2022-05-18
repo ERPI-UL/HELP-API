@@ -13,24 +13,22 @@ import utils
 tags_metadata = [
     {
         "name": "auth",
-        "description": "Operations with users. The **login** logic is also here.",
-    },
-    {
-        "name": "items",
-        "description": "Manage items. So _fancy_ they have their own docs.",
-        "externalDocs": {
-            "description": "Items external docs",
-            "url": "https://fastapi.tiangolo.com/",
-        },
+        "description": "Opérations d'authentification",
     }, {
         "name": "users",
-        "description": "Manage users. So _fancy_ they have their own docs."
+        "description": "Opération sur les utilisateurs : création, modification, suppression, listes paginées",
     }, {
         "name": "scenarios",
-        "description": "Manage scenarios. So _fancy_ they have their own docs."
+        "description": "Opération sur les scénarios , machines et leurs composants : création, modification, suppression, listes paginées",
     }, {
         "name": "stats",
-        "description": "Manage stats. So _fancy_ they have their own docs."
+        "description": "Opération sur les statistiques : création et supression d'une session d'un scénario, listes paginées ",
+    }, {
+        "name": "easy",
+        "description": "générer un code d'accès rapide , HTTP Long-Polling pour envoyer le token d'authentification à l'appareil XR",
+    }, {
+        "name": "admin",
+        "description": "Opérations réservées aux admins : changer le niveau d'admin d'un utilisateur, supprimer un utilisateur",
     }
 ]
 
@@ -50,7 +48,7 @@ app = FastAPI(
         "url": "https://antoninrousseau.fr",
         "email": "antonin.rousseau55000@gmail.com",
     },
-    tags_metadata=tags_metadata
+    openapi_tags=tags_metadata
 )
 
 app.add_middleware(
