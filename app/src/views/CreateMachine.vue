@@ -4,23 +4,54 @@
             <Topbar></Topbar>
         </div>
         <div id="content" class="flex grow min-h-0">
-            <div class="flex m-auto grow-0 w-fit m-2">
-                <div class="flex grow flex-col"> <!-- left panel (basic informations) -->
-                    <div id="scenario-header" class="flex flex-col grow">
+            <div class="flex m-auto grow-0 w-fit m-2 mx-auto">
+                <div class="flex grow flex-col my-auto min-h-0 max-h-full"> <!-- left panel (basic informations) -->
+                    <div id="scenario-header" class="flex flex-col grow max-h-full min-h-0">
                         <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ action }} une machine</h2>
-                        <div class="flex flex-col m-2 h-fit bg-white rounded-lg p-2">
-                            <div class="flex justify-between">
-                                <p class="text-gray-500 font-base text-lg p-2 mr-4">Nom de la machine : </p>
-                                <input type="text" id="input-machinename" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                        <div class="flex min-h-0 max-h-full">
+                            <div class="flex flex-col m-2 h-full bg-white rounded-lg p-2">
+                                <div class="flex justify-between">
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Nom de la machine : </p>
+                                    <input type="text" id="input-machinename" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                </div>
+                                <div class="flex flex-col grow-0">
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Description de la machine : </p>
+                                    <textarea id="input-machinedesc" rows="10" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
+                                </div>
                             </div>
-                            <div class="flex flex-col grow-0">
-                                <p class="text-gray-500 font-base text-lg p-2 mr-4">Description de la machine : </p>
-                                <textarea id="input-machinedesc" rows="10" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
+                            <div class="flex grow flex-col m-2 bg-white rounded-lg p-2 min-h-0">
+                                <p class="text-gray-500 font-base text-lg p-2 mr-4">Cibles de la machine : </p>
+                                <div class="flex grow flex-col min-h-0">
+                                    <div class="flex flex-col grow space-y-2 p-2 h-fit min-h-0 overflow-y-scroll overflow-x-hidden border border-gray-200 rounded">
+                                        <div v-for="el in machineTargets">
+                                            <input 
+                                                type="text" id="input-machinename" name="machine-target" v-bind:value="el.data" v-on:change="setMachineTarget(el.id, $event.target.value);"
+                                                class="whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"
+                                            >
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between space-x-1 pt-2">
+                                        <button v-on:click="removeMachineTarget" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                                            </svg>
+                                            <p class="whitespace-nowrap text-white m-auto mx-1">Supprimer</p>
+                                        </button>
+                                        <button v-on:click="addMachineTarget" class="bg-indigo-600 p-1 h-fit w-fit flex flex-row shadow rounded">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            <p class="whitespace-nowrap text-white m-auto mx-1">Ajouter</p>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        <div class="flex flex-col bg-white rounded-lg p-2">
                             <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
-                                <p class="opacity-0 text-center text-indigo-600">Message</p>
+                                <p class="opacity-0 text-center text-indigo-600"></p>
                             </div>
-                            <div class="flex grow justify-between mt-2">
+                            <div class="flex grow justify-between">
                                 <BackButton>Annuler</BackButton>
                                 <ValidateButton id="validate-button" v-on:click="saveMachine">{{action}}</ValidateButton>
                             </div>
@@ -38,37 +69,115 @@ import BackButton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
 import User from '../script/User';
+import { redirectHome } from '../script/common';
 
 function logMessage(msg) {
     const btn = document.getElementById("validate-button");
     btn.innerHTML = action;
-
     const div = document.getElementById("log-zone");
     const txt = div.firstElementChild;
-    txt.innerHTML = msg;
+    if (txt.innerHTML.length < 1)
+        txt.innerHTML = msg;
+    else txt.innerHTML += "<br>"+msg;
     txt.classList.add("opacity-100");
     div.style.height = txt.getBoundingClientRect().height+"px";
     setTimeout(() => {
         txt.classList.remove("opacity-100");
+        let liste = txt.innerHTML.split("<br>");
+        liste.pop();
+        txt.innerHTML = liste.join("<br>");
         div.style.height = "0px";
     }, 3000);
 }
 
+function retreiveMachineInfos() {
+    if (action=="Modifier")
+        API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
+            document.getElementById('input-machinename').value = res.name;
+            document.getElementById('input-machinedesc').value = res.description;
+            res.targets.forEach(target => addMachineTarget(target))
+        }).catch(console.error);
+}
+
 function saveMachine() {
+    const machineName = document.getElementById('input-machinename');
+    const machineDesc = document.getElementById('input-machinedesc');
+    if (machineName.value.length < 1) {
+        machineName.focus();
+        logMessage("Veuillez préciser un nom de machine.")
+        return;
+    }
+    if (machineDesc.value.length < 1) {
+        machineDesc.focus();
+        logMessage("Veuillez préciser une description de machine.")
+        return;
+    }
+
     const button = document.getElementById("validate-button");
     button.innerHTML = "...";
-    API.execute_logged(API.ROUTE.MACHINES+(action=="Créer"?"":queryParameters.idMachine), action=='Créer'? API.METHOD_POST: API.METHOD_PUT, User.currentUser.getCredentials(), {
-        name: document.getElementById('input-machinename').value,
-        description: document.getElementById('input-machinedesc').value
+    if (action == "Modifier") {
+        logMessage("Erreur: Modification de machine non implémentée.");
+        // TODO : PUT for machine's informations, PUT for modified targets, DELETE for deleted targets, POST for new targets
+        return;
+    }
+    API.execute_logged(API.ROUTE.MACHINES, API.METHOD_POST, User.currentUser.getCredentials(), {
+        name: machineName.value,
+        description: machineDesc.value
     }).then(res => {
-        logMessage("Machine créée avec succès !");
-        button.innerHTML = action;
+        API.execute_logged(API.ROUTE.MACHINES+res.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), machineTargets.map(el =>el.data), API.TYPE_JSON).then(res => {
+            logMessage("Machine créée avec succès !");
+            button.innerHTML = action;
+            redirectHome();
+        }).catch(err => {
+            logMessage("Erreur lors de la création de la machine.");
+            console.error(err);
+        });
     }).catch(err => {
         logMessage("Erreur lors de la création de la machine.");
         console.error(err);
+        err.json().then(json => {
+            switch (json.detail[0].type) {
+                case "IntegrityError":
+                    machineName.focus();
+                    logMessage("Le nom ["+document.getElementById('input-machinename').value+"] existe déjà.");
+                    break;
+                default: break;
+            }
+        });
     });
 }
 
+function setMachineTarget(id, newText) {
+    console.log("setMachineTarget", id, newText);
+    let index = machineTargets.findIndex(el => el.id == id);
+    machineTargets[index].data = newText;
+    console.log("machineTargets", machineTargets);
+}
+
+let IDCounter = 0;
+function addMachineTarget(target=null) {
+    let id = IDCounter++;
+    let data = "";
+    if (target != null) {
+        id = target.id;
+        data = target.name;
+        IDCounter = id+1;
+    }
+
+    machineTargets.push({
+        data: data,
+        id: id
+    });
+    if (dom != null) dom.$forceUpdate();
+}
+
+function removeMachineTarget(index=machineTargets.length-1) {
+    machineTargets.splice(index, 1);
+    if (dom != null) dom.$forceUpdate();
+}
+
+let dom = null;
+let machineTargets = [];
 let urlPath = window.location.pathname.split('/');
 let queryParameters = {};
 const action = urlPath[urlPath.length-1] == "edit"? "Modifier": "Créer";
@@ -86,14 +195,15 @@ export default {
         BackButton,
         ValidateButton
     },
-    data() {return {action};},
-    mounted() {
-        API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
-            document.getElementById('input-machinename').value = res.name;
-            document.getElementById('input-machinedesc').value = res.description;
-        }).catch(console.error);
+    data() {return {action, machineTargets};},
+    setup() {
+        
     },
-    methods: {saveMachine}
+    mounted() {
+        dom = this;
+        retreiveMachineInfos();
+    },
+    methods: {saveMachine, addMachineTarget, removeMachineTarget, setMachineTarget}
 };
 </script>
 

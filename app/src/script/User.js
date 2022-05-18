@@ -68,6 +68,7 @@ class User {
     }
 
     verified = false;
+    id = 0;
     username = "";
     password = "";
     email = "";
@@ -76,7 +77,8 @@ class User {
     token = "";
     permissions = 0;
 
-    constructor(username="", password="", email="", firstname="", lastname="", token=null, permissions=User.PERMISSIONS.VISITOR) {
+    constructor(username="", password="", email="", firstname="", lastname="", token=null, permissions=User.PERMISSIONS.VISITOR, id=0) {
+        this.id = id;
         this.username = username;
         this.password = password;
         this.email = email;
@@ -93,6 +95,7 @@ class User {
                     return;
             }
             API.execute_logged(API.ROUTE.USER, API.METHOD_GET, this.getCredentials()).then(data => {
+                this.id = data.id;
                 this.username = data.username;
                 this.email = data.email;
                 this.firstname = data.firstname;

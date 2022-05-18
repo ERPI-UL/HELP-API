@@ -36,7 +36,7 @@
                         </div>
                     </div>
                     <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
-                        <p class="opacity-0 text-center text-indigo-600">Message</p>
+                        <p class="opacity-0 text-center text-indigo-600"></p>
                     </div>
                     <div class="pt-8 flex justify-between">
                         <Backbutton>Annuler</Backbutton>
@@ -66,17 +66,19 @@ let logTimeout = -1;
 function logMessage(msg) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "S'inscrire";
-
     const div = document.getElementById("log-zone");
     const txt = div.firstElementChild;
-    txt.innerHTML = msg;
+    if (txt.innerHTML.length < 1)
+        txt.innerHTML = msg;
+    else txt.innerHTML += "<br>"+msg;
     txt.classList.add("opacity-100");
     div.style.height = txt.getBoundingClientRect().height+"px";
-    if (logTimeout != -1) clearTimeout(logTimeout);
-    logTimeout = setTimeout(() => {
+    setTimeout(() => {
         txt.classList.remove("opacity-100");
+        let liste = txt.innerHTML.split("<br>");
+        liste.pop();
+        txt.innerHTML = liste.join("<br>");
         div.style.height = "0px";
-        logTimeout = -1;
     }, 3000);
 }
 

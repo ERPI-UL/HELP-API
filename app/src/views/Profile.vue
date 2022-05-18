@@ -83,7 +83,8 @@ function removeAccount() {
     el.setPosition(document.getElementById("delete-btn"));
     el.setCallback(() => {
         API.execute_logged(API.ROUTE.USER, API.METHOD_DELETE, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
-            console.log("User deleted");
+            User.forgetUser();
+            window.location.href = "/";
         }).catch(console.error);
     });
 }
