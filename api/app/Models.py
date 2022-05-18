@@ -240,6 +240,12 @@ class StepPost(BaseModel):
     type: TypePost
     targets: list[int]
     choice: ChoicePost = None
+    ordernumber: int
+    @validator('ordernumber')
+    def ordernumber_validator(cls, v):
+        if v < 0:
+            raise ValueError('ordernumber must be >= 0')
+        return v
 
 
 class ScenarioPost(BaseModel):
