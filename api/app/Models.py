@@ -217,7 +217,7 @@ class TypePost(BaseModel):
 
     @validator('name')
     def name_validator(cls, v):
-        if v not in ['choice', 'step', 'action']:
+        if v not in ['choice', 'info', 'action']:
             raise ValueError('Name must be choice, step or action')
         return v
 
