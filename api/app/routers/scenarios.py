@@ -132,13 +132,15 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
+    scenario = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
     for step in scenario.steps:
         step.position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
         step.type = await Models.Type.get(name=step.type.name).first()
         if step.type.name == 'choice':
             step.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         step.targets = [await Models.Target.get(id=target) for target in step.targets]
-    scenario = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
+        step.scenario = scenario
+        await step.save()
     return {'id': scenario.id}
 
 
