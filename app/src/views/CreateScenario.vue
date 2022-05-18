@@ -292,6 +292,7 @@ function saveCreations() {
 
 function saveModifications() {
     logMessage("Erreur: Modification de scénario non supportée");
+    // TODO : Detect changes and do POST / PUT / DELETE according to them
 }
 
 function saveScenario() {
