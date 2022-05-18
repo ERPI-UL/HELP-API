@@ -132,16 +132,17 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    scenario = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
+    scenarioDB = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
     for step in scenario.steps:
-        step.position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
-        step.type = await Models.Type.get(name=step.type.name).first()
+        position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
+        type = await Models.Type.get(name=step.type.name).first()
+        stepDB = Models.Step(scenario=scenarioDB,type=type, label=step.label,position=position,name=step.name, description=step.description,ordernumber=step.ordernumber)
         if step.type.name == 'choice':
-            step.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
-        step.targets = [await Models.Target.get(id=target) for target in step.targets]
-        step.scenario = scenario
-        await step.save()
-    return {'id': scenario.id}
+            stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+        for target in step.targets:
+            stepDB.targets.add(await Models.Target.get(id=target))
+        await stepDB.save()
+    return {'id': scenarioDB.id}
 
 
 @router.put('/steps/{id}')

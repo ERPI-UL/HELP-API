@@ -238,7 +238,7 @@ class StepPost(BaseModel):
     description: str
     position: PositionPost
     type: TypePost
-    targets: list[int]
+    targets: list[int] = None
     choice: ChoicePost = None
     ordernumber: int
     @validator('ordernumber')
