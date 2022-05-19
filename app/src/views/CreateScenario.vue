@@ -146,7 +146,7 @@ function updateAvailableTargets() {
     })
 }
 
-function updateAvailableMachines() {
+function updateAvailableMachines(selectValue) {
     let selectMachines = document.getElementById("select-machines");
     selectMachines.innerHTML = "";
     if (availableMachines.length == 0) {
@@ -165,6 +165,11 @@ function updateAvailableMachines() {
     option2.value = "<select>";
     option2.innerHTML = "Sélectionner ...";
     selectMachines.appendChild(option2);
+
+    setTimeout(() => {
+        if (selectValue != undefined)
+            selectMachines.value = selectValue;
+    }, 10);
 }
 
 function onMachineChanged() {
@@ -306,10 +311,13 @@ let displayMachineSelection = () => {};
 
 function addMachineSelection(content) {
     availableMachines = availableMachines.filter(el => el.id in content.map(el => el.id));
+    let nbAdded = 0; let lastMachineID = 0;
     content.forEach(el => {
         let inside = false;
         availableMachines.forEach(e => {if (e.id == el.id) inside = true;});
         if (!inside) {
+            nbAdded++;
+            lastMachineID = el.id;
             const targets = [];
             availableMachines.push({
                 name: el.name,
@@ -325,7 +333,7 @@ function addMachineSelection(content) {
             }).catch(console.error);
         }
     });
-    updateAvailableMachines();
+    updateAvailableMachines((nbAdded==1)? lastMachineID : undefined);
     updateAvailableTargets();
     onMachineChanged();
 }

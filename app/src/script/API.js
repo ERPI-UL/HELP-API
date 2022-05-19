@@ -33,7 +33,7 @@ class API {
             // update the API protocol if needed
             if (window.location.protocol !== this.API_URL.split(":")[0]+":")
                 this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
-            // change url from [path/?param] to [path?param] in case it's not supported by the API
+
             path = path.replace("/?", "?");
 
             let reqHeaders = {
@@ -77,7 +77,24 @@ class API {
                         resolve(data);
                     }).catch(reject);
                 }
-            }).catch(reject);
+            }).catch(err => {
+                fetch(API.API_URL + path.replace("?", "/?"), {
+                    credentials: "omit",
+                    method: method,
+                    body: method == this.METHOD_GET ? undefined : reqBody,
+                    headers: reqHeaders,
+                    referrer: window.location.origin,
+                    mode: "cors"
+                }).then(response => {
+                    if (response.status != 200)
+                        reject(response);
+                    else {
+                        response.json().then(data => {
+                            resolve(data);
+                        }).catch(reject);
+                    }
+                }).catch(reject);
+            });
         });
     }
 

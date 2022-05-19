@@ -16,7 +16,6 @@ const TYPE = {
  * @param {number} maxBound maximum bound of the graph
  */
 function addChartToList(list, title, type, labels, data, minBound, maxBound) {
-    console.log(data.length);
     if (minBound) data = data.concat(minBound);
     if (maxBound) data = data.concat(maxBound);
     // create the label from the title
@@ -81,14 +80,11 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
             let data = []
             let total = 0;
             res.data.forEach(step => {
-                console.log("new data: ", step);
                 if (step.avg === undefined || step.name === undefined) return;
-                console.log("adding data");
                 total += step.avg;
                 data.push(step.avg);
                 labels.push(step.name);
             });
-            console.log("before function: "+data.length);
             addChartToList(graphList, "Temps moyen par étape (seconde)", TYPE.LINE, labels, data, 0, 30);
 
             let nbMinutes = Math.floor(total / 60);

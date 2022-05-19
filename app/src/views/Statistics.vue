@@ -85,7 +85,7 @@ const charts = [];
 const infoBoxes = [];
 var dom = null;
 
-function updateUserSelect() {
+function updateUserSelect(selectValue) {
     const userSelect = document.getElementById("user-select");
     let val = userSelect.value;
     userSelect.innerHTML = "";
@@ -100,9 +100,13 @@ function updateUserSelect() {
         userSelect.appendChild(optionElement);
     });
     userSelect.value = (val == "" || val == "<loading>" || val == "<select>") ? '<all>': val;
+    setTimeout(() => {
+        if (selectValue != undefined)
+            scenarioSelect.value = selectValue;
+    }, 10);
 }
 
-function updateScenarioSelect() {
+function updateScenarioSelect(selectValue) {
     const scenarioSelect = document.getElementById("scenario-select");
     let val = scenarioSelect.value;
     scenarioSelect.innerHTML = "";
@@ -117,6 +121,10 @@ function updateScenarioSelect() {
         scenarioSelect.appendChild(optionElement);
     });
     scenarioSelect.value = (val == "" || val == "<loading>" || val == "<select>") ? '<all>': val;
+    setTimeout(() => {
+        if (selectValue != undefined)
+            scenarioSelect.value = selectValue;
+    }, 10);
 }
 
 function setup() {
@@ -142,20 +150,28 @@ function setup() {
 
 function addUserSelection(content) {
     availableUsers = availableUsers.filter(el => el.id in content.map(el => el.id));
+    let nbAdded = 0, lastSelectedID = 0;
     content.forEach(el => {
-        if (!(el.id in availableUsers.map(el => el.id))) 
+        if (!(el.id in availableUsers.map(el => el.id))) {
+            nbAdded++;
+            lastSelectedID = el.id;
             availableUsers.push({value: el.id, text: el.firstname+" "+el.lastname});
+        }
     });
-    updateUserSelect();
+    updateUserSelect((nbAdded==1)? lastSelectedID: undefined);
 }
 
 function addScenarioSelection(content) {
     availableScenarios = availableScenarios.filter(el => el.id in content.map(el => el.id));
+    let nbAdded = 0, lastSelectedID = 0;
     content.forEach(el => {
-        if (!(el.id in availableScenarios.map(el => el.id))) 
+        if (!(el.id in availableScenarios.map(el => el.id))) {
+            nbAdded++;
+            lastSelectedID = el.id;
             availableScenarios.push({value: el.id, text: el.name});
+        }
     });
-    updateScenarioSelect();
+    updateScenarioSelect((nbAdded==1)? lastSelectedID: undefined);
 }
 
 function search() {
