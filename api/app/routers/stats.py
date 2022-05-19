@@ -1,3 +1,4 @@
+from time import time
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import parse_obj_as
 import tortoise
@@ -17,7 +18,7 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
     if id_scenario:
         sessions = await Models.Session.filter(user__id=id, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
     else:
-        sessions = await Models.Session.filter(user__id=id).prefetch_related('user', 'scenario__steps__targets', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
+        sessions = await Models.Session.filter(user__id=id).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
     lastPage = session_count // per_page
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
@@ -26,8 +27,14 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
         'per_page': per_page,
         'current_page': page,
         'last_page': lastPage,
-        'data': [await sessionToJSON(session) for session in sessions]
+        'data': parse_obj_as(list[Models.SessionOut], sessions)
     }
+
+
+@router.get('/sessions/{id}')
+async def readSession(id: int):
+    session = await Models.Session.get(id=id).prefetch_related('user', 'scenario', 'playedSteps', 'playedSteps')
+    return await sessionToJSON(session)
 
 
 @router.post('/users/{id}/sessions')
@@ -50,7 +57,7 @@ async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost, cu
         raise HTTPException(
             status_code=403, detail="Vous n'avez pas les droits pour créer une étape sur cette session")
     step = Models.playedStep(progressNumber=playedStep.progressNumber, missed=playedStep.missed,
-                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid)
+                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid,time=playedStep.time)
     await step.save()
     return step
 
@@ -97,7 +104,9 @@ async def sessionToJSON(session):
         'scenario': {
             "id": session.scenario.id,
         },
-        'playedSteps': [await playedStepToJSON(playedStep) for playedStep in session.playedSteps],
+        'date': session.date,
+        'evaluation': session.evaluation,
+        'playedSteps': [await playedStepToJSON(playedStep) for playedStep in session.playedSteps]
     }
 
 
@@ -160,5 +169,5 @@ async def playedStepToJSON(playedStep):
         'missed': playedStep.missed,
         'skipped': playedStep.skipped,
         'recorded': playedStep.record,
-        'step': playedStep.step,
+        'step_id': playedStep.step_id,
     }
