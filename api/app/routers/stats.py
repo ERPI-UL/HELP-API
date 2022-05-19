@@ -170,4 +170,5 @@ async def playedStepToJSON(playedStep):
         'skipped': playedStep.skipped,
         'recorded': playedStep.record,
         'step_id': playedStep.step_id,
+        'time': playedStep.time,
     }
