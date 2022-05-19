@@ -41,7 +41,7 @@ class Scenario(Model):
     name = fields.TextField()
     description = fields.TextField(null=True)
     machine = fields.ForeignKeyField(
-        'models.Machine', related_name='scenarios',on_delete=fields.CASCADE)
+        'models.Machine', related_name='scenarios', on_delete=fields.CASCADE)
 
     class Meta:
         table = "scenarios"
@@ -54,13 +54,14 @@ class Step(Model):
     type = fields.ForeignKeyField('models.Type', related_name='steps')
     name = fields.TextField()
     description = fields.TextField()
-    scenario = fields.ForeignKeyField('models.Scenario', related_name='steps',on_delete=fields.CASCADE)
+    scenario = fields.ForeignKeyField(
+        'models.Scenario', related_name='steps', on_delete=fields.CASCADE)
     targets = fields.ManyToManyField(
         'models.Target', related_name='steps', null=True)
     position = fields.ForeignKeyField(
-        'models.Position', related_name='steps', null=True,on_delete=fields.CASCADE)
+        'models.Position', related_name='steps', null=True, on_delete=fields.CASCADE)
     choice = fields.ForeignKeyField(
-        'models.Choice', related_name='steps', null=True,on_delete=fields.CASCADE)
+        'models.Choice', related_name='steps', null=True, on_delete=fields.CASCADE)
     ordernumber = fields.IntField()
 
     class Meta:
@@ -181,6 +182,8 @@ ScenarioOut = pydantic_model_creator(
     Scenario, name='ScenarioOut')
 TargetOut = pydantic_model_creator(
     Target, name='TargetOut', include=['id', 'name'])
+SessionOut = pydantic_model_creator(
+    Session, name='SessionOut', include=['id', 'date', 'evaluation', 'scenario_id'])
 
 
 class pagination(BaseModel):
@@ -241,6 +244,7 @@ class StepPost(BaseModel):
     targets: list[int] = None
     choice: ChoicePost = None
     ordernumber: int
+
     @validator('ordernumber')
     def ordernumber_validator(cls, v):
         if v < 0:
@@ -261,6 +265,7 @@ class playedStepPost(BaseModel):
     skipped: bool
     record: str
     stepid: int
+    time: int
 
 
 class SessionIn(BaseModel):
@@ -273,6 +278,7 @@ class PasswordChange(BaseModel):
     username: str
     old: str
     new: str
+
 
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(
