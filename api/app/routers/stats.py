@@ -55,6 +55,18 @@ async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost, cu
     return step
 
 
+@router.delete('/sessions/playedSteps/{id}')
+async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    step = await Models.playedStep.filter(id=id).prefetch_related('session__user').first()
+    if not step:
+        raise HTTPException(status_code=404, detail="Step non trouvé")
+    if step.session.user.id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="Vous n'avez pas les droits pour supprimer cet objet")
+    step = await step.delete()
+    return {'message': 'deleted'}
+
+
 @router.delete('/sessions/{sessionid}/playedSteps')
 async def deletePlayedSteps(sessionid: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     session = await Models.Session.get(id=sessionid).prefetch_related('user')
@@ -67,16 +79,16 @@ async def deletePlayedSteps(sessionid: int, current_user: Models.User = Depends(
     return {'message': f"{steps.__len__()} étapes de progressions ont été supprimés"}
 
 
-@router.delete('/sessions/playedSteps/{id}')
-async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    step = await Models.playedStep.filter(id=id).prefetch_related('session__user').first()
-    if not step:
-        raise HTTPException(status_code=404, detail="Step non trouvé")
-    if step.session.user.id != current_user.id:
+@router.delete('/sessions/{idSession}')
+async def deleteSession(idSession: int, current_user: Models.User = Depends(utils.get_current_user)):
+    session = await Models.Session.get(id=idSession).prefetch_related('user')
+    if session.user.id != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
-            status_code=403, detail="Vous n'avez pas les droits pour supprimer cet objet")
-    step = await step.delete()
-    return {'message': 'deleted'}
+            status_code=403, detail="Vous n'avez pas les droits pour supprimer cette session")
+    await session.delete()
+    return {
+        'message': 'Session supprimée'
+    }
 
 
 async def sessionToJSON(session):
