@@ -31,13 +31,13 @@
                                         </div>
                                     </div>
                                     <div class="flex justify-between space-x-1 pt-2">
-                                        <button v-on:click="removeMachineTarget" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded">
+                                        <button v-on:click="removeMachineTarget();" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
                                             </svg>
                                             <p class="whitespace-nowrap text-white m-auto mx-1">Supprimer</p>
                                         </button>
-                                        <button v-on:click="addMachineTarget" class="bg-indigo-600 p-1 h-fit w-fit flex flex-row shadow rounded">
+                                        <button v-on:click="addMachineTarget();" class="bg-indigo-600 p-1 h-fit w-fit flex flex-row shadow rounded">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                             </svg>
@@ -148,10 +148,8 @@ function saveMachine() {
 }
 
 function setMachineTarget(id, newText) {
-    console.log("setMachineTarget", id, newText);
     let index = machineTargets.findIndex(el => el.id == id);
     machineTargets[index].data = newText;
-    console.log("machineTargets", machineTargets);
 }
 
 let IDCounter = 0;
@@ -171,7 +169,7 @@ function addMachineTarget(target=null) {
     if (dom != null) dom.$forceUpdate();
 }
 
-function removeMachineTarget(index=machineTargets.length-1) {
+function removeMachineTarget(index = machineTargets.length-1) {
     machineTargets.splice(index, 1);
     if (dom != null) dom.$forceUpdate();
 }
