@@ -16,10 +16,11 @@ import CreateMachine from "./views/CreateMachine.vue";
 import './index.css'
 import "flowbite"
 
-// https redirection (should be done in NGINX, but for now we do it here)
-if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-    window.location.protocol = 'https:';
-}
+/** DOESNT WORK: mixed request errors **/
+// // https redirection (should be done in NGINX, but for now we do it here)
+// if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+//     window.location.protocol = 'https:';
+// }
 
 const router = createRouter({
     mode: "history",
