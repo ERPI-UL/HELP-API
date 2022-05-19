@@ -44,8 +44,14 @@
                         <p class="text-center text-4xl text-gray-500">Chargement ...</p>
                         <p class="text-center text-2xl text-gray-400">Chargement des données</p>
                     </div>
-                    <InfoBox v-for="box in infoBoxes" :boxTitle="box.title" :boxInfos="box.infos"></InfoBox>
-                    <Chart v-for="chart in charts" :title="chart.title" :chartInfos="chart.data"></Chart>
+                    <div class="flex flex-col grow">
+                        <div class="flex flex-wrap grow-0 justify-evenly">
+                            <InfoBox v-for="box in infoBoxes" :boxTitle="box.title" :boxInfos="box.infos"></InfoBox>
+                        </div>
+                        <div class="flex flex-wrap grow justify-evenly">
+                            <Chart v-for="chart in charts" :title="chart.title" :chartInfos="chart.data"></Chart>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,6 +161,9 @@ function addScenarioSelection(content) {
 function search() {
     const selectedUser = document.getElementById("user-select").value;
     const selectedScenario = document.getElementById("scenario-select").value;
+
+    charts.splice(0, charts.length);
+    infoBoxes.splice(0, infoBoxes.length);
 
     if (selectedUser == "<error>" || selectedScenario == "<error>") {
         console.error("Error loading data: no data found");

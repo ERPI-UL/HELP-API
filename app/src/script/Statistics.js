@@ -16,8 +16,21 @@ const TYPE = {
  * @param {number} maxBound maximum bound of the graph
  */
 function addChartToList(list, title, type, labels, data, minBound, maxBound) {
+    console.log(data.length);
     if (minBound) data = data.concat(minBound);
     if (maxBound) data = data.concat(maxBound);
+    // create the label from the title
+    let label = "";
+    let nbParenthesis = 0;
+    for(let i = 0; i < title.length; i++) {
+        const char = title.charAt(i);
+        switch (char) {
+            case '(': nbParenthesis++; break;
+            case ')': nbParenthesis--; break;
+            default: if (nbParenthesis == 0) label += char; break;
+        }
+    }
+
     list.push({
         title: title,
         data: {
@@ -25,7 +38,7 @@ function addChartToList(list, title, type, labels, data, minBound, maxBound) {
             data: {
                 labels: labels,
                 datasets: [{
-                    // label: "Data label",
+                    label: label,
                     backgroundColor: '#4F46E5',
                     borderColor: '#4F46E5',
                     data: data,
@@ -48,7 +61,7 @@ function showLoading() {
 function addInfoBoxToList(list, title, info) {
     list.push({
         title: title,
-        info: info
+        infos: info
     });
 }
 
@@ -68,11 +81,14 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
             let data = []
             let total = 0;
             res.data.forEach(step => {
-                if (!step.avg || !step.name) return;
+                console.log("new data: ", step);
+                if (step.avg === undefined || step.name === undefined) return;
+                console.log("adding data");
                 total += step.avg;
                 data.push(step.avg);
                 labels.push(step.name);
             });
+            console.log("before function: "+data.length);
             addChartToList(graphList, "Temps moyen par étape (seconde)", TYPE.LINE, labels, data, 0, 30);
 
             let nbMinutes = Math.floor(total / 60);
@@ -85,7 +101,7 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
                 let data = []
                 let total = 0;
                 res.data.forEach(step => {
-                    if (!step.skipRate || !step.name) return;
+                    if (step.skipRate === undefined || step.name === undefined) return;
                     if (step.skipRate == -1) step.skipRate = 0;
                     total += step.skipRate * 100;
                     data.push(Math.round(step.skipRate * 100));
