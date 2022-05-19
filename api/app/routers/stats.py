@@ -78,6 +78,17 @@ async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.ge
     step = await step.delete()
     return {'message': 'deleted'}
 
+@router.delete('/sessions/{idSession}')
+async def deleteSession(idSession: int, current_user: Models.User = Depends(utils.get_current_user)):
+    session = await Models.Session.get(id=idSession).prefetch_related('user')
+    if session.user.id != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
+        raise HTTPException(
+            status_code=403, detail="Vous n'avez pas les droits pour supprimer cette session")
+    await session.delete()
+    return {
+        'message': 'Session supprimée'
+    }
+
 
 async def sessionToJSON(session):
     return {
