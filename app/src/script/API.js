@@ -29,14 +29,13 @@ class API {
     };
 
     static execute(path, method = this.METHOD_GET, body = null, type = this.TYPE_NONE, headers = null) {
-        // update the API protocol if needed
-        if (window.location.protocol !== this.API_URL.split(":")[0]+":")
-            this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
-
-        // modify the url to go from [path/?param] to [path?param] if needed
-        if (path.indexOf("?") !== -1) path = path.replace("/?", "?");
-
         return new Promise((resolve, reject) => {
+            // update the API protocol if needed
+            if (window.location.protocol !== this.API_URL.split(":")[0]+":")
+                this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
+            // change url from [path/?param] to [path?param] in case it's not supported by the API
+            path = path.replace("/?", "?");
+
             let reqHeaders = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
                 "Accept": "application/json",
