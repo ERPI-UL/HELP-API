@@ -57,7 +57,7 @@ async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost, cu
         raise HTTPException(
             status_code=403, detail="Vous n'avez pas les droits pour créer une étape sur cette session")
     step = Models.playedStep(progressNumber=playedStep.progressNumber, missed=playedStep.missed,
-                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid,time=playedStep.time)
+                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid, time=playedStep.time)
     await step.save()
     return step
 
@@ -150,6 +150,38 @@ async def backwardRate(idScenario: int, idUser: int = None, current_user: Models
             status_code=404, detail="Aucune donnée trouvée")
     backwardRate = 1-(distinct[0]['count']/total[0]['count'])
     return {'scenario': idScenario, 'data': backwardRate}
+
+
+@router.get('/scenarios/performRate')
+# poucentage des utiliseurs qui réalise l'étape par scénario
+async def performRate(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    # pour chaques étapes, un nombre entre 1-0 indicant le taux de personnes ayant fait cette etape du scenario
+    conn = tortoise.Tortoise.get_connection("default")
+    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    list = []
+    numberOfTimeScenarioPlayed = await conn.execute_query_dict('select count(*) from session where scenario_id=($1);', [idScenario])
+    for step in scenario.steps:
+        playedSteps = await conn.execute_query_dict('select count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where step_id = ($1) and scenario_id = ($2);', [step.id, idScenario])
+        if playedSteps[0]['count'] == 0:
+            list.append({'id': step.id, 'name': step.name, 'performRate': 0})
+        else:
+            list.append({'id': step.id, 'name': step.name,
+                        'performRate': playedSteps[0]['count']/numberOfTimeScenarioPlayed[0]['count']})
+    return {'scenario': scenario.id, 'data': list}
+
+
+@router.get('/scenarios/performTime')
+# nombre de fois ou moyenne où l'utilisateur réalise l'étape par scenario
+async def performTime(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    conn = tortoise.Tortoise.get_connection("default")
+    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    numberOfTimeScenarioPlayed = await conn.execute_query_dict('select count(*) from session where scenario_id=($1);', [idScenario])
+    list = []
+    for step in scenario.steps:
+        playedSteps = await conn.execute_query_dict('select count(step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where step_id = ($1) and scenario_id = ($2);', [step.id, idScenario])
+        list.append({'id': step.id, 'name': step.name,
+                    'performTime': playedSteps[0]['count']/numberOfTimeScenarioPlayed[0]['count']})
+    return {'scenario': scenario.id, 'data': list}
 
 
 async def userToJSON(user):
