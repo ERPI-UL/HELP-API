@@ -15,35 +15,31 @@ const TYPE = {
  * @param {number} minBound minimum bound of the graph
  * @param {number} maxBound maximum bound of the graph
  */
-function addChartToList(list, title, type, labels, data, minBound, maxBound) {
-    if (minBound) data = data.concat(minBound);
-    if (maxBound) data = data.concat(maxBound);
-    // create the label from the title
-    let label = "";
-    let nbParenthesis = 0;
-    for(let i = 0; i < title.length; i++) {
-        const char = title.charAt(i);
-        switch (char) {
-            case '(': nbParenthesis++; break;
-            case ')': nbParenthesis--; break;
-            default: if (nbParenthesis == 0) label += char; break;
-        }
-    }
+function addChartToList(list, title, type, labels, sets) {
 
+    const colors = [
+        ['#4F46E540', '#4F46E5'],
+        ['#0004', '#000']
+    ]
+
+    let acc = 0;
     list.push({
         title: title,
         data: {
             type: type,
             data: {
                 labels: labels,
-                datasets: [{
-                    label: label,
-                    backgroundColor: '#4F46E5',
-                    borderColor: '#4F46E5',
-                    data: data,
-                    tension: 0.5,
-                    fill: false
-                }]
+                datasets: sets.map(set => {
+                    return {
+                        label: set.label,
+                        backgroundColor: colors[acc][0],
+                        borderColor: colors[acc++][1],
+                        data: set.data,
+                        tension: 0.5,
+                        fill: true,
+                        hidden: acc > 1
+                    }
+                })
             }
         }
     });
@@ -53,8 +49,17 @@ function hideLoading() {
     document.getElementById("loadzone").style.display = "none";
 }
 
-function showLoading() {
+function showLoading(...lists) {
+    lists.forEach(l => l.splice(0, l.length));
+    window.indico.refreshStatistics();
     document.getElementById("loadzone").style.display = "block";
+    document.getElementById("nodatazone").style.display = "none";
+}
+
+function stringTime(time) {
+    let nbMinutes = Math.floor(time / 60);
+    let nbSeconds = time % 60;
+    return (nbMinutes > 0 ? `${Math.round(nbMinutes)} minute${nbMinutes >= 2 ? "s" : ""} et ` : ``) + `${Math.round(nbSeconds)} seconde${nbSeconds >= 2 ? "s" : ""}`
 }
 
 function addInfoBoxToList(list, title, info) {
@@ -65,67 +70,195 @@ function addInfoBoxToList(list, title, info) {
 }
 
 function generateStatistics(charts, infoBoxes) {
+    showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
-        hideLoading();
-        resolve();
+        API.execute_logged(API.ROUTE.USERS + API.createPagination(1, 1), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+            addInfoBoxToList(infoBoxes, "Nombre d'utilisateurs", res.total);
+        }).catch(reject).finally(() => {
+            API.execute_logged(API.ROUTE.SCENARIOS + API.createPagination(1, 1), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+                addInfoBoxToList(infoBoxes, "Nombre de scénarios", res.total);
+            }).catch(reject).finally(() => {
+                API.retreiveAll(API.ROUTE.SCENARIOS).then(res => {
+                    let scenarioTimes = [];
+                    let retreiveCounter = 0;
+                    const checkForEnd = () => {
+                        if (++retreiveCounter == res.length) {
+                            let avg = scenarioTimes.reduce((a, b) => a + b) / scenarioTimes.length;
+                            addInfoBoxToList(infoBoxes, "Temps moyen des scénarios", stringTime(avg));
+                            hideLoading();
+                            resolve();
+                        }
+                    }
+                    res.forEach(scenario => {
+                        API.execute_logged(API.ROUTE.STATS.SCENARIOS.AVERAGE_TIME + API.createParameters({ idScenario: scenario.id }), API.METHOD_GET, User.currentUser.getCredentials()).then(res2 => {
+                            if (!res2.data) return;
+                            let labels = [];
+                            let data = [];
+                            let total = 0;
+                            res2.data.forEach(step => {
+                                if (step.avg === undefined || step.name === undefined) return;
+                                total += step.avg;
+                                data.push(step.avg);
+                                labels.push(step.name);
+                            });
+                            scenarioTimes.push(total);
+                            checkForEnd();
+                        });
+                    });
+                });
+            });
+        });
     });
 }
 
 function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
+    showLoading(graphList, InfoBoxList);
     return new Promise((resolve, reject) => {
-        showLoading();
-        API.execute_logged(API.ROUTE.STATS.SCENARIOS.AVERAGE_TIME + API.createParameters({ idScenario: scenarioID }), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
-            if (!res.data) return;
-            let labels = []
-            let data = []
-            let total = 0;
-            res.data.forEach(step => {
-                if (step.avg === undefined || step.name === undefined) return;
-                total += step.avg;
-                data.push(step.avg);
-                labels.push(step.name);
-            });
-            addChartToList(graphList, "Temps moyen par étape (seconde)", TYPE.LINE, labels, data, 0, 30);
-
-            let nbMinutes = Math.floor(total / 60);
-            let nbSeconds = total % 60;
-            addInfoBoxToList(InfoBoxList, "Temps total moyen", (nbMinutes > 0 ? `${nbMinutes} minutes et ` : ``) + `${nbSeconds} secondes`);
+        let scenario = null;
+        API.execute_logged(API.ROUTE.SCENARIOS+scenarioID, API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+            scenario = res;
+            scenario.labels = scenario.steps.map(s => s.name);
         }).catch(reject).finally(() => {
-            API.execute_logged(API.ROUTE.STATS.SCENARIOS.SKIP_RATE + API.createParameters({ idScenario: scenarioID }), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+            API.execute_logged(API.ROUTE.STATS.SCENARIOS.AVERAGE_TIME + API.createParameters({ idScenario: scenarioID }), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
                 if (!res.data) return;
-                let labels = []
-                let data = []
+                let data = [];
                 let total = 0;
                 res.data.forEach(step => {
-                    if (step.skipRate === undefined || step.name === undefined) return;
-                    if (step.skipRate == -1) step.skipRate = 0;
-                    total += step.skipRate * 100;
-                    data.push(Math.round(step.skipRate * 100));
-                    labels.push(step.name);
+                    total += step.avg;
+                    data.push(step.avg);
                 });
-                addChartToList(graphList, "Taux moyen de saut d'étapes (pourcentage)", TYPE.BAR, labels, data, 0, 100);
+                let accumulator = 0;
+                addChartToList(graphList, "Temps moyen par étape (s)", TYPE.LINE, scenario.labels, [
+                    { label: "temps moyen", data: data},
+                    { label: "temps absolu", data: data.map(d => accumulator+=d)}
+                ]);
+                addInfoBoxToList(InfoBoxList, "Temps total moyen", stringTime(total));
+            }).catch(reject).finally(() => {
+                API.execute_logged(API.ROUTE.STATS.SCENARIOS.SKIP_RATE + API.createParameters({ idScenario: scenarioID }), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+                    if (!res.data) return;
+                    let labels = [];
+                    let data = [];
+                    let total = 0;
+                    res.data.forEach(step => {
+                        if (step.skipRate === undefined || step.name === undefined) return;
+                        if (step.skipRate == -1) step.skipRate = 0;
+                        total += step.skipRate * 100;
+                        data.push(Math.round(step.skipRate * 100));
+                        labels.push(step.name);
+                    });
+                    addChartToList(graphList, "Taux moyen de saut d'étapes (%)", TYPE.BAR, labels, [{ label: "Taux relatif", data: data }]);
 
-                let moy = total / res.data.length;
-                addInfoBoxToList(InfoBoxList, "Taux moyen de saut d'étapes", `${Math.round(moy)}%`);
-                resolve();
-            }).catch(reject).finally(() => { hideLoading(); });
+                    let moy = total / res.data.length;
+                    addInfoBoxToList(InfoBoxList, "Taux moyen de saut d'étape", `${Math.round(moy)}%`);
+                }).catch(reject).finally(() => {
+                    API.execute_logged(API.ROUTE.STATS.SCENARIOS.PERFORM_RATE+API.createParameters({idScenario: scenarioID}), API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+                        if (!res.data) return;
+                        let labels = [];
+                        let data = [];
+                        let total = 0;
+                        console.log(res.data.map(s => s.performRate))
+                        res.data.forEach(step => {
+                            total += step.performRate*100;
+                            data.push(step.performRate*100);
+                            labels.push(step.name);
+                        });
+                        console.log(labels);
+                        addChartToList(graphList, "Taux moyen d'exécution (%)", TYPE.BAR, labels, [{ label: "Taux relatif", data: data }]);
+                        addInfoBoxToList(InfoBoxList, "Taux moyen d'exécution", `${Math.round(total / res.data.length)}%`);
+                        hideLoading();
+                        resolve();
+                    });
+                });
+            });
         });
     });
 }
 
 function generateUserStatistics(charts, infoBoxes, selectedUser) {
+    showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
         API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS, progress => { console.log("loading progress: " + progress) }, true, 1, []).then(res => {
-            addInfoBoxToList(infoBoxes, "Nombre de sessions", res.data.length);
+            let scenarios = []
+            res.forEach(session => {
+                if (!(session.idScenario in scenarios))
+                    scenarios.push(session.idScenario);
+            });
+            addInfoBoxToList(infoBoxes, "Nombre de sessions", res.length);
+            addInfoBoxToList(infoBoxes, "Nombre de scénarios", scenarios.length);
             resolve();
         }).catch(reject).finally(() => { hideLoading(); });
     });
 }
 
 function generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser) {
+    showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
-        hideLoading();
-        resolve();
+        let scenario = null;
+        API.execute_logged(API.ROUTE.SCENARIOS + selectedScenario, API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
+            scenario = res;
+        }).finally(() => {
+            API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS + API.createParameters({ id_scenario: selectedScenario })).then(res => {
+                let sessions = [];
+                let retreiveCounter = 0;
+
+                res.forEach(session => {
+                    API.execute_logged(API.ROUTE.STATS.SESSIONS + session.id, API.METHOD_GET, User.currentUser.getCredentials()).then(res2 => {
+                        let labels = [];
+                        let data = [];
+                        sessions.push(res2);
+                        res2.playedSteps.forEach(step => {
+                            if (step.time === undefined || step.step_id === undefined) return;
+                            data.push(step.time);
+                            labels.push({ name: scenario.steps.find(s => s.id === step.step_id).name, order: step.progressNumber });
+                        });
+                        checkForEnd();
+                    }).catch(console.error);
+                })
+                const checkForEnd = () => {
+                    if (++retreiveCounter == res.length) {
+                        let avgStepTime = Array.apply(null, Array(scenario.steps.length)).map(v => { return { nb: 0, val: 0 }; });
+                        let watchTime = Array.apply(null, Array(scenario.steps.length)).map(() => 0);
+
+                        for (let i = 0; i < sessions.length; i++) {
+                            for (let j = 0; j < sessions[i].playedSteps.length; j++) {
+                                const step = sessions[i].playedSteps[j];
+                                let stepIndex = scenario.steps.findIndex(s => s.id == step.step_id);
+                                avgStepTime[stepIndex].nb++;
+                                avgStepTime[stepIndex].val += step.time;
+                                watchTime[stepIndex]++;
+                            }
+                        }
+                        let avgScenarioTime = avgStepTime.map(s => s.val).reduce((a, b) => a + b);
+
+                        for (let j = 0; j < scenario.steps.length; j++) {
+                            if (avgStepTime[j].nb != 0)
+                                avgStepTime[j].val /= avgStepTime[j].nb;
+                            watchTime[j] /= sessions.length;
+                        }
+                        let labels = scenario.steps.map(s => s.name);
+
+                        let accumulator = 0;
+                        addChartToList(charts, "Temps moyen par étape (s)", TYPE.LINE, labels, [
+                            { label: "Temps relatif", data: avgStepTime.map(t => t.val) },
+                            { label: "Temps absolu", data: avgStepTime.map(t => accumulator += t.val) }
+                        ]);
+                        accumulator = 0;
+                        addChartToList(charts, "Taux de réalisation d'une étape (%)", TYPE.LINE, labels, [
+                            { label: "Taux relatif", data: watchTime.map(v => v * 100) },
+                            // { label: "Taux absolu", data: watchTime.map(v => { accumulator += v * 100; return accumulator; }) }
+                        ]);
+                        addInfoBoxToList(infoBoxes, "Temps moyen total", stringTime(avgScenarioTime));
+                        addInfoBoxToList(infoBoxes, "Nombre de sessions", sessions.length);
+                        addInfoBoxToList(infoBoxes, "Taux moyen de saut d'étape", Math.round(avgStepTime.filter(s => s.nb == 0).length / scenario.steps.length * 100) + "%");
+                        hideLoading();
+                        resolve();
+                    }
+                }
+            }).catch(err => {
+                hideLoading();
+                resolve();
+            });
+        });
     });
 }
 
