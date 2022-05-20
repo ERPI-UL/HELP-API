@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
+from mail import Mail
 from routers import admin, users
 from routers import scenarios
 from routers import stats
@@ -89,3 +90,5 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
+
+# Mail().send(["fanta.r55000@gmail.com"], "Indico API", "<b>This is HTML message.</b>")
