@@ -123,6 +123,7 @@ class playedStep(Model):
 
     class Meta:
         table = "playedSteps"
+        ordering = ['progressNumber']
 
 
 class Session(Model):
