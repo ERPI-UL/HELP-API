@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from mail import simple_send
 from routers import admin, users
 from routers import scenarios
@@ -66,6 +67,7 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # redirect root to docs
 @app.get("/")
