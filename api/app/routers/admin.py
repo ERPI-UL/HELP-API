@@ -30,22 +30,3 @@ async def deleteUser(idUser: int, bool: bool = Depends(utils.AdminRequired), cur
                             detail="Vous ne pouvez pas supprimer un administrateur")
     await user.delete()
     return {'message': 'Utilisateur supprimé'}
-
-
-@router.get('/logs')
-async def logs(current_user: Models.User = Depends(utils.AdminRequired)):
-    try:
-        file = open('logs.txt', 'r')
-        log = []
-        while True:
-            line = file.readline()
-            if not line:
-                break
-            if line != '\n':
-                log.append(line)
-        return log
-    except IOError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Le fichier n'existe pas"
-        )
