@@ -1,3 +1,6 @@
+import base64
+from datetime import datetime, timedelta
+import random
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 import utils
@@ -30,3 +33,34 @@ async def change_password(data: Models.PasswordChange):
     user.password_hash = Models.User.encrypt_password(data.new)
     await user.save()
     return {'ok'}
+
+
+@router.post("/reset", tags=["auth"])
+async def reset_password(data: Models.PasswordReset):
+    reset = await Models.Reset.get_or_none(token=data.token).prefetch_related('user').first()
+    if not reset:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token invalide"
+        )
+    if datetime.now().astimezone() > reset.expiration:
+        await reset.delete()  # on supprime le lien expiré
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Lien expiré"
+        )
+    reset.user.password_hash = Models.User.encrypt_password(data.password)
+    await reset.user.save()
+    await reset.delete()
+    return {'ok'}
+
+
+@router.get("/reset/{username}", tags=["auth"])
+async def reset_password_get(username: str):
+    token = base64.b16encode(random.getrandbits(
+        256).to_bytes(32, byteorder='little')).decode('utf-8')
+    user = await Models.User.get(username=username).first()
+    dateExpiration = datetime.now() + timedelta(hours=1)
+    reset = Models.Reset(user=user, token=token, expiration=dateExpiration)
+    await reset.save()
+    return {'message': 'Un email vous a été envoyé pour réinitialiser votre mot de passe'}

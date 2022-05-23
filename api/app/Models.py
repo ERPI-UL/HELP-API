@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from tortoise import OneToOneFieldInstance, Tortoise, fields, run_async
 from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
@@ -162,6 +163,14 @@ class IncidentLogs(Model):
     class Meta:
         table = "logs"
 
+class Reset(Model):
+    id = fields.IntField(pk=True)
+    user = fields.ForeignKeyField('models.User', related_name='reset')
+    token = fields.CharField(128)
+    expiration = fields.DatetimeField(default=datetime.now() + timedelta(days=1))
+
+    class Meta:
+        table = "reset"
 
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(
@@ -280,7 +289,9 @@ class PasswordChange(BaseModel):
     old: str
     new: str
 
-
+class PasswordReset(BaseModel):
+    token:str
+    password:str
     # playedSteps:list[playedStepIn]
 SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)
