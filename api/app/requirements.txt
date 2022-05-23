@@ -21,3 +21,4 @@ uvicorn
 anyio
 requests
 python-dotenv
+fastapi-mail
