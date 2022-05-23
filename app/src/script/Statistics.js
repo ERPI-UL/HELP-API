@@ -51,12 +51,14 @@ function addChartToList(list, title, type, labels, sets) {
 
 function hideLoading() {
     document.getElementById("loadzone").style.display = "none";
+    document.getElementById("errorzone").style.display = "none";
 }
 
 function showLoading(...lists) {
     lists.forEach(l => l.splice(0, l.length));
     window.indico.refreshStatistics();
     document.getElementById("loadzone").style.display = "block";
+    document.getElementById("errorzone").style.display = "none";
     document.getElementById("nodatazone").style.display = "none";
 }
 

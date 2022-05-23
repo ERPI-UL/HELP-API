@@ -18,9 +18,9 @@ import './index.css'
 import "flowbite"
 
 // https redirection (should be done in NGINX, but it not we do it here)
-if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-    window.location.protocol = 'https:';
-}
+// if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+//     window.location.protocol = 'https:';
+// }
 
 const router = createRouter({
     mode: "history",

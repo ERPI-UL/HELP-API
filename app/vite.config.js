@@ -9,6 +9,10 @@ export default defineConfig({
     port: 80,
     watch: {
       // usePolling: true
+    },
+    https: {
+      key: fs.readFileSync('./credentials/key.pem'),
+      cert: fs.readFileSync('./credentials/cert.pem')
     }
   }
 })
