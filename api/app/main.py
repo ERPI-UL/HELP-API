@@ -1,9 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from mail import simple_send
+from mail import simple_send, testJinja
 from routers import admin, users
 from routers import scenarios
 from routers import stats
@@ -81,6 +81,9 @@ async def ping():
     await simple_send("fanta.r55000@gmail.com")
     return {'ping': 'pong'}
 
+@app.get('/test')
+async def test(request:Request):
+    return await testJinja(request=request)
 
 @app.get('/init')
 async def init():
