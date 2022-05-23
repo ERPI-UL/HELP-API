@@ -22,4 +22,4 @@ anyio
 requests
 python-dotenv
 fastapi-mail
-jinja2
+jinja2==2.11.3
