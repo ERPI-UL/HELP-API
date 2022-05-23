@@ -29,7 +29,6 @@ async def simple_send(email: str):
     message = MessageSchema(
         subject="Fastapi-Mail module",
         recipients=[email],  # List of recipients, as many as you can pass 
-        body=html,
         template_body={"URL": "https://lfl2l.fr"},
         )
     fm = FastMail(conf)

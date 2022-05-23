@@ -67,8 +67,6 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # redirect root to docs
 @app.get("/")
 async def root():
@@ -96,5 +94,3 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
-
-# Mail().send(["fanta.r55000@gmail.com"], "Indico API", "<b>This is HTML message.</b>")
