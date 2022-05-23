@@ -23,13 +23,13 @@ html = """
 <p>Hi this test mail, thanks for using Fastapi-mail</p> 
 """
 async def testJinja(request:Request):
-    return templates.TemplateResponse('reset.html',{"request":request,"PRENOM":"Jean","NOM":"VALJEAN","URL": "https://lf2l.fr"})
+    return templates.TemplateResponse('reset.html',{"request":request,"PRENOM":"Jean","NOM":"VALJEAN","URL": "https://indico.lf2l.fr/reset?token=123456789"})
 
 async def simple_send(email: str):
     message = MessageSchema(
         subject="Fastapi-Mail module",
         recipients=[email],  # List of recipients, as many as you can pass 
-        template_body={"URL": "https://lfl2l.fr"},
+        template_body={"URL": "https://indico.lf2l.fr/reset?token=123456789"},
         )
     fm = FastMail(conf)
     await fm.send_message(message,template_name="reset.html")
