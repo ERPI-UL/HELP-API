@@ -1,3 +1,4 @@
+import { data } from "autoprefixer";
 import API from "../script/API";
 import User from "../script/User";
 
@@ -16,11 +17,14 @@ const TYPE = {
  * @param {number} maxBound maximum bound of the graph
  */
 function addChartToList(list, title, type, labels, sets) {
-
     const colors = [
         ['#4F46E540', '#4F46E5'],
         ['#0004', '#000']
-    ]
+    ];
+    if (title.includes("%"))
+        sets.forEach(set => {
+            set.data.push(0, 100);
+        });
 
     let acc = 0;
     list.push({
@@ -156,15 +160,13 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
                         let labels = [];
                         let data = [];
                         let total = 0;
-                        console.log(res.data.map(s => s.performRate))
                         res.data.forEach(step => {
                             total += step.performRate*100;
                             data.push(step.performRate*100);
                             labels.push(step.name);
                         });
-                        console.log(labels);
                         addChartToList(graphList, "Taux moyen d'exécution (%)", TYPE.BAR, labels, [{ label: "Taux relatif", data: data }]);
-                        addInfoBoxToList(InfoBoxList, "Taux moyen d'exécution", `${Math.round(total / res.data.length)}%`);
+                        addInfoBoxToList(InfoBoxList, "Taux moyen d'exécution des étapes", `${Math.round(total / res.data.length)}%`);
                         hideLoading();
                         resolve();
                     });

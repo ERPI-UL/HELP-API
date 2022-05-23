@@ -25,13 +25,13 @@
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit flex md:flex-row flex-col grow">
                     <div class="flex md:justify-left justify-between md:mr-6" v-if="user.canTeacher()">
                         <h2 class="m-1 p-1">Utilisateurs: </h2>
-                        <select name="username" id="user-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                        <select id="user-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
                             <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>
                     <div class="flex md:justify-left justify-between md:mr-6">
                         <h2 class="m-1 p-1">Scénarios: </h2>
-                        <select name="username" id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                        <select id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
                             <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>
@@ -42,15 +42,19 @@
                 </div>
                 <div class="m-2 ml-4 flex flex-col flex-wrap justify-evenly grow"> <!-- Statistiques -->
                     <div class="mt-10 overflow-hidden" id="loadzone" style="display: none;">
-                        <p class="text-center text-4xl text-gray-500">Chargement ...</p>
-                        <p class="text-center text-2xl text-gray-400">Chargement des données</p>
+                        <p class="text-center md:text-4xl text-2xl text-gray-500">Chargement ...</p>
+                        <p class="text-center md:text-2xl text-xl text-gray-400">Chargement des données</p>
                     </div>
                     <div class="mt-10 overflow-hidden" id="nodatazone" style="display: none;">
-                        <p class="text-center text-4xl text-gray-500">Aucune donnée :/</p>
-                        <p class="text-center text-2xl text-gray-400">Aucune donnée disponible pour les filtres sélectionnés</p>
+                        <p class="text-center md:text-4xl text-2xl text-gray-500">Aucune donnée :/</p>
+                        <p class="text-center md:text-2xl text-xl text-gray-400">Aucune donnée disponible pour les filtres sélectionnés</p>
                     </div>
-                    <div class="flex flex-col grow">
-                        <div class="flex flex-wrap grow-0 justify-evenly">
+                    <div class="mt-10 overflow-hidden" id="errorzone" style="display: none;">
+                        <p class="text-center md:text-4xl text-2xl text-gray-500">Houston, on a un problème !</p>
+                        <p class="text-center md:text-2xl text-xl text-gray-400">Impossible de récupérer les statistiques</p>
+                    </div>
+                    <div class="flex flex-col grow max-w-full">
+                        <div class="flex flex-wrap grow-0 justify-evenly max-h-full">
                             <InfoBox v-for="box in infoBoxes" :boxTitle="box.title" :boxInfos="box.infos"></InfoBox>
                         </div>
                         <div class="flex flex-wrap grow justify-evenly">
@@ -152,8 +156,7 @@ function setup() {
         }
     });
 
-    window.indico.refreshStatistics();
-    Statistics.generateStatistics(charts, infoBoxes).then(window.indico.refreshStatistics);
+    search();
 }
 
 function addUserSelection(content) {
@@ -207,10 +210,19 @@ function search() {
             promise = Statistics.generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser);
     }
 
+    let hasResults = false;
     if (promise != null)
         promise.then(() => {
+            hasResults = true;
             window.indico.refreshStatistics();
         }).catch(err => {});
+
+        setTimeout(() => {
+            if (hasResults) return;
+            document.getElementById("loadzone").style.display = "none";
+            document.getElementById("nodatazone").style.display = "none";
+            document.getElementById("errorzone").style.display = "block";
+        }, 3000);
 }
 
 if (!window.indico) window.indico = {};
@@ -255,7 +267,7 @@ export default {
 </script>
 
 <style>
-#loadzone, #nodatazone {
+#loadzone, #nodatazone, #errorzone {
     animation: spawn-in 100ms ease;
 }
 </style>

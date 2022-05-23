@@ -23,7 +23,7 @@ class User {
         }
         try {
             const tokenInfos = JSON.parse(atob(token.token.split(".")[1]));
-            return new User(tokenInfos.username??"", "", "", "", "", {type: token.type, token: token.token}, tokenInfos.adminLevel??User.PERMISSIONS.VISITOR);
+            return new User(tokenInfos.username??"", "", "", "", "", {type: token.type, token: token.token}, tokenInfos.adminLevel??User.PERMISSIONS.VISITOR, tokenInfos.id??0);
         } catch(e) {
             console.error("Error getting user from token"+e);
             return new User();
@@ -52,7 +52,7 @@ class User {
     static fromJSON(json) {
         if (json == null) return new User();
         if (typeof json === 'string') json = JSON.parse(json);
-        return new User(json.username, json.password, json.email, json.firstname, json.lastname, json.token, json.permissions);
+        return new User(json.username, json.password, json.email, json.firstname, json.lastname, json.token, json.permissions, json.id);
     }
 
     static toJSON(user) {

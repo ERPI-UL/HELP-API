@@ -12,6 +12,7 @@ import Admin from "./views/Admin.vue";
 import Profile from "./views/Profile.vue";
 import CreateScenario from "./views/CreateScenario.vue";
 import CreateMachine from "./views/CreateMachine.vue";
+import Reset from "./views/Reset.vue";
 
 import './index.css'
 import "flowbite"
@@ -37,7 +38,8 @@ const router = createRouter({
         { path: '/scenarios/create', name: 'CreateScenario', component: CreateScenario },
         { path: '/scenarios/edit', name: 'EditScenario', component: CreateScenario },
         { path: '/machines/create', name: 'CreateMachine', component: CreateMachine },
-        { path: '/machines/edit', name: 'EditMachine', component: CreateMachine }
+        { path: '/machines/edit', name: 'EditMachine', component: CreateMachine },
+        { path: '/reset', name: 'Reset', component: Reset }
     ]
 });
 

@@ -11,9 +11,28 @@
         transform: translateY(0);
     }
 }
+@keyframes slide-out {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }   100% {
+        opacity: 0;
+        transform: translateY(10%);
+    }
+}
 
 .slide-in {
-    animation: slide-in 600ms ease;
+    animation: slide-in 600ms ease forwards;
+}
+.slide-in-quick {
+    animation: slide-in 200ms ease forwards;
+}
+
+.slide-out {
+    animation: slide-out 600ms ease forwards;
+}
+.slide-out-quick {
+    animation: slide-out 200ms ease forwards;
 }
 
 input.size-to-parent {

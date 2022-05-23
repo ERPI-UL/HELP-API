@@ -4,14 +4,14 @@
             <Topbar></Topbar>
         </div>
         <div class="flex grow m-2">
-            <div class="flex m-auto 300 p-4 rounded-lg shadow-lg bg-white">
-                <div>
-                    <img class="max-h-[30vh] w-auto" src="../assets/images/icons/icon_full.png" alt="" />
+            <div class="flex md:flex-row flex-col m-auto 300 p-4 rounded-lg shadow-lg bg-white">
+                <div class="mx-auto">
+                    <img class="max-h-[50vw] md:max-h-[30vh] w-auto" src="../assets/images/icons/icon_full.png" alt="" />
                 </div>
-                <div class="w-[30vw] p-4">
+                <div class="w-full md:w-[30vw] md:p-4 p-2">
                     <h1 class="text-gray-600 text-2xl font-bold text-center">Indico - Interface Web</h1>
                     <br>
-                    <p class="text-gray-500 text-lg text-center">Bienvenue sur l'interface web de l'application <span class="text-indigo-600">Indico</span> !</p>
+                    <p class="text-gray-500 text-lg text-center">Bienvenue sur l'interface web de l'application <span class="font-bold">Indico</span> !</p>
                     <p class="text-gray-500 text-lg text-center">
                         Pour accéder à toutes les fonctionnalités,
                         <a class="text-indigo-600 hover:underline cursor-pointer" href="/login">connectez-vous</a>

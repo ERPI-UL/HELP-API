@@ -11,13 +11,16 @@ class API {
 
     static ROUTE = {
         LOGIN: "/auth/token",
+        RESET: "/auth/reset",
         PASSWORD: "/auth/password",
         USER: "/users/me",
         USERS: "/users/",
         SCENARIOS: "/scenarios/",
         EASY_CONNECT: "/easy/connect",
         MACHINES: "/scenarios/machines/",
+        CHANGE_ADMIN_LEVEL: "/admin/changeAdminLevel",
         __TARGETS: "/targets",
+        __SCENARIOS: "/scenarios",
         STATS: {
             SCENARIOS: {
                 AVERAGE_TIME: "/stats/scenarios/averageTime",
@@ -157,11 +160,11 @@ class API {
         });
     }
 
-    static iterate(path, page = 1, per_page = 10) {
+    static iterate(path, page = 1, per_page = 10, logged = false) {
         let max_page = 1;
         return {
             promise: new Promise((resolve, reject) => {
-                API.execute(path + API.createPagination(page, per_page), API.METHOD_GET, undefined, API.TYPE_JSON)
+                API[logged?"execute_logged": "execute"](path + API.createPagination(page, per_page), API.METHOD_GET, logged ? User.currentUser.getCredentials(): undefined)
                     .then(res => {
                         max_page = res.last_page;
                         resolve(res);

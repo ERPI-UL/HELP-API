@@ -4,22 +4,22 @@
             <Topbar></Topbar>
         </div>
         <div id="content" class="flex grow min-h-0">
-            <div class="flex m-auto grow-0 w-fit m-2 mx-auto">
-                <div class="flex grow flex-col my-auto min-h-0 max-h-full"> <!-- left panel (basic informations) -->
+            <div class="flex m-auto grow-0 w-fit m-2 mx-auto max-w-full">
+                <div class="flex grow flex-col my-auto min-h-0 max-h-inherit md:max-h-full"> <!-- left panel (basic informations) -->
                     <div id="scenario-header" class="flex flex-col grow max-h-full min-h-0">
                         <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ action }} une machine</h2>
-                        <div class="flex min-h-0 max-h-full">
-                            <div class="flex flex-col m-2 h-full bg-white rounded-lg p-2">
-                                <div class="flex justify-between">
+                        <div class="flex md:flex-row flex-col p-2 min-h-0">
+                            <div class="flex flex-col h-full bg-white rounded-lg p-2 max-w-full">
+                                <div class="flex md:flex-row flex-col justify-between">
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Nom de la machine : </p>
                                     <input type="text" id="input-machinename" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                 </div>
                                 <div class="flex flex-col grow-0">
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Description de la machine : </p>
-                                    <textarea id="input-machinedesc" rows="10" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
+                                    <textarea id="input-machinedesc" rows="5" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                                 </div>
                             </div>
-                            <div class="flex grow flex-col m-2 bg-white rounded-lg p-2 min-h-0">
+                            <div class="flex grow flex-col md:mt-0 mt-2 md:ml-2 ml-0 bg-white rounded-lg p-2 min-h-0 max-h-screen">
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4">Cibles de la machine : </p>
                                 <div class="flex grow flex-col min-h-0">
                                     <div class="flex flex-col grow space-y-2 p-2 h-fit min-h-0 overflow-y-scroll overflow-x-hidden border border-gray-200 rounded">
@@ -47,7 +47,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col bg-white rounded-lg p-2">
+                        <div class="flex flex-col bg-white rounded-lg p-2 m-2">
                             <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
                                 <p class="opacity-0 text-center text-indigo-600"></p>
                             </div>

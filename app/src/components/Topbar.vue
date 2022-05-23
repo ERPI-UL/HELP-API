@@ -4,9 +4,12 @@
             <div
                 class="flex justify-between items-center py-3 md:justify-start md:space-x-10">
                 <div class="flex justify-start lg:w-0 lg:flex-1">
-                    <a href="/">
+                    <a href="/" class="expand-parent flex">
                         <span class="sr-only">Workflow</span>
-                        <img class="h-8 w-auto sm:h-11" src="../assets/images/icons/icon_full.png" alt="" />
+                        <img class="h-8 w-auto sm:h-11 bg-indigo-600 border border-2 border-indigo-600 rounded-lg shadow-lg" src="../assets/images/icons/logo_white_indigo.png" alt="" />
+                        <div class="expand-child overflow-hidden border border-2 px-1 border-indigo-600 my-auto bg-indigo-600 rounded-r-md shadow-lg">
+                            <p class="text-white font-semibold">Accueil</p>
+                        </div>
                     </a>
                 </div>
                 <div class="-mr-2 -my-2 md:hidden">
@@ -19,8 +22,8 @@
 
                 <PopoverGroup as="nav" class="hidden md:flex space-x-10">
                     <div v-for="opts in menu">
-                        <div v-if="opts.href">
-                            <a href="#"> {{ opts.name }} </a>
+                        <div v-if="opts.href" class="text-gray-500">
+                            <a :href="opts.href"> {{ opts.name }} </a>
                         </div>
                         <div v-if="opts.elements">
                             <Popover class="relative" v-slot="{ open }">
@@ -109,9 +112,9 @@
                     <div class="pt-5 pb-6 px-5">
                         <div class="flex items-center justify-between">
                             <div v-if="!User.isConnected(User.currentUser)">
-                                <img class="h-8 w-auto" src="../assets/images/icons/icon_full.png" alt="Workflow" />
+                                <h3 class="text-indigo-600 font-semibold text-lg mt-1 ml-2 px-1 bg-indigo-50 rounded shadow border border-2 border-indigo-600"> Indico </h3>
                             </div>
-                            <div v-if="User.isConnected(User.currentUser)" class="border border-2 p-1 rounded-lg shadow-lg bg-indigo-50 cursor-pointer border-indigo-600">
+                            <div v-if="User.isConnected(User.currentUser)" class="mt-1 ml-2 px-1 rounded shadow-lg bg-indigo-50 cursor-pointer border border-2 border-indigo-600">
                                 <a href="/profile" class="flex">
                                     <component :is="icon.user" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                     <h3 class="text-indigo-600 mx-1">{{User.currentUser.username}}</h3>
@@ -194,6 +197,10 @@
 
     let menu = [
         {
+            name: "Accueil",
+            href: "/",
+        },
+        {
             name: "Scénarios",
             elements: [
                 {
@@ -260,13 +267,13 @@
         },
         setup() {
             if (User.currentUser.canLearner()) {
-                menu[0].elements.push({
+                menu[menu.findIndex(el=>el.name=="Scénarios")].elements.push({
                     name: 'En cours',
                     description: 'Voir vos scénarios en cours',
                     href: '/scenarios#pending',
                     icon: RefreshIcon
                 });
-                menu[0].elements.push({
+                menu[menu.findIndex(el=>el.name=="Scénarios")].elements.push({
                     name: 'Complétés',
                     description: 'Voir vos scénarios complétés',
                     href: '/scenarios#completed',
@@ -274,13 +281,13 @@
                 });
             }
             if (User.currentUser.canTeacher()) {
-                menu[0].elements.push({
+                menu[menu.findIndex(el=>el.name=="Scénarios")].elements.push({
                     name: 'Modifier',
                     description: 'Créer ou modifier un scénario',
                     href: '/scenarios#editing',
                     icon: PencilAltIcon
                 });
-                menu[1].elements.push({
+                menu[menu.findIndex(el=>el.name=="Machines")].elements.push({
                     name: 'Modifier',
                     description: 'Créer ou modifier une machine',
                     href: '/machines#editing',
@@ -288,7 +295,7 @@
                 });
             }
             if (User.currentUser.canAdmin()) {
-                menu[3].elements.push({
+                menu[menu.findIndex(el=>el.name=="Autre")].elements.push({
                     name: 'Panneau administrateur',
                     description: 'Accéder au panneau d\'administration',
                     href: '/admin',
@@ -296,7 +303,7 @@
                 });
             }
             if (User.currentUser.isVisitor()) {
-                menu.splice(2, 1);
+                menu.splice(menu.findIndex(el=>el.name=="Statistiques"), 1);
             }
 
             return {menu, icon: {user: UserIcon}, User};
@@ -309,3 +316,18 @@
         }
     }
 </script>
+
+<style>
+.expand-parent > .expand-child {
+    display: flex;
+    max-width: 0px;
+    border-left: none;
+    width: fit-content;
+    opacity: 0;
+    transition: 200ms ease;
+}
+.expand-parent:hover > .expand-child {
+    opacity: 1;
+    max-width: 130px;
+}
+</style>

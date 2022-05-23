@@ -1,11 +1,11 @@
 <template>
-    <div class="min-h-screen flex flex-col">
-        <div class="p-2">
+    <div class="min-h-screen flex flex-col px-2">
+        <div class="py-2">
             <Topbar></Topbar>
         </div>
-        <div class="flex flex-col grow bg-white my-8 rounded-lg shadow-lg w-fit px-4 mx-auto divide-y">
+        <div class="flex flex-col grow bg-white my-8 rounded-lg shadow-lg w-fit px-4 mx-auto divide-y max-w-full">
             <div class="flex justify-between">
-                <h3 class="font-bold text-2xl text-gray-500 m-4 text-left">Mon profile</h3>
+                <h3 class="font-bold md:text-2xl text-xl text-gray-500 m-4 text-left">Mon profile</h3>
             </div>
             <div class="flex flex-col grow">
                 <div class="flex flex-col h-full">
@@ -15,20 +15,20 @@
                             <h2 class="text-indigo-600 font-bold text-2xl my-2 mx-8">{{User.currentUser.username}}</h2>
                         </div>
                     </div>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Nom d'utilisateur: </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nom d'utilisateur: </p>
                         <input disabled="disabled" type="text" id="input-username" name="username" :value="User.currentUser.username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md shadow-sm text-base font-medium text-gray-500 bg-gray-50">
                     </div>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Prénom: </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Prénom: </p>
                         <input type="text" id="input-firstname" name="given-name" :value="User.currentUser.firstname" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Nom: </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nom: </p>
                         <input type="text" id="input-lastname" name="family-name" :value="User.currentUser.lastname" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Email: </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Email: </p>
                         <input type="text" id="input-email" :value="User.currentUser.email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                 </div>
@@ -43,16 +43,16 @@
             <div>
                 <div class="flex flex-col grow h-full">
                     <p class="text-gray-600 font-base text-base p-2 mr-8">Modifier le mot de passe:</p>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Ancien Mot de passe : </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Ancien Mot de passe : </p>
                         <input type="password" id="input-oldpassword" name="old-password" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Nouveau Mot de passe : </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nouveau Mot de passe : </p>
                         <input type="password" id="input-newpassword" name="new-password" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
-                    <div class="flex justify-between m-2">
-                        <p class="text-gray-500 font-base text-lg p-2 mr-8">Confirmez le mot de passe: </p>
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Confirmez le mot de passe: </p>
                         <input type="password" id="input-confirm" name="password-confirm" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                 </div>

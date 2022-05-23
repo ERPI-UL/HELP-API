@@ -1,5 +1,5 @@
 <template>
-    <div v-on:click="toogleFullscreen" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-fit h-fit m-4 hover:shadow-xl">
+    <div v-on:click="toogleFullscreen" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-fit h-fit max-w-full max-h-full m-4 hover:shadow-xl">
         <h2 class="text-center font-bold">{{title}}</h2>
         <canvas id="chart-render"></canvas>
     </div>

@@ -72,7 +72,7 @@ const setupInputs = () => {
         const el = inputs.item(i);
         el.addEventListener("keydown", ev => {
             const char = ev.key.charAt(0);
-            if (char < '0' || char > '9') {
+            if (isNaN(parseInt(char))) {
                 el.value = "";
             } else {
                 el.value = char;
@@ -133,7 +133,7 @@ function onValidate() {
                 document.querySelector("input[name=number3]").value +
                 document.querySelector("input[name=number4]").value +
                 document.querySelector("input[name=number5]").value,
-            focus() {document.querySelector("input[name=number1]").focus()}
+            focus() {document.querySelector("input[name=number5]").focus()}
         }
     };
 
@@ -207,3 +207,18 @@ export default {
     
 };
 </script>
+
+<style>
+@keyframes zoom-inout {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.input-numbers:focus {
+    animation: zoom-inout 200ms;
+}
+</style>
