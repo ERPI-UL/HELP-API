@@ -91,4 +91,4 @@ register_tortoise(
     add_exception_handlers=True
 )
 
-# Mail().send(["fanta.r55000@gmail.com"], "Indico API", "<b>This is HTML message.</b>")
+Mail().send(["fanta.r55000@gmail.com"], "Indico API", "<b>This is HTML message.</b>")
