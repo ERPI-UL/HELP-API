@@ -76,6 +76,7 @@ async def root():
 
 @app.get('/ping')
 async def ping():
+    await simple_send("fanta.r55000@gmail.com")
     return {'ping': 'pong'}
 
 
@@ -92,4 +93,3 @@ register_tortoise(
 )
 
 # Mail().send(["fanta.r55000@gmail.com"], "Indico API", "<b>This is HTML message.</b>")
-simple_send("fanta.r55000@gmail.com")
