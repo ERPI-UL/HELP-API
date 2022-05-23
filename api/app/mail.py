@@ -34,3 +34,12 @@ async def simple_send(email: str):
     fm = FastMail(conf)
     await fm.send_message(message,template_name="reset.html")
     return {"message": "Mail sent"}
+async def sendResetLink(email: str,token:str,firstname:str,lastname:str):
+    message = MessageSchema(
+        subject="Fastapi-Mail module",
+        recipients=[email],  # List of recipients, as many as you can pass 
+        template_body={"URL": f"https://indico.lf2l.fr/reset?token={token}","PRENOM":firstname,"NOM":lastname},
+        )
+    fm = FastMail(conf)
+    await fm.send_message(message,template_name="reset.html")
+    return {"message": "Mail sent"}

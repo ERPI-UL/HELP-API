@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 import utils
 import Models
 import jwt
+import mail
 router = APIRouter()
 
 
@@ -59,8 +60,9 @@ async def reset_password(data: Models.PasswordReset):
 async def reset_password_get(username: str):
     token = base64.b16encode(random.getrandbits(
         256).to_bytes(32, byteorder='little')).decode('utf-8')
-    user = await Models.User.get(username=username).first()
+    user:Models.User = await Models.User.get(username=username).first()
     dateExpiration = datetime.now() + timedelta(hours=1)
     reset = Models.Reset(user=user, token=token, expiration=dateExpiration)
     await reset.save()
+    await mail.sendResetLink(user.email,token,user.firstname,user.lastname)
     return {'message': 'Un email vous a été envoyé pour réinitialiser votre mot de passe'}
