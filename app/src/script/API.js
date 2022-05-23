@@ -22,9 +22,12 @@ class API {
             SCENARIOS: {
                 AVERAGE_TIME: "/stats/scenarios/averageTime",
                 SKIP_RATE: "/stats/scenarios/skipRate",
+                PERFORM_RATE: "/stats/scenarios/performRate",
+                PERFORM_TIME: "/stats/scenarios/performTime"
             },
             USERS: "/stats/users/",
-            __SESSIONS: "/sessions/"
+            __SESSIONS: "/sessions/",
+            SESSIONS: "/stats/sessions/"
         }
     };
 
@@ -35,6 +38,8 @@ class API {
                 this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
 
             path = path.replace("/?", "?");
+            let urlparts = path.split("?");
+            path = urlparts.splice(0, 1) + "?" + urlparts.join("&");
 
             let reqHeaders = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
@@ -129,7 +134,7 @@ class API {
         });
     }
 
-    static retreiveAll(route, progressCallback, logged = true, pageIndex = 1, data = []) {
+    static retreiveAll(route, progressCallback = p=>{}, logged = false, pageIndex = 1, data = []) {
         return new Promise((resolve, reject) => {
             if (logged) {
                 API.execute_logged(route + API.createParameters({ page: pageIndex }), API.METHOD_GET, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
@@ -144,7 +149,6 @@ class API {
             else API.execute(route + API.createParameters({ page: pageIndex }), API.METHOD_GET, undefined, API.TYPE_JSON).then(res => {
                 if (!res.data) reject("No data found");
                 progressCallback(pageIndex / res.last_page);
-                let data = data.concat(res.data);
                 let dataRetreived = res.current_page >= res.last_page;
                 if (!dataRetreived)
                     retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);

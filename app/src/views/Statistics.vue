@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div class="m-4 grow">
-                <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit md:flex block">
+                <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit flex md:flex-row flex-col grow">
                     <div class="flex md:justify-left justify-between md:mr-6" v-if="user.canTeacher()">
                         <h2 class="m-1 p-1">Utilisateurs: </h2>
                         <select name="username" id="user-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
@@ -35,14 +35,19 @@
                             <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>
-                    <div class="flex">
+                    <div class="flex grow justify-between">
+                        <span></span>
                         <ValidateButton v-on:click="search">Chercher</ValidateButton>
                     </div>
                 </div>
-                <div class="m-2 ml-4 flex flex-wrap justify-evenly grow"> <!-- Statistiques -->
-                    <div class="center mt-10 overflow-hidden" id="loadzone" style="display: none;">
+                <div class="m-2 ml-4 flex flex-col flex-wrap justify-evenly grow"> <!-- Statistiques -->
+                    <div class="mt-10 overflow-hidden" id="loadzone" style="display: none;">
                         <p class="text-center text-4xl text-gray-500">Chargement ...</p>
                         <p class="text-center text-2xl text-gray-400">Chargement des données</p>
+                    </div>
+                    <div class="mt-10 overflow-hidden" id="nodatazone" style="display: none;">
+                        <p class="text-center text-4xl text-gray-500">Aucune donnée :/</p>
+                        <p class="text-center text-2xl text-gray-400">Aucune donnée disponible pour les filtres sélectionnés</p>
                     </div>
                     <div class="flex flex-col grow">
                         <div class="flex flex-wrap grow-0 justify-evenly">
@@ -102,7 +107,7 @@ function updateUserSelect(selectValue) {
     userSelect.value = (val == "" || val == "<loading>" || val == "<select>") ? '<all>': val;
     setTimeout(() => {
         if (selectValue != undefined)
-            scenarioSelect.value = selectValue;
+            userSelect.value = selectValue;
     }, 10);
 }
 
@@ -146,6 +151,9 @@ function setup() {
             displayScenarioPagination();
         }
     });
+
+    window.indico.refreshStatistics();
+    Statistics.generateStatistics(charts, infoBoxes).then(window.indico.refreshStatistics);
 }
 
 function addUserSelection(content) {
@@ -201,11 +209,17 @@ function search() {
 
     if (promise != null)
         promise.then(() => {
-            if (dom != null) dom.$forceUpdate();
-        }).catch(err => {
-            console.error(err);
-        });
+            window.indico.refreshStatistics();
+        }).catch(err => {});
 }
+
+if (!window.indico) window.indico = {};
+window.indico.refreshStatistics = () => {
+    if (dom != null) dom.$forceUpdate();
+    if (charts.length == 0 && infoBoxes.length == 0)
+        document.getElementById("nodatazone").style.display = "block";
+    else document.getElementById("nodatazone").style.display = "none";
+};
 
 let displayUserPagination;
 let displayScenarioPagination;
@@ -239,3 +253,9 @@ export default {
     methods: {search, addUserSelection, addScenarioSelection}
 };
 </script>
+
+<style>
+#loadzone, #nodatazone {
+    animation: spawn-in 100ms ease;
+}
+</style>

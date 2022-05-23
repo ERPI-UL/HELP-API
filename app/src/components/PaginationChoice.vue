@@ -84,10 +84,16 @@ export default {
         ValidateButton
     },
     mounted: function() {
+        window.addEventListener("keydown", ev => {
+            if (!this.obj.showing) return;
+            if (ev.key == "Enter") this.validate();
+        });
         updatePagination(this);
     },
     methods: {
-        show() {this.obj.showing = true;},
+        show() {
+            this.obj.showing = true;
+        },
         hide() {
             this.obj.showing = false;
             const obj = document.querySelector(this.selectID);
