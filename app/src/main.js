@@ -13,14 +13,15 @@ import Profile from "./views/Profile.vue";
 import CreateScenario from "./views/CreateScenario.vue";
 import CreateMachine from "./views/CreateMachine.vue";
 import Reset from "./views/Reset.vue";
+import ForgotPassword from "./views/ForgotPassword.vue";
 
 import './index.css'
 import "flowbite"
 
 // https redirection (should be done in NGINX, but it not we do it here)
-if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-    window.location.protocol = 'https:';
-}
+// if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+//     window.location.protocol = 'https:';
+// }
 
 const router = createRouter({
     mode: "history",
@@ -39,7 +40,8 @@ const router = createRouter({
         { path: '/scenarios/edit', name: 'EditScenario', component: CreateScenario },
         { path: '/machines/create', name: 'CreateMachine', component: CreateMachine },
         { path: '/machines/edit', name: 'EditMachine', component: CreateMachine },
-        { path: '/reset', name: 'Reset', component: Reset }
+        { path: '/reset', name: 'Reset', component: Reset },
+        { path: '/forgotPassword', name: 'ForgotPassword', component: ForgotPassword }
     ]
 });
 

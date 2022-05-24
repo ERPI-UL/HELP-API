@@ -23,7 +23,7 @@
             </div>
             <div class="m-4 grow">
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit flex md:flex-row flex-col grow">
-                    <div class="flex md:justify-left justify-between md:mr-6" v-if="user.canTeacher()">
+                    <div class="flex md:justify-left justify-between md:mr-6" v-show="user.canTeacher()">
                         <h2 class="m-1 p-1">Utilisateurs: </h2>
                         <select id="user-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
                             <option value="<loading>">Chargement ...</option>
@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-        <PaginationChoice
+        <PaginationChoice v-if="User.currentUser.canTeacher()"
             ref="userPagination" :title="'Sélection utilisateurs'"
             :selectID="'#user-select'" :callback="addUserSelection" :route="API.ROUTE.USERS"
             :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsers.map(el => el.id)">
@@ -141,12 +141,14 @@ function setup() {
     let scenarioSelect = document.getElementById("scenario-select");
 
     // fill the user select with all the available users and attach listener
-    updateUserSelect();
-    userSelect.addEventListener("change", ev => {
-        if (ev.target.value == "<select>") {
-            displayUserPagination();
-        }
-    });
+    if (User.currentUser.canTeacher()) {
+        updateUserSelect();
+        userSelect.addEventListener("change", ev => {
+            if (ev.target.value == "<select>") {
+                displayUserPagination();
+            }
+        });
+    }
 
     // fill the scenario select with all the available scenarios for the current user
     updateScenarioSelect();
@@ -187,7 +189,8 @@ function addScenarioSelection(content) {
 
 function search() {
     const selectedUser = document.getElementById("user-select").value;
-    const selectedScenario = document.getElementById("scenario-select").value;
+    const scenarioSelect = document.getElementById("scenario-select");
+    const selectedScenario = scenarioSelect==null?"0":scenarioSelect.value;
 
     charts.splice(0, charts.length);
     infoBoxes.splice(0, infoBoxes.length);
@@ -205,9 +208,9 @@ function search() {
             promise = Statistics.generateScenarioStatistics(charts, infoBoxes, selectedScenario);
     } else { // one user selected, get user informations
         if (selectedScenario == "<all>") // selected all scenarios, get average informations
-            promise = Statistics.generateUserStatistics(charts, infoBoxes, selectedUser);
+            promise = Statistics.generateUserStatistics(charts, infoBoxes, User.currentUser.canTeacher()?selectedUser:User.currentUser.id);
         else // one scenario selected, get scenario informations
-            promise = Statistics.generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser);
+            promise = Statistics.generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, User.currentUser.canTeacher()?selectedUser:User.currentUser.id);
     }
 
     let hasResults = false;
@@ -218,11 +221,11 @@ function search() {
         }).catch(err => {});
 
         setTimeout(() => {
-            if (hasResults) return;
+            if (hasResults || charts.length > 0 || infoBoxes.length > 0) return;
             document.getElementById("loadzone").style.display = "none";
             document.getElementById("nodatazone").style.display = "none";
             document.getElementById("errorzone").style.display = "block";
-        }, 3000);
+        }, 8000);
 }
 
 if (!window.indico) window.indico = {};
@@ -239,7 +242,7 @@ let displayScenarioPagination;
 export default {
     name: "Statistics",
     data: () => {
-        return {charts, infoBoxes, user: User.currentUser, API, availableUsers, availableScenarios}
+        return {charts, infoBoxes, user: User.currentUser, API, availableUsers, availableScenarios, User}
     },
     components: {
         Topbar,

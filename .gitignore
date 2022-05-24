@@ -12,3 +12,4 @@
 /api/Lib
 /api/Scripts
 /api/pyvenv.cfg
+app/vite.config.js

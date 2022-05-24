@@ -50,8 +50,9 @@ function getURLParameter(name) {
     return res;
 }
 
+let token = null;
 function setup() {
-    const token = getURLParameter("token");
+    token = getURLParameter("token");
     if (token == null) {
         redirectHome();
         return;
@@ -103,6 +104,7 @@ function onValidate() {
         return;
     }
 
+    if (token == null) return;
     API.execute(API.ROUTE.RESET, API.METHOD_POST, {token: token, password: credentials.newPassword.value}, API.TYPE_JSON).then(data => {
         if (data.error) logMessage(data.error);
         else {
@@ -112,8 +114,11 @@ function onValidate() {
     }).catch(err => {
         btn.innerHTML = "Valider";
         switch (err.status) {
-            case 404:
+            case 401:
                 logMessage("Token de réinitialisation invalide.");
+                break;
+            case 422:
+                res.json().then(logMessage);
                 break;
         
             default:

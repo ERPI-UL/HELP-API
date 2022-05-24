@@ -112,9 +112,9 @@
                     <div class="pt-5 pb-6 px-5">
                         <div class="flex items-center justify-between">
                             <div v-if="!User.isConnected(User.currentUser)">
-                                <h3 class="text-indigo-600 font-semibold text-lg mt-1 ml-2 px-1 bg-indigo-50 rounded shadow border border-2 border-indigo-600"> Indico </h3>
+                                <h3 class="text-indigo-600 font-semibold text-lg mt-1 ml-2 p-1 bg-indigo-50 rounded shadow border border-2 border-indigo-600"> Indico </h3>
                             </div>
-                            <div v-if="User.isConnected(User.currentUser)" class="mt-1 ml-2 px-1 rounded shadow-lg bg-indigo-50 cursor-pointer border border-2 border-indigo-600">
+                            <div v-if="User.isConnected(User.currentUser)" class="mt-1 ml-2 p-1 rounded shadow-lg bg-indigo-50 cursor-pointer border border-2 border-indigo-600">
                                 <a href="/profile" class="flex">
                                     <component :is="icon.user" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                     <h3 class="text-indigo-600 mx-1">{{User.currentUser.username}}</h3>
@@ -272,12 +272,6 @@
                     description: 'Voir vos scénarios en cours',
                     href: '/scenarios#pending',
                     icon: RefreshIcon
-                });
-                menu[menu.findIndex(el=>el.name=="Scénarios")].elements.push({
-                    name: 'Complétés',
-                    description: 'Voir vos scénarios complétés',
-                    href: '/scenarios#completed',
-                    icon: CheckIcon
                 });
             }
             if (User.currentUser.canTeacher()) {

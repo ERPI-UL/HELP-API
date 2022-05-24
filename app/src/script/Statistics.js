@@ -51,12 +51,14 @@ function addChartToList(list, title, type, labels, sets) {
 
 function hideLoading() {
     document.getElementById("loadzone").style.display = "none";
+    document.getElementById("errorzone").style.display = "none";
 }
 
 function showLoading(...lists) {
     lists.forEach(l => l.splice(0, l.length));
     window.indico.refreshStatistics();
     document.getElementById("loadzone").style.display = "block";
+    document.getElementById("errorzone").style.display = "none";
     document.getElementById("nodatazone").style.display = "none";
 }
 
@@ -179,15 +181,30 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
 function generateUserStatistics(charts, infoBoxes, selectedUser) {
     showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
-        API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS, progress => { console.log("loading progress: " + progress) }, true, 1, []).then(res => {
-            let scenarios = []
+        API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS, progress => { console.log("loading progress: " + progress*100 + "%") }, true, 1, []).then(res => {
+            let retreiveCounter = 0;
+            let sessions = [];
             res.forEach(session => {
-                if (!(session.idScenario in scenarios))
-                    scenarios.push(session.idScenario);
+                API.execute_logged(API.ROUTE.STATS.SESSIONS+session.id, API.METHOD_GET, User.currentUser.getCredentials()).then(res2 => {
+                    sessions.push(res2);
+                    checkForEnd();
+                });
             });
-            addInfoBoxToList(infoBoxes, "Nombre de sessions", res.length);
-            addInfoBoxToList(infoBoxes, "Nombre de scénarios", scenarios.length);
-            resolve();
+            
+            const checkForEnd = () => {
+                retreiveCounter++;
+                if (retreiveCounter < res.length) return;
+                
+                let scenarios = [];
+                sessions.forEach(session => {
+                    let inList = false;
+                    scenarios.forEach(s => inList |= s === session.scenario.id);
+                    if (!inList) scenarios.push(session.scenario.id);
+                })
+                addInfoBoxToList(infoBoxes, "Nombre de sessions", res.length);
+                addInfoBoxToList(infoBoxes, "Nombre de scénarios", scenarios.length);
+                resolve();
+            };
         }).catch(reject).finally(() => { hideLoading(); });
     });
 }

@@ -9,7 +9,7 @@
                     </h2>
                 </div>
                 <div class="divide-y divide-gray-300/50">
-                    <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
+                    <div class="space-y-6 pt-8 text-base leading-7 text-gray-400">
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
                             <input type="text" id="input-username" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
@@ -17,6 +17,9 @@
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
                             <input type="password" id="input-password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                        </div>
+                        <div class="md:flex block" v-on:click="forgotPassword();">
+                            <p class="text-indigo-600 hover:underline cursor-pointer">Mot de passe oublié</p>
                         </div>
                     </div>
                     <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
@@ -39,6 +42,10 @@ import BackButton from "../components/BackButton.vue";
 import User from "../script/User";
 import API from "../script/API";
 import { redirectHome } from "../script/common";
+
+function forgotPassword() {
+    window.location.href = '/forgotPassword';
+}
 
 function setup() {
     window.addEventListener("keydown", ev => {
@@ -119,13 +126,13 @@ function onValidate() {
 }
 
 export default {
-    name: "Login",
+    name: "ForgotPassword",
     components: {
         BackButton
     },
     mounted() {
         setup();
     },
-    methods: {onValidate}
+    methods: {onValidate, forgotPassword}
 };
 </script>

@@ -10,23 +10,23 @@ class API {
     static get TYPE_NONE() { return undefined; }
 
     static ROUTE = {
-        LOGIN: "/auth/token",
-        RESET: "/auth/reset",
-        PASSWORD: "/auth/password",
-        USER: "/users/me",
+        LOGIN: "/auth/token/",
+        RESET: "/auth/reset/",
+        PASSWORD: "/auth/password/",
+        USER: "/users/me/",
         USERS: "/users/",
         SCENARIOS: "/scenarios/",
         EASY_CONNECT: "/easy/connect",
         MACHINES: "/scenarios/machines/",
-        CHANGE_ADMIN_LEVEL: "/admin/changeAdminLevel",
-        __TARGETS: "/targets",
-        __SCENARIOS: "/scenarios",
+        CHANGE_ADMIN_LEVEL: "/admin/changeAdminLevel/",
+        __TARGETS: "/targets/",
+        __SCENARIOS: "/scenarios/",
         STATS: {
             SCENARIOS: {
-                AVERAGE_TIME: "/stats/scenarios/averageTime",
-                SKIP_RATE: "/stats/scenarios/skipRate",
-                PERFORM_RATE: "/stats/scenarios/performRate",
-                PERFORM_TIME: "/stats/scenarios/performTime"
+                AVERAGE_TIME: "/stats/scenarios/averageTime/",
+                SKIP_RATE: "/stats/scenarios/skipRate/",
+                PERFORM_RATE: "/stats/scenarios/performRate/",
+                PERFORM_TIME: "/stats/scenarios/performTime/"
             },
             USERS: "/stats/users/",
             __SESSIONS: "/sessions/",
