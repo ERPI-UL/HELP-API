@@ -36,7 +36,7 @@ async def simple_send(email: str):
     return {"message": "Mail sent"}
 async def sendResetLink(email: str,token:str,firstname:str,lastname:str):
     message = MessageSchema(
-        subject="Fastapi-Mail module",
+        subject="Indico - Mot de passe",
         recipients=[email],  # List of recipients, as many as you can pass 
         template_body={"URL": f"https://indico.lf2l.fr/reset?token={token}","PRENOM":firstname,"NOM":lastname},
         )
