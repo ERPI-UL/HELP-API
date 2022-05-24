@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-        <PaginationChoice
+        <PaginationChoice v-if="User.currentUser.canTeacher()"
             ref="userPagination" :title="'Sélection utilisateurs'"
             :selectID="'#user-select'" :callback="addUserSelection" :route="API.ROUTE.USERS"
             :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsers.map(el => el.id)">
@@ -141,12 +141,14 @@ function setup() {
     let scenarioSelect = document.getElementById("scenario-select");
 
     // fill the user select with all the available users and attach listener
-    updateUserSelect();
-    userSelect.addEventListener("change", ev => {
-        if (ev.target.value == "<select>") {
-            displayUserPagination();
-        }
-    });
+    if (User.currentUser.canTeacher()) {
+        updateUserSelect();
+        userSelect.addEventListener("change", ev => {
+            if (ev.target.value == "<select>") {
+                displayUserPagination();
+            }
+        });
+    }
 
     // fill the scenario select with all the available scenarios for the current user
     updateScenarioSelect();
@@ -240,7 +242,7 @@ let displayScenarioPagination;
 export default {
     name: "Statistics",
     data: () => {
-        return {charts, infoBoxes, user: User.currentUser, API, availableUsers, availableScenarios}
+        return {charts, infoBoxes, user: User.currentUser, API, availableUsers, availableScenarios, User}
     },
     components: {
         Topbar,

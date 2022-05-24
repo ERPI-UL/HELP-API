@@ -24,7 +24,7 @@
                         </div>
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Adresse mail: </p>
-                            <input type="text" id="email" name="email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                            <input type="email" id="email" name="email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>

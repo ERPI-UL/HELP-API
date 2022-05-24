@@ -114,8 +114,11 @@ function onValidate() {
     }).catch(err => {
         btn.innerHTML = "Valider";
         switch (err.status) {
-            case 422:
+            case 401:
                 logMessage("Token de réinitialisation invalide.");
+                break;
+            case 422:
+                res.json().then(logMessage);
                 break;
         
             default:
