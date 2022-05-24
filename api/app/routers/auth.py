@@ -56,11 +56,11 @@ async def reset_password(data: Models.PasswordReset):
     return {'ok'}
 
 
-@router.get("/reset/{username}", tags=["auth"])
-async def reset_password_get(username: str):
+@router.get("/reset/{userORemail}", tags=["auth"])
+async def reset_password_get(userORemail: str):
     token = base64.b16encode(random.getrandbits(
         256).to_bytes(32, byteorder='little')).decode('utf-8')
-    user:Models.User = await Models.User.get(username=username).first()
+    user:Models.User = await Models.User.filter(username=userORemail,email=userORemail).first()
     dateExpiration = datetime.now() + timedelta(hours=1)
     reset = Models.Reset(user=user, token=token, expiration=dateExpiration)
     await reset.save()
