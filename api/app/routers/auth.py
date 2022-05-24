@@ -7,6 +7,7 @@ import utils
 import Models
 import jwt
 import mail
+from tortoise.query_utils import Q
 router = APIRouter()
 
 
@@ -60,7 +61,13 @@ async def reset_password(data: Models.PasswordReset):
 async def reset_password_get(userORemail: str):
     token = base64.b16encode(random.getrandbits(
         256).to_bytes(32, byteorder='little')).decode('utf-8')
-    user:Models.User = await Models.User.filter(username=userORemail,email=userORemail).first()
+    print(userORemail)
+    user:Models.User = await Models.User.filter(Q(Q(username=userORemail), Q(email=userORemail), join_type="OR")).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Utilisateur inconnu"
+        )
     dateExpiration = datetime.now() + timedelta(hours=1)
     reset = Models.Reset(user=user, token=token, expiration=dateExpiration)
     await reset.save()
