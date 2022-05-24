@@ -125,7 +125,7 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
     return await Models.MachineOut.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
 
 
-@router.put('/machine/{idMachine}')
+@router.put('/machines/{idMachine}')
 async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
