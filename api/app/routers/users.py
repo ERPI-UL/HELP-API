@@ -64,7 +64,7 @@ async def delete_user(current_user: Models.User = Depends(utils.get_current_user
     return {'message': 'Votre compte a été supprimée'}
 
 
-@router.get('/{id}', response_model=Models.UserinFront)
+@router.get('/{idUser}', response_model=Models.UserinFront)
 async def read_user(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     user = await Models.User.get_or_none(id=8)
     if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != id:
@@ -77,7 +77,7 @@ async def read_user(id: int, current_user: Models.User = Depends(utils.get_curre
     return await Models.UserinFront.from_tortoise_orm(user)
 
 
-@router.get('/{id}/scenarios', response_model=List[Models.ScenarioOut])
+@router.get('/{idUser}/scenarios', response_model=List[Models.ScenarioOut])
 async def get_user_scenarios(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     user = await Models.User.get_or_none(id=id)
     if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != id:

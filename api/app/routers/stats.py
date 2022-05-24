@@ -7,7 +7,7 @@ import Models
 router = APIRouter()
 
 
-@router.get("/users/{id}/sessions", response_model=Models.pagination)
+@router.get("/users/{idUser}/sessions", response_model=Models.pagination)
 async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: int = None):
     session_count = await Models.Session.filter(user__id=id).count()
     if session_count < per_page:
@@ -31,13 +31,13 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
     }
 
 
-@router.get('/sessions/{id}')
+@router.get('/sessions/{idSession}')
 async def readSession(id: int):
     session = await Models.Session.get(id=id).prefetch_related('user', 'scenario', 'playedSteps', 'playedSteps')
     return await sessionToJSON(session)
 
 
-@router.post('/users/{id}/sessions')
+@router.post('/users/{idUser}/sessions')
 async def createSession(id: int, session: Models.SessionIn, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     if id != current_user.id:
         raise HTTPException(
@@ -50,7 +50,7 @@ async def createSession(id: int, session: Models.SessionIn, current_user: Models
     }
 
 
-@router.post('/sessions/{sessionid}/playedSteps', response_model=Models.playedStepIn)
+@router.post('/sessions/{idSession}/playedSteps', response_model=Models.playedStepIn)
 async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     session = await Models.Session.get(id=sessionid).prefetch_related('user')
     if session.user.id != current_user.id:
@@ -62,7 +62,7 @@ async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost, cu
     return step
 
 
-@router.delete('/sessions/playedSteps/{id}')
+@router.delete('/sessions/playedSteps/{idPlayedStep}')
 async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     step = await Models.playedStep.filter(id=id).prefetch_related('session__user').first()
     if not step:
@@ -74,7 +74,7 @@ async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.ge
     return {'message': 'deleted'}
 
 
-@router.delete('/sessions/{sessionid}/playedSteps')
+@router.delete('/sessions/{idSession}/playedSteps')
 async def deletePlayedSteps(sessionid: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     session = await Models.Session.get(id=sessionid).prefetch_related('user')
     if session.user.id != current_user.id:

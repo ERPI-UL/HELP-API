@@ -100,14 +100,14 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
     return {'ok': 'Cible mise à jour'}
 
 
-@router.get('/{id}')
+@router.get('/{idScenario}')
 async def getScenario(id: int):
     scenario = await Models.Scenario.get(id=id).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     return await scenarioToJSON(scenario)
 
 
-@router.delete('/{scenario_id}')
+@router.delete('/{idScenario}')
 async def delete_scenario(scenario_id: int, user: Models.User = Depends(utils.InstructorRequired)):
     scenario = await Models.Scenario.get(id=scenario_id)
     if not scenario:
@@ -125,7 +125,7 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
     return await Models.MachineOut.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
 
 
-@router.put('/machine/{id}')
+@router.put('/machine/{idMachine}')
 async def update_machine(id: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -155,7 +155,7 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
     return {'id': scenarioDB.id}
 
 
-@router.put('/steps/{id}')
+@router.put('/steps/{idStep}')
 async def updateStep(id: int, step: pydantic_model_creator(Models.Step), adminLevel: int = Depends(utils.getAdminLevel)):
     step = utils.sanitizer(step)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
