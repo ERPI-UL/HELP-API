@@ -65,12 +65,11 @@ async def delete_user(current_user: Models.User = Depends(utils.get_current_user
 
 
 @router.get('/{idUser}', response_model=Models.UserinFront)
-async def read_user(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    user = await Models.User.get_or_none(id=8)
-    if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != id:
+async def read_user(idUser: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != idUser:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
-    user = await Models.User.get(id=id)
+    user = await Models.User.get(id=idUser)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -78,9 +77,9 @@ async def read_user(id: int, current_user: Models.User = Depends(utils.get_curre
 
 
 @router.get('/{idUser}/scenarios', response_model=List[Models.ScenarioOut])
-async def get_user_scenarios(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    user = await Models.User.get_or_none(id=id)
-    if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != id:
+async def get_user_scenarios(idUser: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    user = await Models.User.get_or_none(id=idUser)
+    if current_user.adminLevel < utils.Permission.INSTRUCTOR.value and current_user.id != idUser:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
     if user is None:

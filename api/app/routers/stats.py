@@ -1,5 +1,4 @@
-from time import time
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import parse_obj_as
 import tortoise
 import utils
@@ -8,17 +7,20 @@ router = APIRouter()
 
 
 @router.get("/users/{idUser}/sessions", response_model=Models.pagination)
-async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: int = None):
-    session_count = await Models.Session.filter(user__id=id).count()
+async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenario: int = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    if idUser != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+    session_count = await Models.Session.filter(user__id=idUser).count()
     if session_count < per_page:
         per_page = session_count
     # check for zero per_page
     if per_page == 0:
         per_page = 1
     if id_scenario:
-        sessions = await Models.Session.filter(user__id=id, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
+        sessions = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
     else:
-        sessions = await Models.Session.filter(user__id=id).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
+        sessions = await Models.Session.filter(user__id=idUser).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
     lastPage = session_count // per_page
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
@@ -32,17 +34,20 @@ async def readSessions(id: int, page: int = 1, per_page: int = 10, id_scenario: 
 
 
 @router.get('/sessions/{idSession}')
-async def readSession(id: int):
-    session = await Models.Session.get(id=id).prefetch_related('user', 'scenario', 'playedSteps', 'playedSteps')
+async def readSession(idSession: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    session = await Models.Session.get(id=idSession).prefetch_related('user', 'scenario', 'playedSteps', 'playedSteps')
+    if session.user.id != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
+        raise HTTPException(
+            status_code=403, detail="Cette session ne vous appartient pas")
     return await sessionToJSON(session)
 
 
 @router.post('/users/{idUser}/sessions')
-async def createSession(id: int, session: Models.SessionIn, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    if id != current_user.id:
+async def createSession(idUser: int, session: Models.SessionIn, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    if idUser != current_user.id:
         raise HTTPException(
             status_code=403, detail="Vous n'avez pas les droits pour créer une session sur cette utilisateur")
-    user = await Models.User.get(id=id)
+    user = await Models.User.get(id=idUser)
     scenario = await Models.Scenario.get(id=session.scenarioid)
     session = await Models.Session.create(user=user, scenario=scenario, date=session.date, evaluation=session.evaluation)
     return {
@@ -51,20 +56,20 @@ async def createSession(id: int, session: Models.SessionIn, current_user: Models
 
 
 @router.post('/sessions/{idSession}/playedSteps', response_model=Models.playedStepIn)
-async def createPlayedStep(sessionid: int, playedStep: Models.playedStepPost, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    session = await Models.Session.get(id=sessionid).prefetch_related('user')
+async def createPlayedStep(idSession: int, playedStep: Models.playedStepPost, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    session = await Models.Session.get(id=idSession).prefetch_related('user')
     if session.user.id != current_user.id:
         raise HTTPException(
             status_code=403, detail="Vous n'avez pas les droits pour créer une étape sur cette session")
     step = Models.playedStep(progressNumber=playedStep.progressNumber, missed=playedStep.missed,
-                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=sessionid, time=playedStep.time)
+                             skipped=playedStep.skipped, record=playedStep.record, step_id=playedStep.stepid, session_id=idSession, time=playedStep.time)
     await step.save()
     return step
 
 
 @router.delete('/sessions/playedSteps/{idPlayedStep}')
-async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    step = await Models.playedStep.filter(id=id).prefetch_related('session__user').first()
+async def deletePlayedStep(idPlayedStep: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    step = await Models.playedStep.filter(id=idPlayedStep).prefetch_related('session__user').first()
     if not step:
         raise HTTPException(status_code=404, detail="Step non trouvé")
     if step.session.user.id != current_user.id:
@@ -75,12 +80,12 @@ async def deletePlayedStep(id: int, current_user: Models.User = Depends(utils.ge
 
 
 @router.delete('/sessions/{idSession}/playedSteps')
-async def deletePlayedSteps(sessionid: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    session = await Models.Session.get(id=sessionid).prefetch_related('user')
+async def deletePlayedSteps(idSession: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    session = await Models.Session.get(id=idSession).prefetch_related('user')
     if session.user.id != current_user.id:
         raise HTTPException(
             status_code=403, detail="Vous n'avez pas le droit de supprimer ces objets")
-    steps = await Models.playedStep.filter(session__id=sessionid).all()
+    steps = await Models.playedStep.filter(session__id=idSession).all()
     for step in steps:
         await step.delete()
     return {'message': f"{steps.__len__()} étapes de progressions ont été supprimés"}

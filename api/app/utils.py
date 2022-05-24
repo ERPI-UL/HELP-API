@@ -73,8 +73,8 @@ async def isInstructorOrAbove(user: Models.UserinFront = Depends(get_current_use
     return user.adminLevel >= Permission.INSTRUCTOR.value
 
 
-async def isHimself(RequestUserId: int, user: Models.UserinFront = Depends(get_current_user_in_token)):
-    if user.id != RequestUserId:
+async def isHimself(idUser: int, user: Models.UserinFront = Depends(get_current_user_in_token)):
+    if user.id != idUser:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Vous n'avez pas le droit de faire cette action"

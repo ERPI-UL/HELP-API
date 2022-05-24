@@ -101,15 +101,15 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
 
 
 @router.get('/{idScenario}')
-async def getScenario(id: int):
-    scenario = await Models.Scenario.get(id=id).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
+async def getScenario(idScenario: int):
+    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     return await scenarioToJSON(scenario)
 
 
 @router.delete('/{idScenario}')
-async def delete_scenario(scenario_id: int, user: Models.User = Depends(utils.InstructorRequired)):
-    scenario = await Models.Scenario.get(id=scenario_id)
+async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.InstructorRequired)):
+    scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
     await scenario.delete()
@@ -126,13 +126,13 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
 
 
 @router.put('/machine/{idMachine}')
-async def update_machine(id: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
+async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    await Models.Machine.filter(id=id).update(name=machine.name, description=machine.description)
-    return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=id))
+    await Models.Machine.filter(id=idMachine).update(name=machine.name, description=machine.description)
+    return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=idMachine))
 
 
 @router.post('/')
@@ -156,22 +156,14 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
 
 
 @router.put('/steps/{idStep}')
-async def updateStep(id: int, step: pydantic_model_creator(Models.Step), adminLevel: int = Depends(utils.getAdminLevel)):
+async def updateStep(idStep: int, step: pydantic_model_creator(Models.Step), adminLevel: int = Depends(utils.getAdminLevel)):
     step = utils.sanitizer(step)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    step.id = id
+    step.id = idStep
     await step.save()
     return await stepToJSON(step)
-
-
-@router.get('/{idScenario}/step/{idStep}/target/{idTarget}')
-async def getScenarioStepTargets(idScenario: int, idStep: int, idTarget: int):
-    target = await Models.Target.filter(steps=idStep, id=idTarget).first()
-    if not target:
-        raise HTTPException(status_code=404, detail="Target not found")
-    return await targetToJSON(target)
 
 
 async def scenarioToJSON(scenario):
