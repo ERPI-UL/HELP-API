@@ -166,36 +166,43 @@ function saveModifications(name, description, targets) {
     for(let i = _toRemove.length-1; i >= 0; i--) targetsToModify.splice(_toRemove[i], 1);
 
     let taskDone = [false, false, false];
-    const setTaskDone = (nbr) => {taskDone[nbr] = true; if (!taskDone[0] || !taskDone[1] || !taskDone[2]) return; logMessage("Modifications sauvegardées"); retreiveMachineInfos();};
+    const setTaskDone = (nbr) => {
+        taskDone[nbr] = true;
+        if (!taskDone[0] || !taskDone[1] || !taskDone[2]) return;
+        logMessage("Modifications sauvegardées");
+        retreiveMachineInfos();
+    };
+
     let deleteCounter = 0;
-    const checkForDelete = () => {deleteCounter++; if (deleteCounter < targetsToDelete.length) return; setTaskDone(0)};
+    const checkForDelete = () => {deleteCounter++; if (deleteCounter < targetsToDelete.length) return; setTaskDone(0); modifyTargets();};
     let addCounter = 0;
-    const checkForAdd = () => {addCounter++; if (addCounter < targetsToAdd.length) return; setTaskDone(1)};
+    const checkForAdd = () => {addCounter++; if (addCounter < targetsToAdd.length) return; setTaskDone(1);};
     let modifyCounter = 0;
-    const checkForModify = () => {modifyCounter++; if (modifyCounter < targetsToModify.length) return; setTaskDone(2)};
+    const checkForModify = () => {modifyCounter++; if (modifyCounter < targetsToModify.length) return; setTaskDone(2); addTargets();};
 
     targetsToDelete.forEach(target => {
         API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
             checkForDelete();
-            console.log("Target "+target.id+" ("+target.name+") supprimée");
         }).catch(console.error);
     });
-    targetsToModify.forEach(target => {
-        API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_PUT, User.currentUser.getCredentials(), {name: target.name}).then(res => {
-            checkForModify();
-            console.log("Target "+target.id+" ("+target.name+") modifiée");
-        }).catch(console.error);
-    });
-    if (targetsToAdd.length > 0)
-        API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), targetsToAdd.map(t => t.data)).then(res => {
-            checkForAdd();
-            res.forEach(target => {
-                let index = machineTargets.findIndex(t => t.data == target.name);
-                if (index >= 0) machineTargets[index].id = target.id;
-            });
-            updateDom();
-            console.log("Targets ("+targetsToAdd.map(t => t.data)+")  ajoutés");
-        }).catch(console.error);
+    const modifyTargets = () => {
+        targetsToModify.forEach(target => {
+            API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_PUT, User.currentUser.getCredentials(), {name: target.name}).then(res => {
+                checkForModify();
+            }).catch(console.error);
+        });
+    }
+    const addTargets = () => {
+        if (targetsToAdd.length > 0)
+            API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), targetsToAdd.map(t => t.data)).then(res => {
+                checkForAdd();
+                res.forEach(target => {
+                    let index = machineTargets.findIndex(t => t.data == target.name);
+                    if (index >= 0) machineTargets[index].id = target.id;
+                });
+                updateDom();
+            }).catch(console.error);
+    }
 
     if (targetsToAdd.length == 0) checkForAdd();
     if (targetsToDelete.length == 0) checkForDelete();
