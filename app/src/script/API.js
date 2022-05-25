@@ -40,9 +40,11 @@ class API {
             if (window.location.protocol !== this.API_URL.split(":")[0]+":")
                 this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
 
-            path = path.replace("/?", "?");
+            path = path.replace("/?", "?").replaceAll("//", "/");
             let urlparts = path.split("?");
-            path = urlparts.splice(0, 1) + "?" + urlparts.join("&");
+            let base = urlparts.splice(0, 1);
+            let params = (urlparts.length > 0)? ("?" + urlparts.join("&")) : "";
+            path = base + params;
 
             let reqHeaders = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
@@ -106,7 +108,7 @@ class API {
         });
     }
 
-    static execute_logged(path, method = this.METHOD_GET, credentials, body = null, type = this.TYPE_NONE, headers = null) {
+    static execute_logged(path, method = this.METHOD_GET, credentials, body = null, type = this.TYPE_JSON, headers = null) {
         return new Promise((resolve, reject) => {
             if (!credentials) {
                 reject("Please provide credentials (token/type or username/password)");

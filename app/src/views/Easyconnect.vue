@@ -38,11 +38,11 @@
                             <div class="md:flex block justify-between">
                                 <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2 text-center">Code appareil: </p>
                                 <div class="flex justify-center">
-                                    <input type="number" name="number1" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
-                                    <input type="number" name="number2" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
-                                    <input type="number" name="number3" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
-                                    <input type="number" name="number4" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
-                                    <input type="number" name="number5" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    <input type="number" pattern="[0-9]*" name="number1" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    <input type="number" pattern="[0-9]*" name="number2" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    <input type="number" pattern="[0-9]*" name="number3" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    <input type="number" pattern="[0-9]*" name="number4" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                    <input type="number" pattern="[0-9]*" name="number5" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                 </div>
                             </div>
                         </div>

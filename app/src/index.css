@@ -22,14 +22,14 @@
 }
 
 .slide-in {
-    animation: slide-in 600ms ease forwards;
+    animation: slide-in 600ms ease;
 }
 .slide-in-quick {
     animation: slide-in 200ms ease forwards;
 }
 
 .slide-out {
-    animation: slide-out 600ms ease forwards;
+    animation: slide-out 600ms ease;
 }
 .slide-out-quick {
     animation: slide-out 200ms ease forwards;

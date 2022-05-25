@@ -169,11 +169,11 @@ function deleteUser() {
     if (isNaN(userID))
         return;
     Logger.log("Removing user "+userID);
-    API.execute(API.ROUTE.USERS+userID, API.METHOD_DELETE).then(res => {
+    API.execute_logged(API.ROUTE.USERS+userID, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
         Logger.log("User "+userID+" removed");
         availableUsersDelete = availableUsersDelete.filter(el => el.id != userID);
         updateUserDeleteSelect();
-    }).catch(console.error);
+    }).catch(Logger.error);
 }
 
 function updateUserRole() {
@@ -184,9 +184,9 @@ function updateUserRole() {
     if (isNaN(userID) || isNaN(roleID))
         return;
     Logger.log("Changing user "+userID+" role to "+roleID);
-    API.execute(API.ROUTE.CHANGE_ADMIN_LEVEL+API.createParameters({idUser: userID}), API.METHOD_DELETE, {adminLevel: roleID}).then(res => {
+    API.execute_logged(API.ROUTE.CHANGE_ADMIN_LEVEL+userID, API.METHOD_POST, User.currentUser.getCredentials(), {adminLevel: roleID}, API.TYPE_JSON).then(res => {
         Logger.log("User "+userID+" role changed to "+roleID);
-    }).catch(console.error);
+    }).catch(Logger.error);
 }
 
 export default {

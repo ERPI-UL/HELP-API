@@ -25,7 +25,8 @@
                                     <div class="flex flex-col grow space-y-2 p-2 h-fit min-h-0 overflow-y-scroll overflow-x-hidden border border-gray-200 rounded">
                                         <div v-for="el in machineTargets">
                                             <input 
-                                                type="text" id="input-machinename" name="machine-target" v-bind:value="el.data" v-on:change="setMachineTarget(el.id, $event.target.value);"
+                                                type="text" name="machine-target" v-bind:value="el.data" v-on:change="setMachineTarget(el.id, $event.target.value);"
+                                                v-on:focus="setSelectedTarget($event.target);"
                                                 class="whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"
                                             >
                                         </div>
@@ -90,18 +91,122 @@ function logMessage(msg) {
     }, 3000);
 }
 
+class Machine {
+    id = 0;
+    name = "";
+    description = "";
+    targets = [];
+    constructor(id, name, description, targets) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.targets = targets;
+    }
+}
+
+function updateDom() {
+    // sort the targets by name
+    machineTargets = machineTargets.sort((a, b) => {
+        if (a.data < b.data) return -1;
+        if (a.data > b.data) return 1;
+        return 0;
+    });
+    // update vue.js dom
+    if (dom != null) dom.$forceUpdate();
+}
+
+let originalMachine = null;
 function retreiveMachineInfos() {
     if (action=="Modifier")
         API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
             document.getElementById('input-machinename').value = res.name;
             document.getElementById('input-machinedesc').value = res.description;
+            machineTargets.splice(0, machineTargets.length);
             res.targets.forEach(target => addMachineTarget(target))
+            originalMachine = new Machine(res.id, res.name, res.description, res.targets);
+        }).catch(err => {
+            redirectHome();
+            console.error(err);
+        });
+}
+
+function saveModifications(name, description, targets) {
+    if (name != originalMachine.name || description != originalMachine.description) {
+        API.execute_logged(API.ROUTE.MACHINES+originalMachine.id, API.METHOD_PUT, User.currentUser.getCredentials(), {
+            name: name,
+            description: description
+        }, API.TYPE_JSON).then(res => {
+            //logMessage("Informations de la machine modifiées");
         }).catch(console.error);
+    } // else logMessage("Aucune information machine à sauvegarder.")
+
+    let _toRemove = [];
+    let targetsToDelete = Array.from(originalMachine.targets);
+    targets.forEach(target => {
+        let index = targetsToDelete.findIndex(t => t.id == target.id);
+        if (index >= 0) _toRemove.push(index);
+    });
+    for(let i = _toRemove.length-1; i >= 0; i--) targetsToDelete.splice(_toRemove[i], 1);
+
+    _toRemove = [];
+    let targetsToAdd = Array.from(targets);
+    originalMachine.targets.forEach(target => {
+        let index = targetsToAdd.findIndex(t => t.name == target.data && t.id == target.id);
+        if (index >= 0) _toRemove.push(index);
+    });
+    for(let i = _toRemove.length-1; i >= 0; i--) targetsToAdd.splice(_toRemove[i], 1);
+
+    _toRemove = [];
+    let targetsToModify = Array.from(originalMachine.targets);
+    targetsToModify.forEach(target => {
+        let index = targets.findIndex(t => t.data != target.name && t.id == target.id);
+        if (index < 0) _toRemove.push(targetsToModify.findIndex(t => t.id == target.id));
+        else targetsToModify[index].name = targets[index].data;
+    });
+    for(let i = _toRemove.length-1; i >= 0; i--) targetsToModify.splice(_toRemove[i], 1);
+
+    let taskDone = [false, false, false];
+    const setTaskDone = (nbr) => {taskDone[nbr] = true; if (!taskDone[0] || !taskDone[1] || !taskDone[2]) return; logMessage("Modifications sauvegardées"); retreiveMachineInfos();};
+    let deleteCounter = 0;
+    const checkForDelete = () => {deleteCounter++; if (deleteCounter < targetsToDelete.length) return; setTaskDone(0)};
+    let addCounter = 0;
+    const checkForAdd = () => {addCounter++; if (addCounter < targetsToAdd.length) return; setTaskDone(1)};
+    let modifyCounter = 0;
+    const checkForModify = () => {modifyCounter++; if (modifyCounter < targetsToModify.length) return; setTaskDone(2)};
+
+    targetsToDelete.forEach(target => {
+        API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
+            checkForDelete();
+            console.log("Target "+target.id+" ("+target.name+") supprimée");
+        }).catch(console.error);
+    });
+    targetsToModify.forEach(target => {
+        API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_PUT, User.currentUser.getCredentials(), {name: target.name}).then(res => {
+            checkForModify();
+            console.log("Target "+target.id+" ("+target.name+") modifiée");
+        }).catch(console.error);
+    });
+    if (targetsToAdd.length > 0)
+        API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), targetsToAdd.map(t => t.data)).then(res => {
+            checkForAdd();
+            res.forEach(target => {
+                let index = machineTargets.findIndex(t => t.data == target.name);
+                if (index >= 0) machineTargets[index].id = target.id;
+            });
+            updateDom();
+            console.log("Targets ("+targetsToAdd.map(t => t.data)+")  ajoutés");
+        }).catch(console.error);
+
+    if (targetsToAdd.length == 0) checkForAdd();
+    if (targetsToDelete.length == 0) checkForDelete();
+    if (targetsToModify.length == 0) checkForModify();
 }
 
 function saveMachine() {
     const machineName = document.getElementById('input-machinename');
     const machineDesc = document.getElementById('input-machinedesc');
+    const machineTargs = Array.from(machineTargets);
+
     if (machineName.value.length < 1) {
         machineName.focus();
         logMessage("Veuillez préciser un nom de machine.")
@@ -113,11 +218,26 @@ function saveMachine() {
         return;
     }
 
+    for (let i = 0; i < machineTargs.length; i++) {
+        const target = machineTargs[i];
+        if (target.data < 1) {
+            logMessage("Veuillez préciser un nom de cible.")
+            return;
+        }
+        for (let j = i+1; j < machineTargs.length; j++) {
+            const target2 = machineTargs[j];
+            if (target2.data == target.data) {
+                logMessage("Veuillez ne pas préciser deux fois la même cible.")
+                return;
+            }
+        }
+    }
+
     const button = document.getElementById("validate-button");
     button.innerHTML = "...";
     if (action == "Modifier") {
-        logMessage("Erreur: Modification de machine non implémentée.");
-        // TODO : PUT for machine's informations, PUT for modified targets, DELETE for deleted targets, POST for new targets
+        // logMessage("Erreur: Modification de machine non implémentée.");
+        saveModifications(machineName.value, machineDesc.value, machineTargs);
         return;
     }
     API.execute_logged(API.ROUTE.MACHINES, API.METHOD_POST, User.currentUser.getCredentials(), {
@@ -129,13 +249,14 @@ function saveMachine() {
             button.innerHTML = action;
             redirectHome();
         }).catch(err => {
-            logMessage("Erreur lors de la création de la machine.");
+            logMessage("Erreur lors de la création des cibles de la machine.");
             console.error(err);
         });
     }).catch(err => {
         logMessage("Erreur lors de la création de la machine.");
         console.error(err);
         err.json().then(json => {
+            console.error(json)
             switch (json.detail[0].type) {
                 case "IntegrityError":
                     machineName.focus();
@@ -166,12 +287,22 @@ function addMachineTarget(target=null) {
         data: data,
         id: id
     });
-    if (dom != null) dom.$forceUpdate();
+    updateDom();
 }
 
-function removeMachineTarget(index = machineTargets.length-1) {
+function setSelectedTarget(target) {
+    selectedTarget = target;
+}
+
+let selectedTarget = null;
+function removeMachineTarget(index) {
+    if (!index) {
+        index = machineTargets.length-1;
+        if (selectedTarget != null)
+            index = machineTargets.findIndex(el => el.data == selectedTarget.value);
+    }
     machineTargets.splice(index, 1);
-    if (dom != null) dom.$forceUpdate();
+    updateDom();
 }
 
 let dom = null;
@@ -201,7 +332,7 @@ export default {
         dom = this;
         retreiveMachineInfos();
     },
-    methods: {saveMachine, addMachineTarget, removeMachineTarget, setMachineTarget}
+    methods: {saveMachine, addMachineTarget, removeMachineTarget, setMachineTarget, setSelectedTarget}
 };
 </script>
 

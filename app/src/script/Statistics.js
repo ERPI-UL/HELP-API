@@ -39,7 +39,7 @@ function addChartToList(list, title, type, labels, sets) {
                         backgroundColor: colors[acc][0],
                         borderColor: colors[acc++][1],
                         data: set.data,
-                        tension: 0.5,
+                        tension: 0.4,
                         fill: true,
                         hidden: acc > 1
                     }
@@ -216,7 +216,7 @@ function generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, sel
         API.execute_logged(API.ROUTE.SCENARIOS + selectedScenario, API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
             scenario = res;
         }).finally(() => {
-            API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS + API.createParameters({ id_scenario: selectedScenario })).then(res => {
+            API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS + API.createParameters({ id_scenario: selectedScenario }), undefined, true).then(res => {
                 let sessions = [];
                 let retreiveCounter = 0;
 
@@ -247,7 +247,7 @@ function generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, sel
                                 watchTime[stepIndex]++;
                             }
                         }
-                        let avgScenarioTime = avgStepTime.map(s => s.val).reduce((a, b) => a + b);
+                        let avgScenarioTime = avgStepTime.map(s => s.val).reduce((a, b) => a + b) / sessions.length;
 
                         for (let j = 0; j < scenario.steps.length; j++) {
                             if (avgStepTime[j].nb != 0)
