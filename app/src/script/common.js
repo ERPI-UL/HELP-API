@@ -1,9 +1,9 @@
-export function redirectHome() {
+export function redirectHome(wait=true) {
     setTimeout(() => {
         if (document.referrer.startsWith(window.location.origin))
             window.location.href = document.referrer;
         else window.location.href = window.location.origin;
-    }, 1000);
+    }, wait?1000:0);
 }
 
 /** FOR EXI PREVENT POPUP **/
