@@ -23,9 +23,9 @@ async def changeAdminLevel(idUser: int, adminLevel: int = Body(..., embed=True),
 
 
 @router.delete('/deleteUser/{idUser}')
-async def deleteUser(idUser: int, bool: bool = Depends(utils.AdminRequired), current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def deleteUser(idUser: int, bool: bool = Depends(utils.AdminRequired)):
     user = await Models.User.get(id=idUser)
-    if user.adminLevel == current_user.adminLevel:
+    if user.adminLevel == utils.Permission.ADMIN.value:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Vous ne pouvez pas supprimer un administrateur")
     await user.delete()
