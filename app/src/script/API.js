@@ -19,6 +19,9 @@ class API {
         EASY_CONNECT: "/easy/connect",
         MACHINES: "/scenarios/machines/",
         CHANGE_ADMIN_LEVEL: "/admin/changeAdminLevel/",
+        ADMIN: {
+            DELETE_USER: "/admin/deleteUser/",
+        },
         __TARGETS: "/targets/",
         __SCENARIOS: "/scenarios/",
         STATS: {

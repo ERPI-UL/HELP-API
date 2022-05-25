@@ -21,6 +21,17 @@
     }
 }
 
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    99% { transform: rotate(-360deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.animate-spin {
+    transform-origin: 50% 50%;
+    animation: spin 1s ease;
+}
+
 .slide-in {
     animation: slide-in 600ms ease;
 }

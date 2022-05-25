@@ -4,9 +4,9 @@
             <Topbar class="bg-gray-800"></Topbar>
         </div>
         <div class="flex bg-gray-800 m-4 shadow-lg rounded-lg p-2 grow">
-            <div class="flex flex-col rounded-lg p-2 space-y-4">
+            <div class="flex flex-col rounded-lg p-2 space-y-4 max-w-full">
                 <p class="text-gray-300 text-lg">Utilisateurs</p>
-                <div class="flex flex-col space-y-1">
+                <div class="flex flex-col space-y-1 max-w-full">
                     <p class="text-gray-400">Supprimer un utilisateur :</p>
                     <div class="flex space-x-6">
                         <select id="user-select-remove" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
@@ -20,7 +20,7 @@
                         :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsersDelete.map(el => el.id)">
                     </PaginationChoice>
                 </div>
-                <div class="flex flex-col space-y-1">
+                <div class="flex flex-col space-y-1 max-w-full">
                     <p class="text-gray-400">Changer le role d'un utilisateur :</p>
                     <div class="flex space-x-6">
                         <select id="user-select-role" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
@@ -61,18 +61,18 @@ import DangerousButton from "../components/DangerousButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 
 class Logger {
-    div = null;
+    static div = null;
 
     static init() {
-        this.div = document.getElementById("log-message");
+        Logger.div = document.getElementById("log-message");
     }
 
     static createDiv(message, color) {
-        if (this.div === null) this.init();
+        if (Logger.div === null) Logger.init();
         const newDiv = document.createElement("div");
         newDiv.className = "text-white w-fit mx-auto slide-in-quick font-semibold text-base text-sm px-3 py-2 rounded-lg shadow-lg bg-"+color+"-600";
-        newDiv.innerHTML = message;
-        this.div.appendChild(newDiv);
+        newDiv.innerHTML = (typeof(message)==="string")? message: JSON.stringify(message, null, 2);
+        Logger.div.appendChild(newDiv);
         setTimeout(() => {
             newDiv.className += " slide-out-quick";
             setTimeout(() => {newDiv.remove();}, 300);
@@ -80,11 +80,11 @@ class Logger {
     }
 
     static log(message) {
-        this.createDiv(message, "sky");
+        Logger.createDiv(message, "sky");
     }
 
     static error(message) {
-        this.createDiv(message, "red");
+        Logger.createDiv(message, "red");
     }
 }
 window.Logger = Logger;
@@ -147,7 +147,7 @@ function updateUserRoleSelect(selectValue) {
         document.getElementById("role-select").value = "<loading>";
         API.execute_logged(API.ROUTE.USERS+userSelect.value, API.METHOD_GET, User.currentUser.getCredentials()).then(res => {
             document.getElementById("role-select").value = res.adminLevel;
-        }).catch(console.error);
+        }).catch(Logger.error);
     }, 10);
 }
 function addUserRoleSelection(content) {
@@ -169,7 +169,7 @@ function deleteUser() {
     if (isNaN(userID))
         return;
     Logger.log("Removing user "+userID);
-    API.execute_logged(API.ROUTE.USERS+userID, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
+    API.execute_logged(API.ROUTE.ADMIN.DELETE_USER+userID, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
         Logger.log("User "+userID+" removed");
         availableUsersDelete = availableUsersDelete.filter(el => el.id != userID);
         updateUserDeleteSelect();

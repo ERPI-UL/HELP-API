@@ -192,8 +192,8 @@
         CheckIcon,
         PencilAltIcon,
         TerminalIcon
-    } from '@heroicons/vue/outline'
-    import { ChevronDownIcon, UserIcon } from '@heroicons/vue/solid'
+    } from '@heroicons/vue/outline';
+    import { ChevronDownIcon, UserIcon } from '@heroicons/vue/solid';
 
     let menu = [
         {
