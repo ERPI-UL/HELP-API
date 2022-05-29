@@ -166,6 +166,12 @@ async def updateStep(idStep: int, step: pydantic_model_creator(Models.Step), adm
     return await stepToJSON(step)
 
 
+@router.delete('/steps/{idStep}')
+async def deleteStep(idStep: int, user: Models.User = Depends(utils.InstructorRequired)):
+    await Models.Step.filter(id=idStep).delete()
+    return {'ok': 'étape supprimée'}
+
+
 async def scenarioToJSON(scenario):
     scenario.machine = await scenario.machine.get()
     return {
