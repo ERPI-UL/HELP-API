@@ -249,18 +249,17 @@ class StepPost(BaseModel):
     name: str
     label: str
     description: str
+    ordernumber: int
     position: PositionPost
     type: TypePost
     targets: list[int] = None
     choice: ChoicePost = None
-    ordernumber: int
 
     @validator('ordernumber')
     def ordernumber_validator(cls, v):
         if v < 0:
             raise ValueError('ordernumber must be >= 0')
         return v
-
 
 class ScenarioPost(BaseModel):
     name: str

@@ -156,14 +156,35 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
 
 
 @router.put('/steps/{idStep}')
-async def updateStep(idStep: int, step: pydantic_model_creator(Models.Step), adminLevel: int = Depends(utils.getAdminLevel)):
+async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
     step = utils.sanitizer(step)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    step.id = idStep
-    await step.save()
-    return await stepToJSON(step)
+    stepDB = await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice')
+    if not stepDB:
+        raise HTTPException(status_code=404, detail="Step introuvable")
+    stepDB.label = step.label
+    stepDB.name = step.name
+    stepDB.description = step.description
+    stepDB.ordernumber = step.ordernumber
+    await stepDB.save()
+    if step.type.name == 'choice':
+        if stepDB.choice:
+            stepDB.choice.labelleft = step.choice.option_left.label
+            stepDB.choice.labelright = step.choice.option_right.label
+            stepDB.choice.redirectleft = step.choice.option_left.redirect
+            stepDB.choice.redirectright = step.choice.option_right.redirect
+            await stepDB.choice.save()
+        else:
+            stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+    for target in step.targets:
+        await stepDB.targets.add(await Models.Target.get(id=target))
+    stepDB.position.x = step.position.x
+    stepDB.position.y = step.position.y
+    stepDB.position.z = step.position.z
+    await stepDB.position.save()
+    return await stepToJSON(await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice'))
 
 
 @router.delete('/steps/{idStep}')
