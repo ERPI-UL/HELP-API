@@ -155,6 +155,27 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
     return {'id': scenarioDB.id}
 
 
+@router.post('/{idScenario}/steps')
+async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
+    step = utils.sanitizer(step)
+    if adminLevel < utils.Permission.INSTRUCTOR.value:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
+    scenario = await Models.Scenario.get(id=idScenario)
+    if not scenario:
+        raise HTTPException(status_code=404, detail="Scenario introuvable")
+    position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
+    type = await Models.Type.get(name=step.type.name).first()
+    stepDB = Models.Step(scenario=scenario, type=type, label=step.label, position=position,
+                         name=step.name, description=step.description, ordernumber=step.ordernumber)
+    if step.type.name == 'choice':
+        stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+    await stepDB.save()
+    for target in step.targets:
+        await stepDB.targets.add(await Models.Target.get(id=target))
+    return {'id': stepDB.id}
+
+
 @router.put('/steps/{idStep}')
 async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
     step = utils.sanitizer(step)
