@@ -24,6 +24,8 @@ class API {
         },
         __TARGETS: "/targets/",
         __SCENARIOS: "/scenarios/",
+        __STEPS: "/steps/",
+        STEPS: "/scenarios/steps/",
         STATS: {
             SCENARIOS: {
                 AVERAGE_TIME: "/stats/scenarios/averageTime/",

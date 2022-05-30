@@ -170,7 +170,8 @@ function saveModifications(name, description, targets) {
         taskDone[nbr] = true;
         if (!taskDone[0] || !taskDone[1] || !taskDone[2]) return;
         logMessage("Modifications sauvegardées");
-        retreiveMachineInfos();
+        redirectHome();
+        // retreiveMachineInfos();
     };
 
     let deleteCounter = 0;
@@ -182,26 +183,26 @@ function saveModifications(name, description, targets) {
 
     targetsToDelete.forEach(target => {
         API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
-            checkForDelete();
-        }).catch(console.error);
+            // deleted
+        }).catch(console.error).finally(checkForDelete);
     });
     const modifyTargets = () => {
         targetsToModify.forEach(target => {
             API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_PUT, User.currentUser.getCredentials(), {name: target.name}).then(res => {
-                checkForModify();
-            }).catch(console.error);
+                // modified
+            }).catch(console.error).finally(checkForModify);
         });
     }
     const addTargets = () => {
-        if (targetsToAdd.length > 0)
-            API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), targetsToAdd.map(t => t.data)).then(res => {
-                checkForAdd();
-                res.forEach(target => {
-                    let index = machineTargets.findIndex(t => t.data == target.name);
-                    if (index >= 0) machineTargets[index].id = target.id;
-                });
-                updateDom();
-            }).catch(console.error);
+        if (targetsToAdd.length > 0) {
+            targetsToAdd.forEach(target => {
+                API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), targetsToAdd.map(t => t.data)).then(res => {
+                    // added
+                    // let index = machineTargets.findIndex(t => t.data == res.name);
+                    // if (index >= 0) machineTargets[index].id = res.id;
+                }).catch(console.error).finally(checkForAdd);
+            })
+        } else checkForAdd();
     }
 
     if (targetsToAdd.length == 0) checkForAdd();

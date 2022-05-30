@@ -6,7 +6,7 @@ export function redirectHome(wait=true) {
     }, wait?1000:0);
 }
 
-/** FOR EXI PREVENT POPUP **/
+/** FOR EXIT PREVENT POPUP **/
 // window.addEventListener("beforeunload", function (e) {
 //     var confirmationMessage = "Certaines modifications ne seront pas enregistrés si vous quittez la page maintenant.\n"+
 //                               "Enregistrez vos modifications avant de quitter.";
