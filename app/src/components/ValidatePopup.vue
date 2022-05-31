@@ -1,6 +1,6 @@
 <template>
     <!-- Template Validate Ppopup : popup showing up on top of other components to validate an action (for example account deletion) -->
-    <div v-show="this.obj.showing" class="flex w-screen h-screen absolute top-0 left-0 pointer-events-none bg-black/[0.2]">
+    <div ref="parent" v-show="this.obj.showing" class="flex w-screen h-screen absolute top-0 left-0 pointer-events-none bg-black/[0.2]">
         <div v-show="this.obj.showing" class="pointer-events-auto fixed rounded-lg shadow-lg border border-1 border-gray-300 p-2 bg-white">
             <!-- Popup title and description -->
             <div id="text" class="divide-y">
@@ -42,7 +42,7 @@ export default {
         ValidateButton,
         DangerousButton
     },
-    data() { return {obj: new ValidatePopup()}; },
+    data() { return {obj: new ValidatePopup(this)}; },
     methods: {
         /**
          * Shows the popup, applying the new title, description, buttons labels
@@ -53,13 +53,14 @@ export default {
             this.obj.cancelLabel = cancelLabel;
             this.obj.validateLabel = validateLabel;
             this.obj.showing = true;
-            this.$el.style.opacity = "0";
+            this.$refs["parent"].style.opacity = "0";
+            // the popup is showing with css opacity in the setPosition function, assuming it's always called after the show function
         },
         /**
          * hides the popup
          */
         hide() {
-            this.$el.style.opacity = "0";
+            this.$refs["parent"].style.opacity = "0";
             setTimeout(() => {
                 this.obj.showing = false;
             }, 200);
@@ -70,7 +71,7 @@ export default {
          */
         setPosition(dom) {
             setTimeout(() => {
-                const el = this.$el.firstChild;
+                const el = this.$refs["parent"].firstChild;
                 const domRect = dom.getBoundingClientRect();
                 const elRect = el.getBoundingClientRect();
                 
@@ -91,7 +92,7 @@ export default {
                     setTimeout(() => {
                         el.style.animation = "";
                         el.style.transform = "scale(1, 1)";
-                        this.$el.style.opacity = "1";
+                        this.$refs["parent"].style.opacity = "1";
                     }, 40);
                 }
             }, 30);
