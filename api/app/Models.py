@@ -282,6 +282,7 @@ class SessionIn(BaseModel):
     scenarioid: int
     date: str
     evaluation: bool
+    vrmode: bool = None
 
 
 class PasswordChange(BaseModel):
