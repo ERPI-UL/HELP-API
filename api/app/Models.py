@@ -62,7 +62,7 @@ class Step(Model):
     position = fields.ForeignKeyField(
         'models.Position', related_name='steps', null=True, on_delete=fields.CASCADE)
     choice = fields.ForeignKeyField(
-        'models.Choice', related_name='steps', null=True)
+        'models.Choice', related_name='steps', null=True,on_delete=fields.RESTRICT)
     ordernumber = fields.IntField()
 
     class Meta:
