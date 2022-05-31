@@ -28,14 +28,14 @@
                                         <div v-for="el in machineTargets"> <!-- For each target, display an input with the target's name in it -->
                                             <input 
                                                 type="text" name="machine-target" :id="'machine-target-'+el.id" v-bind:value="el.name" v-on:change="setMachineTarget(el.id, $event.target.value);"
-                                                v-on:focus="setSelectedTarget($event.target);"
+                                                v-on:focus="setSelectedTarget($event.target);" v-on:blur="setSelectedTarget(null);"
                                                 class="whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"
                                             >
                                         </div>
                                     </div>
                                     <!-- Target deletion / addition buttons -->
                                     <div class="flex justify-between space-x-1 pt-2">
-                                        <button v-on:click="removeMachineTarget();" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded">
+                                        <button ref="delete-btn" v-on:click="removeMachineTarget();" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded opacity-50 cursor-auto">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /> <!-- Remove button icon -->
                                             </svg>
@@ -130,7 +130,9 @@ function updateDom() {
     if (dom != null) dom.$forceUpdate();
 
     // if a new target is added, select it (it has no name so we use that to detect it)
-    dom.querySelectorAll("machine-target").forEach(el => {
+    let elements = dom.$el.querySelectorAll("machine-target");
+    if (elements) elements.forEach(el => {
+        console.log("el: "+el.value);
         if (el.value == "") el.focus();
     });
 }
@@ -147,6 +149,7 @@ function retreiveMachineInfos() {
             document.getElementById('input-machinename').value = res.name;
             document.getElementById('input-machinedesc').value = res.description;
             machineTargets.splice(0, machineTargets.length);
+            console.log(res.targets.map(t => t.id+" - "+t.name).join("\n"));
             res.targets.forEach(target => addMachineTarget(target))
             originalMachine = new Machine(res.id, res.name, res.description, res.targets);
         }).catch(err => {
@@ -206,15 +209,6 @@ function saveModifications(name, description, targets) {
     let modifyCounter = 0;
     const checkForModify = () => {if (modifyCounter >= targetsToModify.length) addTargets();};
 
-    // delete all the required targets and execute checkForDelete to continue to save the modifications after that
-    if (targetsToDelete.length > 0) {
-        targetsToDelete.forEach(target => {
-            API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
-                // deleted
-            }).catch(console.error).finally(checkForDelete);
-        });
-    } else checkForDelete();
-
     // modifies all the required targets and execute checkForModify to continue to save the modifications after that
     const modifyTargets = () => {
         if (targetsToModify.length > 0) {
@@ -238,6 +232,15 @@ function saveModifications(name, description, targets) {
             })
         } else checkForAdd();
     }
+    
+    // delete all the required targets and execute checkForDelete to continue to save the modifications after that
+    if (targetsToDelete.length > 0) {
+        targetsToDelete.forEach(target => {
+            API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
+                // deleted
+            }).catch(console.error).finally(checkForDelete);
+        });
+    } else checkForDelete();
 }
 
 /**
@@ -370,7 +373,14 @@ function addMachineTarget(target=null) {
  * Sets the selected target to the provided one (for delete button)
  */
 function setSelectedTarget(target) {
-    selectedTarget = target;
+    if (target != null) {
+        dom.$refs["delete-btn"].classList.remove("opacity-50", "cursor-auto");
+        selectedTarget = target;
+    }
+    else setTimeout(() => {
+        dom.$refs["delete-btn"].classList.add("opacity-50", "cursor-auto");
+        selectedTarget = null;
+    }, 100);
 }
 
 let selectedTarget = null;
@@ -381,11 +391,15 @@ let selectedTarget = null;
  */
 function removeMachineTarget(index) {
     if (!index) { // if no index is provided
-        index = machineTargets.length-1; // take the last element
-        if (selectedTarget != null) // check if there is a selected target
-            index = machineTargets.findIndex(el => el.name == selectedTarget.value); // if so, find the index of this target
+        if (selectedTarget != null) {// check if there is a selected target
+            let value = selectedTarget.value;
+            index = machineTargets.findIndex(el => el.name == value); // if so, find the index of this target
+        }
     }
-    machineTargets.splice(index, 1); // remove the target from the list
+    if (index != undefined) {
+        machineTargets.splice(index, 1); // remove the target from the lists
+        dom.$refs["delete-btn"].classList.add("opacity-50", "cursor-auto");
+    }
     updateDom();
 }
 
