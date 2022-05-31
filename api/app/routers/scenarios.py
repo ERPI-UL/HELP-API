@@ -175,7 +175,6 @@ async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = D
 
 @router.put('/steps/{idStep}')
 async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
-    step = utils.sanitizer(step)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
@@ -186,7 +185,7 @@ async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depen
     stepDB.name = step.name
     stepDB.description = step.description
     stepDB.ordernumber = step.ordernumber
-    await stepDB.save()
+    stepDB.type = await Models.Type.get(name=step.type.name).first()
     if step.type.name == 'choice':
         if stepDB.choice:
             stepDB.choice.labelleft = step.choice.option_left.label
@@ -196,6 +195,13 @@ async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depen
             await stepDB.choice.save()
         else:
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+        await stepDB.save()
+    else:
+        stepDB.choice = None
+        await stepDB.save()
+        choice = await Models.Choice.get_or_none(id=stepDB.choice_id)
+        if choice:
+            await choice.delete()
     for target in step.targets:
         await stepDB.targets.add(await Models.Target.get(id=target))
     stepDB.position.x = step.position.x
