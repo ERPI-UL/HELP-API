@@ -115,7 +115,6 @@ async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.Ins
 
 @router.post("/machines")
 async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
-    machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -124,7 +123,6 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
 
 @router.put('/machines/{idMachine}')
 async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
-    machine = utils.sanitizer(machine)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
@@ -134,7 +132,6 @@ async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: 
 
 @router.post('/')
 async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depends(utils.getAdminLevel)):
-    scenario = utils.sanitizer(scenario)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
@@ -154,7 +151,6 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
 
 @router.post('/{idScenario}/steps')
 async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
-    step = utils.sanitizer(step)
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
