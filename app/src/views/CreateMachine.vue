@@ -25,7 +25,7 @@
                                     <div class="flex flex-col grow space-y-2 p-2 h-fit min-h-0 overflow-y-scroll overflow-x-hidden border border-gray-200 rounded">
                                         <div v-for="el in machineTargets">
                                             <input 
-                                                type="text" name="machine-target" v-bind:value="el.data" v-on:change="setMachineTarget(el.id, $event.target.value);"
+                                                type="text" name="machine-target" :id="'machine-target-'+el.id" v-bind:value="el.name" v-on:change="setMachineTarget(el.id, $event.target.value);"
                                                 v-on:focus="setSelectedTarget($event.target);"
                                                 class="whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"
                                             >
@@ -95,6 +95,7 @@ class Machine {
     id = 0;
     name = "";
     description = "";
+    /**@type {{name:string,id:number}[]} */
     targets = [];
     constructor(id, name, description, targets) {
         this.id = id;
@@ -107,14 +108,15 @@ class Machine {
 function updateDom() {
     // sort the targets by name
     machineTargets = machineTargets.sort((a, b) => {
-        if (a.data < b.data) return -1;
-        if (a.data > b.data) return 1;
+        if (a.name < b.name) return -1;
+        if (a.name > b.name) return 1;
         return 0;
     });
     // update vue.js dom
     if (dom != null) dom.$forceUpdate();
 }
 
+/**@type {Machine} */
 let originalMachine = null;
 function retreiveMachineInfos() {
     if (action=="Modifier")
@@ -140,46 +142,36 @@ function saveModifications(name, description, targets) {
         }).catch(console.error);
     } // else logMessage("Aucune information machine à sauvegarder.")
 
-    let _toRemove = [];
-    let targetsToDelete = Array.from(originalMachine.targets);
-    targets.forEach(target => {
-        let index = targetsToDelete.findIndex(t => t.id == target.id);
-        if (index >= 0) _toRemove.push(index);
-    });
-    for(let i = _toRemove.length-1; i >= 0; i--) targetsToDelete.splice(_toRemove[i], 1);
-
-    _toRemove = [];
-    let targetsToAdd = Array.from(targets);
+    let targetsToDelete = [];
+    let targetsToAdd = [];
+    let targetsToModify = [];
+    
     originalMachine.targets.forEach(target => {
-        let index = targetsToAdd.findIndex(t => t.name == target.data && t.id == target.id);
-        if (index >= 0) _toRemove.push(index);
+        let index = targets.findIndex(t => t.id == target.id);
+        if (index < 0) targetsToDelete.push(target);
+        else if (targets[index].name != target.name) targetsToModify.push(targets[index]);
     });
-    for(let i = _toRemove.length-1; i >= 0; i--) targetsToAdd.splice(_toRemove[i], 1);
-
-    _toRemove = [];
-    let targetsToModify = Array.from(originalMachine.targets);
-    targetsToModify.forEach(target => {
-        let index = targets.findIndex(t => t.data != target.name && t.id == target.id);
-        if (index < 0) _toRemove.push(targetsToModify.findIndex(t => t.id == target.id));
-        else targetsToModify[index].name = targets[index].data;
+    targets.forEach(target => {
+        let index = originalMachine.targets.findIndex(t => t.id == target.id);
+        if (index < 0) targetsToAdd.push(target);
     });
-    for(let i = _toRemove.length-1; i >= 0; i--) targetsToModify.splice(_toRemove[i], 1);
 
-    let taskDone = [false, false, false];
-    const setTaskDone = (nbr) => {
-        taskDone[nbr] = true;
-        if (!taskDone[0] || !taskDone[1] || !taskDone[2]) return;
+    console.log("Added: ", targetsToAdd);
+    console.log("Modified: ", targetsToModify);
+    console.log("Deleted: ", targetsToDelete);
+
+    const setTaskDone = () => {
         logMessage("Modifications sauvegardées");
-        redirectHome();
+        // redirectHome();
         // retreiveMachineInfos();
     };
 
     let deleteCounter = 0;
-    const checkForDelete = () => {deleteCounter++; if (deleteCounter < targetsToDelete.length) return; setTaskDone(0); modifyTargets();};
+    const checkForDelete = () => {if (++deleteCounter >= targetsToDelete.length) modifyTargets();};
     let addCounter = 0;
-    const checkForAdd = () => {addCounter++; if (addCounter < targetsToAdd.length) return; setTaskDone(1);};
+    const checkForAdd = () => {if (++addCounter >= targetsToAdd.length) setTaskDone();};
     let modifyCounter = 0;
-    const checkForModify = () => {modifyCounter++; if (modifyCounter < targetsToModify.length) return; setTaskDone(2); addTargets();};
+    const checkForModify = () => {if (modifyCounter >= targetsToModify.length) addTargets();};
 
     targetsToDelete.forEach(target => {
         API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
@@ -196,10 +188,10 @@ function saveModifications(name, description, targets) {
     const addTargets = () => {
         if (targetsToAdd.length > 0) {
             targetsToAdd.forEach(target => {
-                API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), targetsToAdd.map(t => t.data)).then(res => {
+                API.execute_logged(API.ROUTE.MACHINES+originalMachine.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), {name: target.name}).then(res => {
                     // added
-                    // let index = machineTargets.findIndex(t => t.data == res.name);
-                    // if (index >= 0) machineTargets[index].id = res.id;
+                    let index = machineTargets.findIndex(t => t.name == res.name);
+                    if (index >= 0) machineTargets[index].id = res.id;
                 }).catch(console.error).finally(checkForAdd);
             })
         } else checkForAdd();
@@ -228,13 +220,13 @@ function saveMachine() {
 
     for (let i = 0; i < machineTargs.length; i++) {
         const target = machineTargs[i];
-        if (target.data < 1) {
+        if (target.name < 1) {
             logMessage("Veuillez préciser un nom de cible.")
             return;
         }
         for (let j = i+1; j < machineTargs.length; j++) {
             const target2 = machineTargs[j];
-            if (target2.data == target.data) {
+            if (target2.name == target.name) {
                 logMessage("Veuillez ne pas préciser deux fois la même cible.")
                 return;
             }
@@ -252,18 +244,27 @@ function saveMachine() {
         name: machineName.value,
         description: machineDesc.value
     }).then(res => {
-        API.execute_logged(API.ROUTE.MACHINES+res.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), machineTargets.map(el =>el.data), API.TYPE_JSON).then(res => {
-            logMessage("Machine créée avec succès !");
-            button.innerHTML = action;
-            redirectHome();
-        }).catch(err => {
-            logMessage("Erreur lors de la création des cibles de la machine.");
-            console.error(err);
-        });
+        let additionCounter = 0;
+        const checkForAddition = () => {
+            console.log("checking : "+additionCounter+" out of "+machineTargs.length);
+            if (++additionCounter >= machineTargs.length) {
+                logMessage("Machine créée");
+                redirectHome();
+            }
+        }
+        if (machineTargets.length > 0) {
+            machineTargets.forEach(target => {
+                API.execute_logged(API.ROUTE.MACHINES+res.id+API.ROUTE.__TARGETS, API.METHOD_POST, User.currentUser.getCredentials(), {name: target.name}).then(res => {
+                    // added
+                    let index = machineTargets.findIndex(t => t.name == res.name);
+                    if (index >= 0) machineTargets[index].id = res.id;
+                }).catch(console.error).finally(checkForAddition);
+            });
+        } else checkForAddition();
     }).catch(err => {
         logMessage("Erreur lors de la création de la machine.");
-        console.error(err);
-        err.json().then(json => {
+        if (!err.json) console.error(err);
+        else err.json().then(json => {
             console.error(json)
             switch (json.detail[0].type) {
                 case "IntegrityError":
@@ -278,21 +279,21 @@ function saveMachine() {
 
 function setMachineTarget(id, newText) {
     let index = machineTargets.findIndex(el => el.id == id);
-    machineTargets[index].data = newText;
+    machineTargets[index].name = newText;
 }
 
 let IDCounter = 0;
 function addMachineTarget(target=null) {
     let id = IDCounter++;
-    let data = "";
+    let name = "";
     if (target != null) {
         id = target.id;
-        data = target.name;
+        name = target.name;
         IDCounter = id+1;
     }
 
     machineTargets.push({
-        data: data,
+        name: name,
         id: id
     });
     updateDom();
@@ -307,7 +308,7 @@ function removeMachineTarget(index) {
     if (!index) {
         index = machineTargets.length-1;
         if (selectedTarget != null)
-            index = machineTargets.findIndex(el => el.data == selectedTarget.value);
+            index = machineTargets.findIndex(el => el.name == selectedTarget.value);
     }
     machineTargets.splice(index, 1);
     updateDom();

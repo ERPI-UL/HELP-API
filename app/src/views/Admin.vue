@@ -1,11 +1,15 @@
 <template>
+    <!-- Admin view page -->
     <div class="min-h-screen flex flex-col bg-black">
-        <div class="p-2">
+        <div class="p-2"> <!-- Header (with black background) -->
             <Topbar class="bg-gray-800"></Topbar>
         </div>
+        <!-- Start main panel -->
         <div class="flex bg-gray-800 m-4 shadow-lg rounded-lg p-2 grow">
+            <!-- Start user managemenet zone -->
             <div class="flex flex-col rounded-lg p-2 space-y-4 max-w-full">
                 <p class="text-gray-300 text-lg">Utilisateurs</p>
+                <!-- User deletion -->
                 <div class="flex flex-col space-y-1 max-w-full">
                     <p class="text-gray-400">Supprimer un utilisateur :</p>
                     <div class="flex space-x-6">
@@ -20,6 +24,7 @@
                         :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsersDelete.map(el => el.id)">
                     </PaginationChoice>
                 </div>
+                <!-- User role modification -->
                 <div class="flex flex-col space-y-1 max-w-full">
                     <p class="text-gray-400">Changer le role d'un utilisateur :</p>
                     <div class="flex space-x-6">
@@ -41,13 +46,14 @@
                     </PaginationChoice>
                 </div>
             </div>
+            <!-- End user managemenet zone -->
         </div>
+        <!-- End main panel -->
+
+        <!-- Popup debug message zone -->
         <div id="log-message" class="logs-container">
-            <!-- JUST FOR TAILWIND TO GENERATE COLORS IN CSS -->
-            <div class="bg-sky-600"></div>
-            <div class="bg-red-600"></div>
-            <!-- JUST FOR TAILWIND TO GENERATE COLORS IN CSS -->
-            
+            <div class="bg-sky-600"></div> <!-- JUST FOR TAILWIND TO GENERATE COLORS IN CSS -->
+            <div class="bg-red-600"></div> <!-- JUST FOR TAILWIND TO GENERATE COLORS IN CSS -->
         </div>
     </div>
 </template>
@@ -60,13 +66,24 @@ import PaginationChoice from "../components/PaginationChoice.vue";
 import DangerousButton from "../components/DangerousButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 
+/**
+ * Logger class, used to display debug messages in the html popup zone (at the bottom center of the screen)
+ */
 class Logger {
     static div = null;
 
+    /**
+     * Retreives the html popup zone
+     */
     static init() {
         Logger.div = document.getElementById("log-message");
     }
 
+    /**
+     * Creates a new popup message based on the given message and the popup color
+     * @param {string} message popup displayed message
+     * @param {string} color popup color
+     */
     static createDiv(message, color) {
         if (Logger.div === null) Logger.init();
         const newDiv = document.createElement("div");
@@ -79,17 +96,27 @@ class Logger {
         }, 3000);
     }
 
+    /**
+     * Logs a message in the popup zone
+     */
     static log(message) {
         Logger.createDiv(message, "sky");
     }
 
+    /**
+     * Logs an error in the popup zone
+     */
     static error(message) {
         Logger.createDiv(message, "red");
     }
 }
-window.Logger = Logger;
 
+// array containing the users in the delete selection
 let availableUsersDelete = [];
+
+/**
+ * Updates the delete select html element according to the availableUsersDelete array
+ */
 function updateUserDeleteSelect(selectValue) {
     const userSelect = document.getElementById("user-select-remove");
     let val = userSelect.value;
@@ -111,6 +138,10 @@ function updateUserDeleteSelect(selectValue) {
             userSelect.value = selectValue;
     }, 10);
 }
+/**
+ * Adds a user to the given content (users list to add) to the availableUsersDelete array (if they are not already in it)
+ * And updates the html select element
+ */
 function addUserDeleteSelection(content) {
     availableUsersDelete = availableUsersDelete.filter(el => el.id in content.map(el => el.id));
     let nbAdded = 0, lastSelectedID = 0;
@@ -124,7 +155,12 @@ function addUserDeleteSelection(content) {
     updateUserDeleteSelect((nbAdded==1)? lastSelectedID: undefined);
 }
 
+// array containing the users in the role selection
 let availableUsersRole = [];
+
+/**
+ * Updates the role select html element according to the availableUsersRole array
+ */
 function updateUserRoleSelect(selectValue) {
     const userSelect = document.getElementById("user-select-role");
     let val = userSelect.value;
@@ -150,6 +186,10 @@ function updateUserRoleSelect(selectValue) {
         }).catch(Logger.error);
     }, 10);
 }
+/**
+ * Adds a user to the given content (users list to add) to the availableUsersRole array (if they are not already in it)
+ * And updates the html select element
+ */
 function addUserRoleSelection(content) {
     availableUsersRole = availableUsersRole.filter(el => el.id in content.map(el => el.id));
     let nbAdded = 0, lastSelectedID = 0;
@@ -163,6 +203,9 @@ function addUserRoleSelection(content) {
     updateUserRoleSelect((nbAdded==1)? lastSelectedID: undefined);
 }
 
+/**
+ * Deletes the selected user in the delete html select
+ */
 function deleteUser() {
     const userSelect = document.getElementById("user-select-remove");
     const userID = parseInt(userSelect.value);
@@ -176,6 +219,9 @@ function deleteUser() {
     }).catch(Logger.error);
 }
 
+/**
+ * Changes the selected user in the user-role html select for the new role selected in the role html select
+ */
 function updateUserRole() {
     const userSelect = document.getElementById("user-select-role");
     const roleSelect = document.getElementById("role-select");
@@ -198,18 +244,20 @@ export default {
         ValidateButton
     },
     setup() {
-        Logger.init();
+        Logger.init(); // retreive the log html zone
         return {User, API, availableUsersDelete, availableUsersRole, deleteUser, updateUserRole}
     },
     mounted() {
-        if (!User.currentUser.isAdmin()) window.location.href = "/";
-        updateUserDeleteSelect();
+        if (!User.currentUser.isAdmin()) window.location.href = "/"; // if not admin, go back
+        updateUserDeleteSelect(); // update the user selects html elements
+        // if the user select is on "Selectionner ..." option, display the user's pagination
         document.getElementById("user-select-remove").addEventListener("change", ev => {
             if (ev.target.value == "<select>") {
                 this.$refs["userDeletePagination"].show();
             }
         });
-        updateUserRoleSelect();
+        updateUserRoleSelect(); // update the role select html element
+        // if the other user select is on "Selectionner ..." option, display the other user's pagination
         document.getElementById("user-select-role").addEventListener("change", ev => {
             if (ev.target.value == "<select>") {
                 this.$refs["userRolePagination"].show();
