@@ -1,4 +1,5 @@
 <template>
+    <!-- Template machine card : Used to represente a machine in the machine listing webpage -->
     <div class="scenario-parent bg-white rounded-lg shadow-lg p-4 w-fit h-fit min-w-[15vw] m-4 hover:shadow-xl">
         <div class="top">
             <div class="flex justify-between center">

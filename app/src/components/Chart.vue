@@ -1,8 +1,9 @@
 <template>
-    <div v-on:click="toogleFullscreen(this)" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-[20vw] h-min max-w-full max-h-full m-4 scale-100 hover:shadow-xl hover:scale-105 cursor-pointer">
-        <div>
+    <!-- Template chart view : Used to display a graph to the user based on informations in the [charInfos] variable -->
+    <div v-on:click="toogleFullscreen(this)" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-[20vw] min-h-[10vh] h-min max-w-full max-h-full m-4 scale-100 hover:shadow-xl hover:scale-105 cursor-pointer">
+        <div class="flex flex-col min-h-0">
             <h2 class="text-center font-bold">{{title}}</h2>
-            <canvas id="chart-render" class="flex grow bg-white"></canvas>
+            <canvas id="chart-render" class="flex grow-0 bg-white my-auto max-h-full min-h-[10vh]"></canvas>
         </div>
     </div>
 </template>
@@ -10,6 +11,10 @@
 <script>
 import Chart from "chart.js/auto";
 
+/**
+ * Creates a chart inside the template (using Chart.JS)
+ * and attaches the onclick event listener for fullscreen mode
+ */
 function setChart(el, div, infos) {
     const chart = new Chart(div, infos);
     div.parentNode.addEventListener("click", ev => {
@@ -18,6 +23,7 @@ function setChart(el, div, infos) {
 }
 
 /**
+ * Toogle the fullscreen mode of the chart, modifying the chart's css to fit the screen's size for fullscreen mode
  * @param {HTMLElement} el
  */
 function toogleFullscreen(el) {
@@ -55,13 +61,14 @@ export default {
     left: 15vw;
     width: 70vw;
     height: 80vh;
-    z-index: 99;
     cursor: auto;
     box-shadow: 0px 0px 80px #0005;
     border-radius: 1em;
     padding: 1em;
 }
 .fullscreen-parent {
+    z-index: 99;
+    animation: spawn-in 800ms ease;
     background-color: #0006;
     position: absolute;
     top: 0px;
