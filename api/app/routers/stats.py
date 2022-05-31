@@ -109,6 +109,7 @@ async def sessionToJSON(session):
         'scenario': {
             "id": session.scenario.id,
         },
+        'vrmode': session.vrmode,
         'date': session.date,
         'evaluation': session.evaluation,
         'playedSteps': [await playedStepToJSON(playedStep) for playedStep in session.playedSteps]

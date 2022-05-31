@@ -113,9 +113,9 @@ class Target(Model):
 
 class playedStep(Model):
     id = fields.IntField(pk=True)
-    step = fields.ForeignKeyField('models.Step', related_name='playedSteps')
+    step = fields.ForeignKeyField('models.Step', related_name='playedSteps',on_delete=fields.CASCADE)
     session = fields.ForeignKeyField(
-        'models.Session', related_name='playedSteps')
+        'models.Session', related_name='playedSteps',on_delete=fields.CASCADE)
     progressNumber = fields.IntField(default=0)  # garantie l'ordre des steps
     missed = fields.BooleanField(default=False)
     skipped = fields.BooleanField(default=False)
@@ -132,8 +132,9 @@ class Session(Model):
     user = fields.ForeignKeyField(
         'models.User', related_name='sessions')
     scenario = fields.ForeignKeyField(
-        'models.Scenario', related_name='sessions')
+        'models.Scenario', related_name='sessions',on_delete=fields.CASCADE)
     evaluation = fields.BooleanField()
+    vrmode = fields.BooleanField(null=True)
     date = fields.DatetimeField(auto_now_add=True)
 # class UserinFront(BaseModel):
 #     id: int
@@ -193,7 +194,7 @@ ScenarioOut = pydantic_model_creator(
 TargetOut = pydantic_model_creator(
     Target, name='TargetOut', include=['id', 'name'])
 SessionOut = pydantic_model_creator(
-    Session, name='SessionOut', include=['id', 'date', 'evaluation', 'scenario_id'])
+    Session, name='SessionOut', include=['id', 'date', 'evaluation', 'scenario_id','vrmode'])
 
 
 class pagination(BaseModel):
