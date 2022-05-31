@@ -202,6 +202,8 @@ async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depen
         choice = await Models.Choice.get_or_none(id=stepDB.choice_id)
         if choice:
             await choice.delete()
+    #clear all targets
+    await stepDB.targets.clear()
     for target in step.targets:
         await stepDB.targets.add(await Models.Target.get(id=target))
     stepDB.position.x = step.position.x
@@ -240,6 +242,7 @@ async def shortScenarioToJSON(scenario):
 async def stepToJSON(step):
     return {
         'id': step.id,
+        'ordernumber': step.ordernumber,
         'description': step.description,
         'label': step.label,
         'name': step.name,
