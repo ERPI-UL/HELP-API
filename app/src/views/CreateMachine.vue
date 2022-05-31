@@ -156,13 +156,9 @@ function saveModifications(name, description, targets) {
         if (index < 0) targetsToAdd.push(target);
     });
 
-    console.log("Added: ", targetsToAdd);
-    console.log("Modified: ", targetsToModify);
-    console.log("Deleted: ", targetsToDelete);
-
     const setTaskDone = () => {
         logMessage("Modifications sauvegardées");
-        // redirectHome();
+        redirectHome();
         // retreiveMachineInfos();
     };
 
@@ -173,18 +169,24 @@ function saveModifications(name, description, targets) {
     let modifyCounter = 0;
     const checkForModify = () => {if (modifyCounter >= targetsToModify.length) addTargets();};
 
-    targetsToDelete.forEach(target => {
-        API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
-            // deleted
-        }).catch(console.error).finally(checkForDelete);
-    });
-    const modifyTargets = () => {
-        targetsToModify.forEach(target => {
-            API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_PUT, User.currentUser.getCredentials(), {name: target.name}).then(res => {
-                // modified
-            }).catch(console.error).finally(checkForModify);
+    if (targetsToDelete.length > 0) {
+        targetsToDelete.forEach(target => {
+            API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
+                // deleted
+            }).catch(console.error).finally(checkForDelete);
         });
+    } else checkForDelete();
+
+    const modifyTargets = () => {
+        if (targetsToModify.length > 0) {
+            targetsToModify.forEach(target => {
+                API.execute_logged(API.ROUTE.MACHINES+API.ROUTE.__TARGETS+target.id, API.METHOD_PUT, User.currentUser.getCredentials(), {name: target.name}).then(res => {
+                    // modified
+                }).catch(console.error).finally(checkForModify);
+            });
+        } else checkForModify();
     }
+
     const addTargets = () => {
         if (targetsToAdd.length > 0) {
             targetsToAdd.forEach(target => {
@@ -196,10 +198,6 @@ function saveModifications(name, description, targets) {
             })
         } else checkForAdd();
     }
-
-    if (targetsToAdd.length == 0) checkForAdd();
-    if (targetsToDelete.length == 0) checkForDelete();
-    if (targetsToModify.length == 0) checkForModify();
 }
 
 function saveMachine() {
