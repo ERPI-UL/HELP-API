@@ -242,6 +242,7 @@ async def shortScenarioToJSON(scenario):
 async def stepToJSON(step):
     return {
         'id': step.id,
+        'ordernumber': step.ordernumber,
         'description': step.description,
         'label': step.label,
         'name': step.name,
