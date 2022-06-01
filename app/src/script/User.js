@@ -1,6 +1,10 @@
 import API from "./API";
 
+/**
+ * User class, used to store user information.
+ */
 class User {
+    // User available permissions
     static PERMISSIONS = {
         VISITOR: 0,
         LEARNER: 1,
@@ -8,12 +12,14 @@ class User {
         ADMIN: 3
     }
 
+    // User current (default at what's in the localstorage)
     static currentUser = User.fromLocalStorage();
 
-    static get USER_ADMIN() {return new User("FurAdmin", "Pawsword", "fur.admin@indico.fr", "Fur", "Admin", {type: "Bearer", token: "fur4dm1nt0k3nuwu"}, User.PERMISSIONS.ADMIN);}
-    static get USER_TEACHER() {return new User("FurTeacher", "Pawsword", "fur.teacher@indico.fr", "Fur", "Teacher", {type: "Bearer", token: "furt34ch3rt0k3nuwu"}, User.PERMISSIONS.TEACHER);}
-    static get USER_LEARNER() {return new User("FurLearner", "Pawsword", "fur.learner@indico.fr", "Fur", "Learner", {type: "Bearer", token: "furl34rn3rt0k3nuwu"}, User.PERMISSIONS.LEARNER);}
-
+    /**
+     * Retreives the user's informations in the token and creates a new user with them
+     * @param {string|object} token token object or string containing type and token fields
+     * @returns a new user created from the given token object or string
+     */
     static fromToken(token) {
         if (token == null) return new User();
         if (typeof token === 'string') token = JSON.parse(token);
@@ -30,39 +36,74 @@ class User {
         }
     }
 
+    /**
+     * Removes all user informations from the client
+     */
     static forgetUser() {
         localStorage.removeItem("user");
         User.curUser = null;
     }
 
+    /**
+     * Returns the user stored in the client's localstorage (new User is null)
+     * @returns {User} The user corresponding to the state of the client's local storage
+     */
     static fromLocalStorage() {
         const localData = localStorage.getItem("user");
         return localData? User.fromJSON(localData) : new User();
     }
 
+    /**
+     * Retreives the user from the localstorage and replaces the current one by the new retreived one
+     */
     static refreshUser() {
         User.curUser = User.fromLocalStorage();
     }
 
+    /**
+     * Saves a user in the client's localstorage
+     * @param {User} user user to save to the localstorage
+     */
     static saveUser(user=User.currentUser) {
         localStorage.setItem("user", User.toJSON(user));
         User.curUser = user;
     }
 
+    /**
+     * Creates a user from the given JSON string or object
+     * @param {string|object} json json object to use to create the user from
+     * @returns the user created from the given JSON string or object
+     */
     static fromJSON(json) {
         if (json == null) return new User();
         if (typeof json === 'string') json = JSON.parse(json);
         return new User(json.username, json.password, json.email, json.firstname, json.lastname, json.token, json.permissions, json.id);
     }
 
+    /**
+     * Converts a user to a JSON string
+     * @param {User} user user to convert to JSON
+     * @returns json string representing the user
+     */
     static toJSON(user) {
         return JSON.stringify(user);
     }
 
+    /**
+     * Compares two user's credentials and returns true if they are the same
+     * @param {User} user1 first user
+     * @param {User} user2 second user
+     * @returns if the user's credentials are the same
+     */
     static sameCredentials(user1, user2) {
         return user1.username === user2.username && user1.password === user2.password;
     }
 
+    /**
+     * Checks if a given user is connected or not
+     * @param {User} user user to test
+     * @returns if the user is connected is connected or not
+     */
     static isConnected(user) {
         return !(user == null || user.username == null || user.username == "");
     }
@@ -88,6 +129,10 @@ class User {
         this.permissions = permissions;
     }
 
+    /**
+     * Fetches all the user's informations from the server with an API call
+     * @returns {Promise} a promise containing the user's informations, resolving when the API call is done
+     */
     fetchInformations() {
         return new Promise((resolve, reject) => {
             if (!this.token && !(this.username && this.password)) {
@@ -109,20 +154,33 @@ class User {
         });
     }
 
+    /**
+     * Returns the credentials corresponding to this user
+     * @returns The credentials of the user
+     */
     getCredentials() {
         return this.token ?? {username: this.username, password: this.password}
     }
 
+    // is the user a visitor
     isVisitor() {return this.permissions == User.PERMISSIONS.VISITOR;}
+    // is the user a teacher
     isTeacher() {return this.permissions == User.PERMISSIONS.TEACHER;}
+    // is the user a learner
     isLearner() {return this.permissions == User.PERMISSIONS.LEARNER;}
+    // is the user an admin
     isAdmin() {return this.permissions == User.PERMISSIONS.ADMIN;}
 
+    // does the user have visitor permissions (or above)
     canVisitor() {return this.permissions >= User.PERMISSIONS.VISITOR;}
+    // does the user have teacher permissions (or above)
     canTeacher() {return this.permissions >= User.PERMISSIONS.TEACHER;}
+    // does the user have learner permissions (or above)
     canLearner() {return this.permissions >= User.PERMISSIONS.LEARNER;}
+    // does the user have admin permissions (or above)
     canAdmin() {return this.permissions >= User.PERMISSIONS.ADMIN;}
 
+    // is the user equal to another user (compares the tokens)
     equals(user) {return this.token.token == user.token.token;}
 }
 
