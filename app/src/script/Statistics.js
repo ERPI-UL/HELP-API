@@ -8,6 +8,7 @@ const TYPE = {
 };
 
 /**
+ * Adds a graphical chart to the given list
  * @param {Array} list list of graphs to add this graph to
  * @param {string} title graph title
  * @param {string} type graph type (line or bar)
@@ -49,11 +50,18 @@ function addChartToList(list, title, type, labels, sets) {
     });
 }
 
+/**
+ * Hides the loading zone
+ */
 function hideLoading() {
     document.getElementById("loadzone").style.display = "none";
     document.getElementById("errorzone").style.display = "none";
 }
 
+/**
+ * Shows the laoding zone and makes every list in parameter empty
+ * @param  {...any} lists lists to empty
+ */
 function showLoading(...lists) {
     lists.forEach(l => l.splice(0, l.length));
     window.indico.refreshStatistics();
@@ -62,12 +70,23 @@ function showLoading(...lists) {
     document.getElementById("nodatazone").style.display = "none";
 }
 
+/**
+ * Converts a number of seconds to a stringified time
+ * @param {number} time time in seconds to convert to a string
+ * @returns stringified time (minutes+seconds)
+ */
 function stringTime(time) {
     let nbMinutes = Math.floor(time / 60);
     let nbSeconds = time % 60;
     return (nbMinutes > 0 ? `${Math.round(nbMinutes)} minute${nbMinutes >= 2 ? "s" : ""} et ` : ``) + `${Math.round(nbSeconds)} seconde${nbSeconds >= 2 ? "s" : ""}`
 }
 
+/**
+ * Adds a info box data to the given list
+ * @param {object[]} list list to add the info box to
+ * @param {string} title title of the info box
+ * @param {string} info informations of the info box
+ */
 function addInfoBoxToList(list, title, info) {
     list.push({
         title: title,
@@ -75,6 +94,12 @@ function addInfoBoxToList(list, title, info) {
     });
 }
 
+/**
+ * Adds statistics corresponding to all the users and all the scenarios
+ * @param {object[]} charts charts list to add the graphs to
+ * @param {object[]} infoBoxes info boxes list to add the info boxes to
+ * @returns a promise resolving when all the graphics have been added
+ */
 function generateStatistics(charts, infoBoxes) {
     showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
@@ -117,6 +142,13 @@ function generateStatistics(charts, infoBoxes) {
     });
 }
 
+/**
+ * Adds statistics corresponding to the given scenario
+ * @param {object[]} graphList graph list to add the graphs to
+ * @param {object[]} InfoBoxList info boxes list to add the info boxes to
+ * @param {number} scenarioID scenario ID to get the statistics for
+ * @returns Promise resolving when the graphics have been added
+ */
 function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
     showLoading(graphList, InfoBoxList);
     return new Promise((resolve, reject) => {
@@ -178,6 +210,13 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
     });
 }
 
+/**
+ * Adds statistics corresponding to the given user
+ * @param {object[]} charts list of charts to add the graph to
+ * @param {object[]} infoBoxes info boxes list to add the info box to
+ * @param {number} selectedUser user id to get the statistics for
+ * @returns a promise resolving when the graphics have been added
+ */
 function generateUserStatistics(charts, infoBoxes, selectedUser) {
     showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
@@ -209,6 +248,14 @@ function generateUserStatistics(charts, infoBoxes, selectedUser) {
     });
 }
 
+/**
+ * Adds statistics corresponding to the given user ID and scenario ID
+ * @param {object[]} charts list of charts to add the graph to
+ * @param {object[]} infoBoxes list of info boxes to add the info box to
+ * @param {number} selectedScenario scenario id to get the statistics for
+ * @param {number} selectedUser user id to get the statistics for
+ * @returns a promise resolving when the graphics have been added
+ */
 function generateUserScenarioStatistics(charts, infoBoxes, selectedScenario, selectedUser) {
     showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
