@@ -1,6 +1,6 @@
 <template>
     <div class="min-h-screen max-h-screen flex flex-col">
-        <div class="p-2">
+        <div class="p-2"> <!-- Header -->
             <Topbar></Topbar>
         </div>
         <div id="content" class="flex flex-row grow min-h-0">
@@ -9,34 +9,37 @@
                     <div id="scenario-header" class="flex flex-col grow">
                         <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">Informations principales</h2>
                         <div class="flex flex-col m-2 h-fit bg-white rounded-lg p-2">
-                            <div class="flex justify-between">
+                            <div class="flex justify-between"> <!-- Scenario name input (input label and input zone) -->
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Nom du scénario : </p>
                                 <input type="text" id="input-scenarioname" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                             </div>
-                            <div class="flex flex-col grow-0">
+                            <div class="flex flex-col grow-0"> <!-- Scenario description input (input label and input zone) -->
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4">Description du scénario : </p>
                                 <textarea id="input-scenariodesc" name="scenario-desc" rows="10" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                             </div>
-                            <div class="flex justify-between mt-2 h-fit bg-white rounded-lg">
+                            <div class="flex justify-between mt-2 h-fit bg-white rounded-lg"> <!-- Machine selection zone -->
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4">Machine cible : </p>
                                 <select name="machines" id="select-machines" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 pr-10 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     <!-- available machines goes here, plus the <select> option -->
                                     <option value="<select>">Sélectionner ...</option>
                                 </select>
-                                <PaginationChoice
+                                <!-- Machine pagination popup -->
+                                <PaginationChoice 
                                     ref="machinePagination" :title="'Sélection machines'"
                                     :selectID="'#select-machines'" :callback="addMachineSelection" :route="API.ROUTE.MACHINES"
                                     :displayAttribute="el => el.name" :identifier="el => el.id" :selectedValues="availableMachines.map(el => el.id)">
                                 </PaginationChoice>
                             </div>
                         </div>
+
                         <div id="navbar" class="flex flex-col justify-between h-fit mx-2 rounded-lg bg-white p-2">
-                            <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
+                            <div id="log-zone" class="border-none overflow-y-hidden h-[0px]"> <!-- log message zone -->
                                 <p class="opacity-0 text-center text-indigo-600"></p>
                             </div>
+                            <!-- BUTTONS -->
                             <div class="flex grow-0 justify-between">
-                                <BackButton>Annuler</BackButton>
-                                <ValidateButton id="save-btn" v-on:click="saveScenario">Enregistrer</ValidateButton>
+                                <BackButton>Annuler</BackButton> <!-- Cancel button -->
+                                <ValidateButton id="save-btn" v-on:click="saveScenario">Enregistrer</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>
@@ -45,19 +48,22 @@
             <div class="flex flex-col grow w-fit m-2 min-w-0"> <!-- right panel (steps customization) -->
                 <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">Étapes</h2>
                 <div class="flex flex-col m-2 grow overflow-auto border border-2 border-white rounded-lg p-4">
+                    <!-- START FLAG ELEMENT -->
                     <div class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white w-fit">
                         <component :is="icon.flag" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
                         <p>Début</p>
                     </div>
-                    <span class="step-link"></span>
+                    <span class="step-link"></span> <!-- link between steps -->
                     <div id="steps-zone">
                         <!-- step blocks goes here -->
                     </div>
+                    <!-- ADD STEP BUTTON -->
                     <ValidateButton v-on:click="addStep">
                         <component :is="icon.plus" class="flex-shrink-0 h-5 text-white mr-2" aria-hidden="true" />
                         <p>Ajouter une étape</p>
                     </ValidateButton>
-                    <span class="step-link"></span>
+                    <span class="step-link"></span> <!-- link between steps -->
+                    <!-- END FLAG ELEMENT -->
                     <div class="h-fit whitespace-nowrap inline-flex items-center justify-center px-4 py-2 w-fit rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white">
                         <component :is="icon.stop" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
                         <p>Fin</p>
@@ -82,6 +88,9 @@ import {
 import User from '../script/User';
 import { redirectHome } from '../script/common';
 
+/**
+ * BlockInfo class, represents a visual scenario step
+ */
 class BlockInfo {
     id = 0;
     ordernumber = 0;
@@ -107,6 +116,10 @@ class BlockInfo {
     }
 }
 
+/**
+ * Logs a message to the user
+ * @param {string} msg message to display to the user
+ */
 function logMessage(msg) {
     const btn = document.getElementById("save-btn");
     btn.innerHTML = "Enregistrer";
@@ -126,9 +139,14 @@ function logMessage(msg) {
     }, 3000);
 }
 
+// Current available machines in the machine html select
 let availableMachines = [];
+// Current available targets in the targets html selects (in the tutorial steps)
 let availableTargets = [];
 
+/**
+ * Updates the available machines' targets inside all the targets html selects
+ */
 function updateAvailableTargets() {
     let selectTargets = document.querySelectorAll("select[name=select-targets]");
     selectTargets.forEach(select => {
@@ -150,6 +168,9 @@ function updateAvailableTargets() {
     })
 }
 
+/**
+ * Updates the available machines inside the machine html select
+ */
 function updateAvailableMachines(selectValue) {
     let selectMachines = document.getElementById("select-machines");
     selectMachines.innerHTML = "";
@@ -176,7 +197,11 @@ function updateAvailableMachines(selectValue) {
     }, 10);
 }
 
+// available steps to redirect to in a button redirection html select (in choice steps)
 let availableRedirects = [];
+/**
+ * Updates the available steps in every html redirection select
+ */
 function updateAvailableRedirects() {
     availableRedirects = Array.from(document.querySelectorAll(".step-part-container")).map(step => {
         return {
@@ -199,6 +224,10 @@ function updateAvailableRedirects() {
     });
 }
 
+/**
+ * Event listener for machine selection change event,
+ * updates the available targets for the new ones
+ */
 function onMachineChanged() {
     let val = document.getElementById("select-machines").value;
     switch (val) {
@@ -218,7 +247,12 @@ function onMachineChanged() {
     }
 }
 
+// Original scenario fetched at the beginning (if the page is in edit mode)
 let originalScenario = null;
+/**
+ * Retreives the original edited scenario (if in edit mode) and stores it in the originalScenario variable
+ * Updates the machine selection, available targets, available redirections (steps), etc.
+ */
 function fetchScenario() {
     return new Promise((resolve, reject) => {
         const url = window.location.pathname.split("/");
@@ -256,6 +290,11 @@ function fetchScenario() {
     });
 }
 
+/**
+ * Setup function, called at the beginning.
+ * Fetches the original scenario if in edit mode, updates all the available machines, targets, etc.
+ * and attaches all the required event listeners
+ */
 function setup() {
         fetchScenario().then(res => {
         updateAvailableMachines();
@@ -265,10 +304,17 @@ function setup() {
     }).catch(console.error);
 }
 
+/**
+ * Adds a new scenario block to the interface
+ */
 function addStep() {
     createScenarioBlock();
 }
 
+/**
+ * Retreives all the scenario informations from a dom element and returns it as a BlockInfo object
+ * @param {HTMLElement} dom the dom element to get the informations from
+ */
 function blockInfoFromDom(dom) {
     return new BlockInfo(
         parseInt(dom.querySelector("h2").id.split("-")[1]),
@@ -286,16 +332,20 @@ function blockInfoFromDom(dom) {
         {
             option_left: {
                 label: dom.querySelector("input[name='btn-left-label']")?.value,
-                redirect: dom.querySelector("select[name='btn-left-redirect']")?.value
+                redirect: availableRedirects.find(r => r.id == parseInt(dom.querySelector("select[name='btn-left-redirect']")?.value)).name
             },
             option_right: {
                 label: dom.querySelector("input[name='btn-right-label']")?.value,
-                redirect: dom.querySelector("select[name='btn-right-redirect']")?.value
+                redirect: availableRedirects.find(r => r.id == parseInt(dom.querySelector("select[name='btn-right-redirect']")?.value)).name
             }
         }
     );
 }
 
+/**
+ * Retreives all the scenario informations from the dom, builds a scenario object from it and returns it
+ * Also checks if the scenario inputs are valid and if not, it returns null and displays a log message to the user
+ */
 function compileScenario() {
     const informations = {
         name: document.querySelector("input[name=scenario-name]"),
@@ -315,7 +365,7 @@ function compileScenario() {
         if (!check.cond(check.el)) {
             check.el.focus();
             logMessage(check.msg);
-            return;
+            return null;
         }
     }
 
@@ -332,6 +382,10 @@ function compileScenario() {
     return scenario;
 }
 
+/**
+ * Saves the scenario to the server with an API call,
+ * only executed when the page is in creation mode, not edit mode
+ */
 function saveCreations() {
     const button = document.getElementById("save-btn");
     const scenario = compileScenario();
@@ -343,9 +397,13 @@ function saveCreations() {
     }).catch(err => err.json().then(console.error));
 }
 
+/**
+ * Checks if two scenario blocks are equals, depending of their names, descriptions, targets, positions, etc.
+ */
 function stepEquals(a, b) {
     const conditions = [
         a.name == b.name,
+        a.ordernumber == b.ordernumber,
         a.label == b.label,
         a.description == b.description,
         a.targets.length == b.targets.length,
@@ -362,8 +420,12 @@ function stepEquals(a, b) {
     return conditions.every(c => c);
 }
 
+/**
+ * Saves all the modifications brought to a scenario to teh server with multiple API calls
+ * according to modifications, additions, deletions, etc. made to the scenario
+ */
 function saveModifications() {
-    logMessage("Erreur: Modification de scénario non supportée");
+    // logMessage("Erreur: Modification de scénario non supportée");
     const scenario = compileScenario();
     if (scenario.name != originalScenario.name || scenario.description != originalScenario.description) {
         API.execute_logged(API.ROUTE.MACHINES, API.METHOD_PUT, User.currentUser.getCredentials(), {name: scenario.name, description: scenario.description}, API.TYPE_JSON).then(res => {
@@ -396,7 +458,16 @@ function saveModifications() {
         if (deleteCounter++ >= removedSteps.length) {
             if (modifiedSteps.length > 0) {
                 modifiedSteps.forEach(step => {
-                    API.execute_logged(API.ROUTE.STEPS + step.id, API.METHOD_PUT, User.currentUser.getCredentials(), step, API.TYPE_JSON).then(res => {
+                    API.execute_logged(API.ROUTE.STEPS + step.id, API.METHOD_PUT, User.currentUser.getCredentials(), {
+                        name: step.name,
+                        label: step.label,
+                        description: step.description,
+                        ordernumber: step.ordernumber,
+                        position: step.position,
+                        type: step.type,
+                        targets: step.targets,
+                        choice: step.choice
+                    }, API.TYPE_JSON).then(res => {
                         // modified
                     }).catch(err => console.log(err)).finally(checkForModify);
                 });
@@ -429,6 +500,9 @@ function saveModifications() {
     } else checkForDelete();
 }
 
+/**
+ * Saves the scenario to the server (chooses between saveCreations and saveModifications depending on the page's mode)
+ */
 function saveScenario() {
     const url = window.location.pathname.split("/");
     if (url[url.length-1] == "edit")
@@ -436,8 +510,13 @@ function saveScenario() {
     else saveCreations();
 }
 
+// idk what's this but it's needed somewhere
 let displayMachineSelection = () => {};
 
+/**
+ * Adds the new selected content from the pagination window to the available machines list
+ * And updates the html machine selects
+ */
 function addMachineSelection(content) {
     availableMachines = availableMachines.filter(el => el.id in content.map(el => el.id));
     let nbAdded = 0; let lastMachineID = 0;
@@ -467,12 +546,25 @@ function addMachineSelection(content) {
     onMachineChanged();
 }
 
+/**
+ * Returns a new HTML scenario block based on the given informations
+ * @param {number} id id of the scenario block
+ * @param {string} name name of the scenario block
+ * @param {string} title title of the scenario block
+ * @param {string} desc description of the scenario block
+ * @param {{id:number,name:string}[]} targets list of targets of the scenario block (not used yet)
+ * @param {{x:number,y:number,z:number}} pos position attribute of the scenario block
+ * @param {string} mode mode of the scenario block
+ * @param {any} btnInfos choice button informations of the scenario block
+ */
 function getBlockDiv(id, name, title, desc, targets, pos, mode="action", btnInfos={option_left: {label: "Bouton gauche", redirect: ""}, option_right: {label: "Bouton droit", redirect: ""}}) {
     let tgs = "";
     // if (targets)
     //     targets.forEach(target => {
     //         tgs += `<select name="select-targets" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 pr-10 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100" value="${target.id}">${target.name}</select>`
     //     });
+    // WE DON'T ADD THEE TARGETS IN THE TEXT NOW, WE DO IT IN THE createScenarioBlock FUNCTION
+
     const container = document.createElement("div");
     container.classList.add("step-part-container", "flex", "flex-col", "h-fit", "w-fit", "max-w-[80%]");
     container.id = "stepcontainer-" + id;
@@ -576,16 +668,26 @@ function getBlockDiv(id, name, title, desc, targets, pos, mode="action", btnInfo
     return container;
 }
 
+// scenario block's ID counter (incremented by 1 every time a new block is created)
 let ID_COUNTER = 1;
+// list of all the current displayed scenario blocks
 let scenarioBlocks = [];
+
+/**
+ * Creates a new scenario block using the getBlockDiv function, adds it to the scenarioBlocks array,
+ * adds it to the DOM and adds the event listeners to it.
+ */
 function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id) {
-    if (id) ID_COUNTER = id;
-    const newID = ID_COUNTER++;
+    if (id) ID_COUNTER = id; // if an ID is given, set the counter accordingly
+    const newID = ID_COUNTER++; // inscrease by one the counter
     const stepZone = document.getElementById("steps-zone");
-    const newBlock = getBlockDiv(newID, name, title, desc, targets, pos, mode, btnInfos);
+    const newBlock = getBlockDiv(newID, name, title, desc, targets, pos, mode, btnInfos); // create the new block
+
+    // add the new block and a wire behind it (the wire is only here for aesthetic reasons)
     stepZone.appendChild(newBlock);
     stepZone.appendChild(document.createElement("span")).classList.add("step-link");
     
+    // add the block to the list (wired list so we set the .next attribute to the new block id)
     if (scenarioBlocks.length > 0)
         scenarioBlocks[scenarioBlocks.length-1].next = newID;
     scenarioBlocks.push({
@@ -595,18 +697,22 @@ function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id
         previous: (scenarioBlocks.length > 0)? scenarioBlocks[scenarioBlocks.length-1].id: 0
     });
 
+    // timeout to be sure that the DOM is updated and ready for modifications
     setTimeout(() => {
         const selects = [];
+        // add each target to the newly created block
         if (targets) targets.forEach(target => {selects.push({el: window.indico.addStepTarget(newID, target.id, target.name), id: target.id});});
-        updateAvailableTargets();
-        selects.forEach(select => {select.el.value = select.id});
+        updateAvailableTargets(); // call the update function to fill those new step targets
+        selects.forEach(select => {select.el.value = select.id}); // set the value of each select to the target's id
         
+        // add en event listener for name change, to update the available redirects (the step names for choice button redirection)
         newBlock.querySelector("input[name='scenario-name']").addEventListener("change", ev => {
             let index = availableRedirects.findIndex(step => step.id == newID);
             if (index >= 0) availableRedirects[index].name = ev.target.value;
-            updateAvailableRedirects();
+            updateAvailableRedirects(); // update all the html selects
         });
 
+        // add an event listener for a step mode change, to display or not the choice button configuration panel
         let stepMode = newBlock.querySelector("select[name='step-mode']");
         stepMode.stepDiv = newBlock;
         const onModeChange = ev => {
@@ -621,7 +727,9 @@ function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id
             stepMode.value = mode;
             onModeChange({target: stepMode});
         }
-        updateAvailableRedirects();
+
+        updateAvailableRedirects(); // update the available redirects immediately to fill the html select with the newly created block
+        // if the block defaut mode is choice, set all the choice button informations to the given ones
         if (mode == "choice") {
             const leftRedirect = availableRedirects.find(step => step.name === btnInfos.option_left.redirect);
             const rightRedirect = availableRedirects.find(step => step.name === btnInfos.option_right.redirect);
@@ -631,6 +739,11 @@ function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id
     }, 10);
 }
 
+// TODO : BUG DETECTED, FIX IT
+/**
+ * Removes a scenario block from the DOM and from the scenario blocks list
+ * BUG DETECTED, NOT WORKING YET
+ */
 function removeScenarioBlock(id) {
     const blockIndex = scenarioBlocks.findIndex(el => el.id == id);
     const block = scenarioBlocks[blockIndex];
@@ -639,23 +752,24 @@ function removeScenarioBlock(id) {
     dom.nextElementSibling.remove();
     dom.remove();
     let current = block;
-    if (current.next == 0 && scenarioBlocks.length > 1) {
-        const prev = scenarioBlocks.find(el => el.next == id);
-        if (prev) prev.next = 0;
-    }
+    const prev = scenarioBlocks.find(el => el.next == id);
+    if (prev) prev.next = current.next;
     while (current.next != 0) {
-        let currentIndex = scenarioBlocks.findIndex(el => el.id == current.next);
-        if (currentIndex < 0) {
+        let nextIndex = scenarioBlocks.findIndex(el => el.id == current.next);
+        if (nextIndex < 0 || current.next == 0) {
             current.next = 0;
             break;
         } else {
-            current = scenarioBlocks[currentIndex];
-            document.getElementById("stepname-"+current.id).innerHTML = "Étape "+(currentIndex);
+            current = scenarioBlocks[nextIndex];
+            document.getElementById("stepname-"+current.id).innerHTML = "Étape "+(nextIndex);
         }
     }
     scenarioBlocks.splice(blockIndex, 1);
 }
 
+/**
+ * Adds a step target to a given scenario block (from his ID)
+ */
 function addStepTarget(stepID, value, label) {
     const select = document.createElement("select");
     select.name = "select-targets";
@@ -667,6 +781,9 @@ function addStepTarget(stepID, value, label) {
     return select;
 }
 
+/**
+ * Removes a step target from a scenario block (from his ID)
+ */
 function removeStepTarget(stepID) {
     document.getElementById("steptargetscontainer-"+stepID).lastElementChild?.remove();
     updateAvailableTargets();
@@ -677,6 +794,7 @@ window.indico.removeStepTarget = removeStepTarget;
 window.indico.addStepTarget = addStepTarget;
 window.indico.removeScenarioBlock = removeScenarioBlock;
 
+// FOR DEBUG PURPOSE, DELETE IT LATER
 window.displayJSON = function(str) {
     console.log(JSON.stringify(JSON.parse(str.replaceAll("\\", "")), null, 2));
 }

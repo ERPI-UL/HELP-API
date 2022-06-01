@@ -25,14 +25,14 @@
                 <PopoverGroup as="nav" class="hidden md:flex space-x-10">
                     <div v-for="opts in menu"> <!-- For each menu's elements, add a clickable label -->
                         
-                        <div v-if="opts.href" class="text-gray-500"> <!-- if the element does not contains submenus, make a redirection label -->
+                        <div v-if="opts.href" class="text-gray-500 hover:text-gray-900"> <!-- if the element does not contains submenus, make a redirection label -->
                             <a :href="opts.href"> {{ opts.name }} </a>
                         </div>
 
                         <div v-if="opts.elements"> <!-- If the element contains submenus, add a popover containing the submenus -->
                             <Popover class="relative" v-slot="{ open }">
                                 <!-- Add a clickable label to the menu (that will unwarp the submenu's list) -->
-                                <PopoverButton :class="[open ? 'text-gray-900' : 'text-gray-500', 'group rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500']">
+                                <PopoverButton :class="[open ? 'text-gray-900' : 'text-gray-500', 'group rounded-md inline-flex items-center text-base font-medium hover:text-gray-900']">
                                     <span> {{ opts.name }} </span>
                                     <ChevronDownIcon :class="[open ? 'text-gray-600' : 'text-gray-400', 'ml-2 h-5 w-5 group-hover:text-gray-500']" aria-hidden="true" />
                                 </PopoverButton>
