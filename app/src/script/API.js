@@ -1,4 +1,5 @@
 class API {
+    // API constants
     static API_URL = window.location.protocol + '//indico-api.lf2l.fr';
     static get METHOD_GET() { return "GET"; }
     static get METHOD_PUT() { return "PUT"; }
@@ -9,6 +10,7 @@ class API {
     static get TYPE_JSON() { return "application/json"; }
     static get TYPE_NONE() { return undefined; }
 
+    // API routes
     static ROUTE = {
         LOGIN: "/auth/token/",
         RESET: "/auth/reset/",
@@ -39,6 +41,15 @@ class API {
         }
     };
 
+    /**
+     * Makes an API call with the specified parameters
+     * @param {string} path API call url path (see API.ROUTES for possible routes)
+     * @param {string} method API call method (see API.METHOD_ for possible values)
+     * @param {object|string} body API call body (data to send, ignored if METHOD_GET is used)
+     * @param {string} type API call data type (see API.TYPE_ for possible values))  
+     * @param {object[]}} headers API call additionnal headers
+     * @returns a promise resolving when the API call is done
+     */
     static execute(path, method = this.METHOD_GET, body = null, type = this.TYPE_NONE, headers = null) {
         return new Promise((resolve, reject) => {
             // update the API protocol if needed
@@ -76,7 +87,8 @@ class API {
                     default: break;
                 }
             }
-
+            
+            // try with / at the request end
             fetch(API.API_URL + path, {
                 credentials: "omit",
                 method: method,
@@ -93,6 +105,7 @@ class API {
                     }).catch(reject);
                 }
             }).catch(err => {
+                // is the request fails, test the same request but without a / at the end (in case the error it just a 307 shitty redirection)
                 fetch(API.API_URL + path.replace("?", "/?"), {
                     credentials: "omit",
                     method: method,
@@ -113,6 +126,16 @@ class API {
         });
     }
 
+    /**
+     * Makes a logged API call with the specified parameters, using the specified credentials (token + token type / username + password)
+     * @param {*} path API call url path (see API.ROUTES for possible routes)
+     * @param {*} method API call method (see API.METHOD_ for possible values)
+     * @param {*} credentials API call credentials to use (use User.currentUser.getCredentials() to get the current user's credentials)
+     * @param {*} body API call body (data to send, ignored if METHOD_GET is used)
+     * @param {*} type API call data type (see API.TYPE_ for possible values))
+     * @param {*} headers API call additionnal headers
+     * @returns A promise resolving when the API call is done
+     */
     static execute_logged(path, method = this.METHOD_GET, credentials, body = null, type = this.TYPE_JSON, headers = null) {
         return new Promise((resolve, reject) => {
             if (!credentials) {
@@ -136,7 +159,7 @@ class API {
                 reqHeaders.Authorization = credentials.type + " " + credentials.token;
                 this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
             } else {
-                API.execute("/token", this.METHOD_POST, { username: credentials.username, password: credentials.password }, this.TYPE_FORM).then(data => {
+                this.execute(API.ROUTE.LOGIN, this.METHOD_POST, { username: credentials.username, password: credentials.password }, this.TYPE_FORM).then(data => {
                     reqHeaders.Authorization = data.token_type + " " + data.access_token;
                     this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
                 }).catch(reject);
@@ -144,6 +167,15 @@ class API {
         });
     }
 
+    /**
+     * Retreives all the elements from an API pagination request (User's list for example) [discouraged to use]
+     * @param {*} route API route to use (see API.ROUTES for possible routes)
+     * @param {*} progressCallback API retreive progression callback (value parameter is from 0 to 1)
+     * @param {*} logged Should the API call be logged (use User.currentUser.getCredentials() to get the current user's credentials)
+     * @param {*} pageIndex pagination index page to start from
+     * @param {*} data original data to add the pagination data to
+     * @returns A promise resolving when all the pagination data is retreived (a call to progressCallback will be done just before)
+     */
     static retreiveAll(route, progressCallback = p=>{}, logged = false, pageIndex = 1, data = []) {
         return new Promise((resolve, reject) => {
             if (logged) {
@@ -167,6 +199,14 @@ class API {
         });
     }
 
+    /**
+     * Creates an iterator for paginated API calls
+     * @param {*} path API route to use (see API.ROUTES for possible routes)
+     * @param {*} page Page number to start the iterator at
+     * @param {*} per_page Number of elements by page
+     * @param {*} logged Should the iterator execute API calls with logged mode
+     * @returns An object containing the current iterator's call promise and a next function that returns the next iterator object
+     */
     static iterate(path, page = 1, per_page = 10, logged = false) {
         let max_page = 1;
         return {
@@ -188,6 +228,11 @@ class API {
         };
     }
 
+    /**
+     * Creates API parameters from an object
+     * @param {object} params key-value pairs of parameters to add to the url
+     * @returns string corresponding to the query parameters part of the url
+     */
     static createParameters(params) {
         switch (typeof (params)) {
             case "string":
@@ -202,6 +247,12 @@ class API {
         }
     }
 
+    /**
+     * Creates pagination parameters from a page index and page number of elements
+     * @param {number} page index of the pagination's page
+     * @param {number} per_page number of elements in one page
+     * @returns a string corresponding to the pagination's parameters part of the url
+     */
     static createPagination(page, per_page) {
         return this.createParameters({ page: page, per_page: per_page });
     }
