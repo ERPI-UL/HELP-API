@@ -1,3 +1,7 @@
+/**
+ * Redirects the user back in history or on the home page
+ * @param {boolean} wait Should the function wait 1s before redirecting
+ */
 export function redirectHome(wait=true) {
     setTimeout(() => {
         if (document.referrer.startsWith(window.location.origin))
