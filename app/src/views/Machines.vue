@@ -1,4 +1,5 @@
 <template>
+    <!-- Machine list page, to see all the app's machines -->
     <div class="min-h-screen flex flex-col">
         <div class="p-2">
             <Topbar></Topbar>
@@ -6,6 +7,7 @@
         <div class="block md:flex grow">
             <div class="m-2 grow-0">
                 <div class="bg-white rounded min-w-[12vw] divide-y grow">
+                    <!-- Left panel with different pages (all and edit mode) -->
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">Machines</h2>
                     <div class="md:pt-8 flex md:flex-col md:overflow-x-visible overflow-x-scroll justify-between">
                         <a class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
@@ -21,26 +23,32 @@
                     </div>
                 </div>
             </div>
+            <!-- Machines list -->
             <div class="flex flex-col grow m-2 min-h-0 overflow-x-hidden overflow-y-scroll">
                 <div v-if="window.location.href.split('#')[1] == 'editing'" class="m-4 w-fit h-fit">
+                    <!-- Create new machine button, only visible in edit mode -->
                     <RedirectButton href="/machines/create">
                         <component :is="icon.plus" class="flex-shrink-0 h-5 text-white mr-2" aria-hidden="true" />
                         Nouvelle machine
                     </RedirectButton>
                 </div>
-                <div class="m-2 ml-4 flex grow flex-wrap justify-evenly"> <!-- Scenario -->
+                <div class="m-2 ml-4 flex grow flex-wrap justify-evenly"> <!-- Scenario list -->
+                    <!-- All machines list (showed when in #all mode) -->
                     <MachineCard v-if="window.location.href.split('#')[1] == 'all'" v-for="item in obj.machines.all">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
                     </MachineCard>
+                    <!-- Edit machines list (showed when in #edit mode) -->
                     <MachineCard v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in obj.machines.editing" id="machine-container">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
                         <template v-slot:href><RedirectButton :href="item.href">Editer</RedirectButton></template>
                         <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);">Supprimer</DangerousButton></template>
                     </MachineCard>
+                    <!-- Delete popup called when the remove button is pressed on a machine card -->
                     <ValidatePopup ref="delete-popup"></ValidatePopup>
                 </div>
+                <!-- Mode button to display mode machines -->
                 <div class="flex grow-0 m-2 p-2 justify-center w-full">
                     <OutlineButton v-if="obj.displayMoreBtn" v-on:click="loadNextMachines();">Voir plus</OutlineButton>
                 </div>
@@ -76,9 +84,17 @@ let obj = {
     }
 };
 
+/**
+ * Callback function to load the next available machines using the machine iterator
+ * (modified in the attachListeners function)
+ */
 let loadNextMachines = () => {return iterator != null && iterator.isNext();};
 let iterator = null;
 
+/**
+ * Attaches all the required listeners to the new iterator
+ * and modifies the loadNextMachines function to use it
+ */
 function attachListeners(it) {
     it.promise.then(response => {
         const data = response.data.map(el => {return {
@@ -105,6 +121,9 @@ function attachListeners(it) {
     }
 }
 
+/**
+ * Removes a machine from the server (calls the a popup window for validation)
+ */
 function removeMachine(id, caller) {
     const el = this.$refs["delete-popup"];
     el.show("Supprimer une machine", "Voulez-vous supprimer "+(obj.machines.all.find(el => el.id == id).title)+" ?", "Annuler", "Supprimer");
@@ -118,6 +137,9 @@ function removeMachine(id, caller) {
     });
 }
 
+/**
+ * Creates an iterator to retreive all the machines on the server using pagination
+ */
 function fetchMachines() {
     iterator = API.iterate(API.ROUTE.MACHINES);
     attachListeners(iterator);

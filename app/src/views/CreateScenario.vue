@@ -771,11 +771,14 @@ function removeScenarioBlock(id) {
  * Adds a step target to a given scenario block (from his ID)
  */
 function addStepTarget(stepID, value, label) {
+    // create the select element
     const select = document.createElement("select");
     select.name = "select-targets";
     select.classList.add("md:size-to-parent", "whitespace-nowrap", "inline-flex", "px-4", "py-2", "pr-10", "border-gray-200", "rounded-md", "shadow-sm", "text-base", "font-medium", "text-black", "bg-gray-50", "hover:bg-gray-100");
+    // set his value and label
     if (value) select.value = value;
     if (label) select.innerHTML = label;
+    // add it to the block and update its available targets
     document.getElementById("steptargetscontainer-"+stepID).appendChild(select);
     if (!value || !label) updateAvailableTargets();
     return select;
@@ -796,7 +799,7 @@ window.indico.removeScenarioBlock = removeScenarioBlock;
 
 // FOR DEBUG PURPOSE, DELETE IT LATER
 window.displayJSON = function(str) {
-    console.log(JSON.stringify(JSON.parse(str.replaceAll("\\", "")), null, 2));
+    console.log(JSON.parse(str.replaceAll("\\", "")));
 }
 
 export default {
@@ -810,7 +813,7 @@ export default {
     data() {return {icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines};},
     mounted() {
         setup();
-        displayMachineSelection = () => {
+        displayMachineSelection = () => { // show the machine pagination window
             this.$refs["machinePagination"].show();
         }
     },

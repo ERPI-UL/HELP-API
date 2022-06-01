@@ -1,8 +1,9 @@
 <template>
+    <!-- EasyConnect page, for device connection through the website -->
     <div class="relative flex p-4 md:p-8 min-h-screen flex-col justify-center">
         <div class="bg-white p-4 md:p-8 shadow-xl mx-auto rounded-lg">
             <div class="mx-auto max-w-md">
-                <div class="flex center">
+                <div class="flex center"> <!-- Modal title -->
                     <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 whitespace-wrap md:whitespace-nowrap">
                         Connecter un appareil
@@ -11,6 +12,7 @@
                 <div>
                     <div class="divide-y divide-gray-300/50">
                         <div class="border-none">
+                            <!-- If we are not connected, display the username/password inputs -->
                             <div id="login-credentials" v-show="!User.isConnected(User.currentUser)" >
                                 <div class="md:space-y-6 md:py-8 text-base leading-7 text-gray-400">
                                     <div class="md:flex block justify-between">
@@ -22,11 +24,13 @@
                                         <input type="password" name="password" class="md:w-fit w-full box-border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     </div>
                                 </div>
+                                <!-- If we want to use custom credentials but the user is connected, display a button to switch to automatic credentials -->
                                 <div v-show="User.isConnected(User.currentUser)" class="flex justify-left">
                                     <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">Connecté à {{ User.currentUser.username }} : </p>
                                     <a v-on:click="useUserinfos" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Utiliser</a>
                                 </div>
                             </div>
+                            <!-- Button to switch to custom credentials -->
                             <div id="login-userinfos" v-show="User.isConnected(User.currentUser)">
                                 <div class="flex justify-left">
                                     <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">Connecté à {{ User.currentUser.username }} : </p>
@@ -34,6 +38,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- EasyConnect code input -->
                         <div class="md:space-y-6 md:py-8 py-4 text-base md:leading-7 text-gray-400">
                             <div class="md:flex block justify-between">
                                 <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2 text-center">Code appareil: </p>
@@ -46,12 +51,14 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Message log zone -->
                         <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
                             <p class="opacity-0 text-center text-indigo-600">Message</p>
                         </div>
+                        <!-- Buttons -->
                         <div class="pt-8 flex justify-between">
-                            <Backbutton>Annuler</Backbutton>
-                            <ValidateButton id="btn-validate" v-on:click="onValidate">Valider</ValidateButton>
+                            <Backbutton>Annuler</Backbutton> <!-- Cancel -->
+                            <ValidateButton id="btn-validate" v-on:click="onValidate">Valider</ValidateButton> <!-- Validate -->
                         </div>
                     </div>
                 </div>
@@ -66,26 +73,32 @@ import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
 import User from "../script/User";
 
+/**
+ * Setup all number input listeners
+ * to check if only numbers are entered and to jump to the other input if a number is entered
+ */
 const setupInputs = () => {
     const inputs = document.querySelectorAll(".input-numbers");
     for (let i = 0; i < inputs.length; i++) {
         const el = inputs.item(i);
         el.addEventListener("keydown", ev => {
             const char = ev.key.charAt(0);
-            if (isNaN(parseInt(char))) {
+            if (isNaN(parseInt(char))) { // if the input character is not a number
                 el.value = "";
-            } else {
+            } else { // if the input character is a number, add it and jump to the other input 
                 el.value = char;
                 if (i < inputs.length - 1) {
                     inputs.item(i + 1).focus();
                 } else el.blur();
             }
+             // delete the input content and jump to the previous one
             if (ev.key == "Backspace" && i > 0) {
                 inputs.item(i - 1).focus();
             }
             ev.preventDefault();
         });
     }
+    // if enter is pressed, click on the validate button
     window.addEventListener("keydown", ev => {
         if (ev.key != "Enter") return;
         const btn = document.getElementById("btn-validate");
@@ -93,19 +106,29 @@ const setupInputs = () => {
     });
 }
 
+// is the user connected (if so, set the connection mode to automatic credentials)
 let usingCredentials = !User.isConnected(User.currentUser);
+/**
+ * Display the credentials input zone (to input custom credentials)
+ */
 function useCredentials() {
     usingCredentials = true;
     document.getElementById("login-userinfos").style.display = "none";
     document.getElementById("login-credentials").style.display = "inherit";
 }
-
+/**
+ * Hides the credentials input zone (to use automatic credentials)
+ */
 function useUserinfos() {
     usingCredentials = false;
     document.getElementById("login-credentials").style.display = "none";
     document.getElementById("login-userinfos").style.display = "inherit";
 }
 
+/**
+ * Displays a message to the user
+ * @param {string} msg message to display
+ */
 function logMessage(msg) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "Valider";
@@ -121,6 +144,11 @@ function logMessage(msg) {
     }, 3000);
 }
 
+/**
+ * When the validate button is pressed, chekc if there is credentials to use
+ * and if the easyconnect code is correctly entered, if so make an API call
+ * to try to connect the device to this account.
+ */
 function onValidate() {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "...";
@@ -175,6 +203,10 @@ function onValidate() {
     }
 }
 
+/**
+ * Send an API call to connect a device to this account
+ * @param {{token:string,code:number}} data data to use in the call (user token and easyconnect code)
+ */
 function sendEasyConnectRequest(data) {
     API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, User.currentUser.getCredentials(), data, API.TYPE_JSON).then(res => {
         logMessage("Appareil connecté au compte.");

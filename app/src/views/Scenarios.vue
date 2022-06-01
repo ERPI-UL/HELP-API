@@ -62,7 +62,7 @@
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
                             <template v-slot:href><RedirectButton :href="item.href">Editer</RedirectButton></template>
-                            <template v-slot:remove><DangerousButton v-on:click="removeScenario(item.id, $event.target)">Supprimer</DangerousButton></template>
+                            <template v-slot:remove><DangerousButton v-on:click="removeScenario(item.id, $event.target)" v-if="item.id != 6">Supprimer</DangerousButton></template>
                         </Scenario>
                         <Scenario v-if="window.location.href.split('#')[1] == 'pending'" v-for="item in scenarios.pending">
                             <template v-slot:title>{{item.title}}</template>

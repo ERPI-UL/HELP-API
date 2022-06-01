@@ -1,4 +1,5 @@
 <template>
+    <!-- Home page, with topbar and a little window with some basic introduction text -->
     <div class="flex flex-col h-screen">
         <div class="p-2">
             <Topbar></Topbar>
