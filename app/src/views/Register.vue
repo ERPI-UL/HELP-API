@@ -1,46 +1,57 @@
 <template>
+    <!-- Register web page -->
     <div class="flex min-h-screen p-4 md:p-8 flex-col justify-center">
         <div class="bg-white p-4 md:p-8 shadow-xl mx-auto rounded-lg">
             <div class="max-h-full">
                 <div class="flex center">
+                    <!-- Modal Title -->
                     <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6">
                         S'inscrire
                     </h2>
                 </div>
                 <div>
+                    <!-- Modal content, inputs to register -->
                     <div class="space-y-1 md:space-y-4 py-8 text-base leading-7 text-gray-400 max-h-full">
+                        <!-- Firstname input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Prénom: </p>
                             <input type="text" id="given-name" name="given-name" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
+                        <!-- Lastname input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom: </p>
                             <input type="text" id="family-name" name="family-name" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
+                        <!-- Username input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
                             <input type="text" id="username" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
+                        <!-- Email input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Adresse mail: </p>
                             <input type="email" id="email" name="email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
+                        <!-- Password input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
                             <input type="password" id="new-password" name="new-password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
+                        <!-- Password confirmation input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Confirmez le mot de passe: </p>
                             <input type="password" id="password-confirm" name="password-confirm" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                     </div>
+                    <!-- Message log zone -->
                     <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
                         <p class="opacity-0 text-center text-indigo-600"></p>
                     </div>
+                    <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
-                        <Backbutton>Annuler</Backbutton>
-                        <ValidateButton id="btn-validate" v-on:click="register">S'inscrire</ValidateButton>
+                        <Backbutton>Annuler</Backbutton> <!-- Cancel button -->
+                        <ValidateButton id="btn-validate" v-on:click="register">S'inscrire</ValidateButton> <!-- Validate button -->
                     </div>
                 </div>
             </div>
@@ -54,6 +65,10 @@ import ValidateButton from "../components/ValidateButton.vue";
 import API from "../script/API";
 import { redirectHome } from "../script/common";
 
+/**
+ * Registers the event listener for the enter key
+ * if it's pressed, emulate a click on the validate button
+ */
 function setup() {
     window.addEventListener("keydown", ev => {
         if (ev.key != "Enter") return;
@@ -62,7 +77,10 @@ function setup() {
     });
 }
 
-let logTimeout = -1;
+/**
+ * Displays a log message to the user
+ * @param {string} msg message to display
+ */
 function logMessage(msg) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "S'inscrire";
@@ -82,6 +100,11 @@ function logMessage(msg) {
     }, 3000);
 }
 
+/**
+ * Event listener for when the validate button is clicked
+ * Checks if all the fields are correctly filled and makes an API call
+ * to try to register the User. If so, redirects to the home page
+ */
 function register() {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "..."

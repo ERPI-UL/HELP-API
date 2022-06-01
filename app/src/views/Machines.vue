@@ -42,8 +42,8 @@
                     <MachineCard v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in obj.machines.editing" id="machine-container">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
-                        <template v-slot:href><RedirectButton :href="item.href">Editer</RedirectButton></template>
-                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);">Supprimer</DangerousButton></template>
+                        <template v-slot:href><RedirectButton :href="item.href" v-if="item.id != 1">Editer</RedirectButton></template>
+                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">Supprimer</DangerousButton></template>
                     </MachineCard>
                     <!-- Delete popup called when the remove button is pressed on a machine card -->
                     <ValidatePopup ref="delete-popup"></ValidatePopup>
@@ -72,6 +72,7 @@ import {
 import API from '../script/API';
 
 let dom = null;
+// object representing the current webpage state (available machines, if the "more" button is visible or not)
 let obj = {
     displayMoreBtn: false,
     machines: {
