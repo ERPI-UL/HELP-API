@@ -40,6 +40,7 @@ services:
       - SQL_DB_PORT=5432
     volumes:
       - "./api/app:/opt/app"
+      - api_data:/opt/app/data
     restart: always
 
   web:
@@ -50,3 +51,4 @@ services:
 
 volumes:
   postgres_data:
+  api_data:
