@@ -31,6 +31,7 @@ class Machine(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(50, unique=True)
     description = fields.TextField()
+    path = fields.TextField(null=True)
     # scenarios: fields.ReverseRelation["Scenario"]
 
     class Meta:

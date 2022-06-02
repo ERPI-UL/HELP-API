@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, status, File
+from fastapi.responses import FileResponse
 from pydantic import parse_obj_as
 from tortoise.contrib.pydantic import pydantic_model_creator
 import Models
 import utils
+import aiofiles
+import aiofiles.os
 router = APIRouter()
 
 
@@ -14,7 +17,10 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
     # check for zero per_page
     if per_page == 0:
         per_page = 1
+    #calculate the number of pages
     lastPage = scenario_count // per_page
+    if scenario_count % per_page != 0:
+        lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
     if idMachine:
@@ -47,7 +53,10 @@ async def getMachines(page: int = 1, per_page: int = 10):
     # check for zero per_page
     if per_page == 0:
         per_page = 1
+    #calculate the number of pages
     lastPage = machine_count // per_page
+    if machine_count % per_page != 0:
+        lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
     machines = await Models.Machine.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('scenarios')
@@ -66,6 +75,42 @@ async def getMachine(machine_id: int):
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
     return await machineWithTargetsToJSON(machine)
+
+
+@router.get('/machines/{machine_id}/model', response_class=FileResponse)
+async def getMachineModel(machine_id: int):
+    machine = await Models.Machine.get(id=machine_id)
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine introuvable")
+    try:
+        # test if file exists
+        await aiofiles.os.stat(machine.path)
+        return FileResponse(
+            machine.path, media_type='application/octet-stream', filename=machine.name+'.fbx')  # FastApi will automatically find the file and return it
+    except Exception:
+        raise HTTPException(status_code=404, detail="Model introuvable")
+
+
+@router.post('/machines/{machine_id}/model')
+async def postMachineModel(machine_id: int, model: UploadFile = File(...), user: Models.User = Depends(utils.InstructorRequired)):
+    machine = await Models.Machine.get(id=machine_id)
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine introuvable")
+    machine.path = utils.MODELS_DIRECTORY+str(machine.id)+"/machine.fbx"
+    try:
+        contents = await model.read()
+        # create the directory if it doesn't exist
+        await aiofiles.os.makedirs(utils.MODELS_DIRECTORY+str(machine.id), exist_ok=True)
+        async with aiofiles.open(machine.path, 'wb') as f:
+            await f.write(contents)
+        await machine.save()
+    except Exception:
+        raise HTTPException(
+            status_code=500, detail="Erreur lors de l'enregistrement du fichier")
+    finally:
+        await model.close()
+
+    return {"ok": f" fichier envoyé : {model.filename}"}
 
 
 @router.post('/machines/{machine_id}/targets', response_model=Models.TargetOut)
@@ -198,7 +243,7 @@ async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depen
         choice = await Models.Choice.get_or_none(id=stepDB.choice_id)
         if choice:
             await choice.delete()
-    #clear all targets
+    # clear all targets
     await stepDB.targets.clear()
     for target in step.targets:
         await stepDB.targets.add(await Models.Target.get(id=target))
