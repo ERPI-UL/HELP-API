@@ -15,7 +15,7 @@
                 </div>
                 <div class="flex justify-between my-2"> <!-- CONTROLS -->
                     <!-- Left button -->
-                    <div class="w-full disabled:opacity-50" v-on:click="this.obj.prevPage">
+                    <div class="w-full disabled:opacity-50" v-on:click="prevPage();">
                         <svg xmlns="http://www.w3.org/2000/svg" class="shadow h-8 w-8 cursor-pointer text-indigo-600 m-auto border border-1 border-indigo-600 rounded-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
@@ -25,7 +25,7 @@
                         <p id="pagination-state" class="m-auto w-fit">{{ this.obj.pageNumber }} / {{ this.obj.pageNbr_max }}</p>
                     </div>
                     <!-- Right button -->
-                    <div class="w-full disabled:opacity-50" v-on:click="this.obj.nextPage">
+                    <div class="w-full disabled:opacity-50" v-on:click="nextPage();">
                         <svg xmlns="http://www.w3.org/2000/svg" class="shadow h-8 w-8 cursor-pointer text-indigo-600 m-auto border border-1 border-indigo-600 rounded-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
