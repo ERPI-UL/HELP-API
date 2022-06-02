@@ -1,7 +1,7 @@
 <template>
     <!-- Template chart view : Used to display a graph to the user based on informations in the [charInfos] variable -->
-    <div v-on:click="toogleFullscreen(this)" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-[20vw] min-h-[10vh] h-min max-w-full max-h-full m-4 scale-100 hover:shadow-xl hover:scale-105 cursor-pointer">
-        <div class="flex flex-col min-h-0">
+    <div ref="parent" v-on:click="toogleFullscreen(this)" class="slide-in bg-white rounded-lg shadow-lg p-2 relative w-[20vw] min-h-[10vh] h-min max-w-full max-h-full m-4 scale-100 hover:shadow-xl hover:scale-105 cursor-pointer">
+        <div ref="child" class="flex flex-col min-h-0">
             <h2 class="text-center font-bold">{{title}}</h2>
             <canvas id="chart-render" class="flex grow-0 bg-white my-auto max-h-full min-h-[10vh]"></canvas>
         </div>
@@ -28,14 +28,14 @@ function setChart(el, div, infos) {
  */
 function toogleFullscreen(el) {
     if (el.attrs.length == 0) {
-        el.$el.classList.forEach(attr => el.attrs.push(attr));
-        el.attrs.forEach(attr => el.$el.classList.remove(attr));
-        el.$el.classList.add("fullscreen-parent");
-        el.$el.childNodes[0].classList.add("fullscreen-child");
+        el.$refs["parent"].classList.forEach(attr => el.attrs.push(attr));
+        el.attrs.forEach(attr => el.$refs["parent"].classList.remove(attr));
+        el.$refs["parent"].classList.add("fullscreen-parent");
+        el.$refs["child"].classList.add("fullscreen-child");
     } else {
-        el.$el.classList.remove("fullscreen-parent");
-        el.$el.childNodes[0].classList.remove("fullscreen-child");
-        el.attrs.forEach(attr => el.$el.classList.add(attr));
+        el.$refs["parent"].classList.remove("fullscreen-parent");
+        el.$refs["child"].classList.remove("fullscreen-child");
+        el.attrs.forEach(attr => el.$refs["parent"].classList.add(attr));
         el.attrs = [];
     }
 }
@@ -47,7 +47,7 @@ export default {
     components: {},
     mounted: function() {
         this.attrs = [];
-        setChart(this, this.$el.childNodes[0].childNodes[1], this.chartInfos);
+        setChart(this, this.$refs["child"].childNodes[1], this.chartInfos);
     },
     methods: {toogleFullscreen}
 }
