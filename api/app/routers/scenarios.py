@@ -76,9 +76,13 @@ async def getMachineModel(machine_id: int):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
         raise HTTPException(status_code=404, detail="Machine introuvable")
-    response = FileResponse(
-        machine.path, media_type='application/octet-stream', filename=machine.name+'.fbx')
-    return response  # FastApi will automatically find the file and return it
+    try:
+        # test if file exists
+        await aiofiles.os.stat(machine.path)
+        return FileResponse(
+            machine.path, media_type='application/octet-stream', filename=machine.name+'.fbx')  # FastApi will automatically find the file and return it
+    except Exception:
+        raise HTTPException(status_code=404, detail="Model introuvable")
 
 
 @router.post('/machines/{machine_id}/model')
@@ -100,7 +104,7 @@ async def postMachineModel(machine_id: int, model: UploadFile = File(...), user:
     finally:
         await model.close()
 
-    return {"message": f"Successfuly uploaded {model.filename}"}
+    return {"ok": f" fichier envoyé : {model.filename}"}
 
 
 @router.post('/machines/{machine_id}/targets', response_model=Models.TargetOut)
