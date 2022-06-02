@@ -12,6 +12,8 @@ load_dotenv()
 
 JWT_SECRET = os.getenv('SECRET_KEY')
 DB_URL = os.getenv('DB_HOST')
+DATA_DIRECTORY = './data/'
+MODELS_DIRECTORY = DATA_DIRECTORY+'models/'
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
