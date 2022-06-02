@@ -27,6 +27,7 @@ class API {
         __TARGETS: "/targets/",
         __SCENARIOS: "/scenarios/",
         __STEPS: "/steps/",
+        __MODEL: "/model/",
         STEPS: "/scenarios/steps/",
         STATS: {
             SCENARIOS: {
