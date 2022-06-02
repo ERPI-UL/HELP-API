@@ -38,7 +38,10 @@ async def get_users(page: int = 1, per_page: int = 10, res: any = Depends(utils.
     users = await Models.User.all().offset((page - 1) * per_page).limit(per_page)
     # on cache les données sensibles pour le front
     front = parse_obj_as(List[Models.UserinFront], users)
+    #calculate the number of pages
     lastPage = users_count // per_page
+    if users_count % per_page != 0:
+        lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
     return {

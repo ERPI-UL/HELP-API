@@ -21,7 +21,10 @@ async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenar
         sessions = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
     else:
         sessions = await Models.Session.filter(user__id=idUser).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
+    #calculate the number of pages
     lastPage = session_count // per_page
+    if session_count % per_page != 0:
+        lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
     return {

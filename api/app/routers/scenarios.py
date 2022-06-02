@@ -17,7 +17,10 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
     # check for zero per_page
     if per_page == 0:
         per_page = 1
+    #calculate the number of pages
     lastPage = scenario_count // per_page
+    if scenario_count % per_page != 0:
+        lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
     if idMachine:
@@ -50,7 +53,10 @@ async def getMachines(page: int = 1, per_page: int = 10):
     # check for zero per_page
     if per_page == 0:
         per_page = 1
+    #calculate the number of pages
     lastPage = machine_count // per_page
+    if machine_count % per_page != 0:
+        lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
     machines = await Models.Machine.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('scenarios')
