@@ -45,9 +45,8 @@ app = FastAPI(
     title="Indico API",
     description="API pour le site web et les applications XR indico",
     contact={
-        "name": "Antonin Rousseau",
-        "url": "https://antoninrousseau.fr",
-        "email": "antonin.rousseau55000@gmail.com",
+        "name": "Lorraine Fab Living Lab",
+        "url": "https://lf2l.fr"
     },
     openapi_tags=tags_metadata
 )
