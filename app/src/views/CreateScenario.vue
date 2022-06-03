@@ -47,11 +47,11 @@
             </div>
             <div class="flex flex-col grow w-fit m-2 min-w-0"> <!-- right panel (steps customization) -->
                 <div id="tabs" class="flex grow-0 justify-between">
-                    <h2 v-on:click="mode=MODE_STEPS; updateMode(MODE_STEPS);" :class="mode==MODE_STEPS? 'shadow-lg': 'bg-indigo-50 text-indigo-300'" class="flex grow justify-start text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">Étapes</h2>
-                    <h2 v-on:click="mode=MODE_MODEL; updateMode(MODE_MODEL);" :class="mode==MODE_MODEL? 'shadow-lg': 'bg-indigo-50 text-indigo-300'" class="flex grow justify-end text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">Modèle</h2>
+                    <h2 id="MODE_STEP_h2" v-on:click="updateMode(MODE_STEPS);" class="flex grow justify-start text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">Étapes</h2>
+                    <h2 id="MODE_MODEL_h2" v-on:click="updateMode(MODE_MODEL);" class="flex grow justify-end text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">Modèle</h2>
                 </div>
                 <!-- steps zone -->
-                <div :class="mode==MODE_STEPS? '': 'hidden'" class="flex flex-col m-2 grow overflow-auto border border-2 border-white rounded-lg p-4">
+                <div id="MODE_STEP_div" :class="obj.mode==MODE_STEPS? '': 'hidden'" class="flex flex-col m-2 grow overflow-auto border border-2 border-white rounded-lg p-4">
                     <!-- START FLAG ELEMENT -->
                     <div class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white w-fit">
                         <component :is="icon.flag" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
@@ -74,16 +74,13 @@
                     </div>
                 </div>
                 <!-- model 3D view zone -->
-                <div :class="mode==MODE_MODEL? '': 'hidden'" class="flex flex-col grow m-2 border-2 border-white border rounded-lg overflow-hidden">
+                <div id="MODE_MODEL_div" :class="obj.mode==MODE_MODEL? '': 'hidden'" class="flex flex-col grow m-2 border-2 border-white border rounded-lg overflow-hidden">
                     <div class="fixed"> <!-- CONTROL ICONS -->
-                        <div v-on:click="setControlMode('translate')" class="rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 p-1 cursor-pointer hover:shadow-lg hover:bg-gray-50">
-                            <img src="../assets/images/logos/move.png" alt="move icon">
-                        </div>
-                        <div v-on:click="setControlMode('rotate')" class="rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 p-1 cursor-pointer hover:shadow-lg hover:bg-gray-50">
-                            <img src="../assets/images/logos/rotate.png" alt="rotate icon">
-                        </div>
-                        <div v-on:click="setControlMode('scale')" class="rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 p-1.5 cursor-pointer hover:shadow-lg hover:bg-gray-50">
-                            <img src="../assets/images/logos/scale.png" alt="rotate icon">
+                        <div v-on:click="toogleControls($event.target)" class="flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                                <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                            </svg>
                         </div>
                     </div>
                     <canvas id="3D-view" class="flex grow"></canvas>
@@ -114,7 +111,8 @@ import {
     updateAvailableMachines,
     updateAvailableTargets,
     onMachineChanged,
-    setDisplayMachinesCallback
+    setDisplayMachinesCallback,
+    setEditPositionCallback
 } from "../script/CreateScenario";
 
 import  {
@@ -122,7 +120,9 @@ import  {
     startRendering,
     stopRendering,
     set3DMachineModel,
-    setControlMode
+    toogleTransformEnabled,
+    setLabel,
+    clearLabels
 } from "../script/Scenario3DEditor";
 
 /**
@@ -144,21 +144,87 @@ function setup() {
             set3DMachineModel(id);
             const link = API.ROUTE.MACHINES+id+API.ROUTE.__MODEL;
         });
+        updateMode(MODE_STEPS);
     }).catch(console.error);
 }
 
 const MODE_STEPS = "steps";
 const MODE_MODEL = "model";
-let mode = MODE_STEPS;
+let obj = {mode: ""};
+
+let editedBlock = null;
 
 function updateMode(newMode) {
-    if (newMode == MODE_MODEL) {
-        setTimeout(() => {
-            checkForCanvasSetup();
-            startRendering();
-        }, 10);
-    } else {
-        stopRendering();
+    return new Promise((resolve, reject) => {
+        if (newMode == MODE_MODEL) {
+            setTimeout(() => {
+                checkForCanvasSetup();
+                startRendering();
+                resolve();
+            }, 10);
+        } else {
+            if (editedBlock != null) {    
+                const dom = document.getElementById("stepcontainer-"+editedBlock.id);
+                dom.querySelector("input[name='pos-x']").value = editedBlock.position.x;
+                dom.querySelector("input[name='pos-y']").value = editedBlock.position.y;
+                dom.querySelector("input[name='pos-z']").value = editedBlock.position.z;
+                console.log(dom);
+                editedBlock = null;
+                clearLabels();
+            }
+            stopRendering();
+            resolve();
+        }
+
+        if (obj.mode != newMode) {
+            const stepH2 = document.getElementById("MODE_STEP_h2");
+            const modelH2 = document.getElementById("MODE_MODEL_h2");
+            const stepDIV = document.getElementById("MODE_STEP_div");
+            const modelDIV = document.getElementById("MODE_MODEL_div");
+            stepH2.classList[newMode == MODE_STEPS? "remove": "add"]("bg-indigo-50", "text-indigo-300");
+            stepH2.classList[newMode == MODE_STEPS? "add": "remove"]("shadow-lg");
+            modelH2.classList[newMode == MODE_MODEL? "remove": "add"]("bg-indigo-50", "text-indigo-300");
+            modelH2.classList[newMode == MODE_MODEL? "add": "remove"]("shadow-lg");
+            stepDIV.classList[newMode == MODE_MODEL? "add": "remove"]("hidden");
+            modelDIV.classList[newMode == MODE_MODEL? "remove": "add"]("hidden");
+            obj.mode = newMode;
+        }
+    })
+}
+
+setEditPositionCallback(block => {
+    updateMode(MODE_MODEL).then(() => {
+        setLabel(block.label, block.position);
+        editedBlock = block;
+    });
+});
+
+function setIcon(el, state) {
+    if (state) {
+        el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                               <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                               <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                           </svg>`;
+    } else el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>`;
+}
+
+/**@param {HTMLElement} el */
+function toogleControls(el) {
+    const state = toogleTransformEnabled();
+    console.log(el.tagName.toUpperCase())
+    switch (el.tagName.toUpperCase()) {
+        case "DIV":
+            setIcon(el, state);
+            break;
+        case "SVG":
+            setIcon(el.parentElement, state);
+            break;
+        case "PATH":
+            setIcon(el.parentElement.parentElement, state);
+            break;
     }
 }
 
@@ -170,7 +236,7 @@ export default {
         ValidateButton,
         PaginationChoice
     },
-    data() {return {icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, mode, MODE_STEPS, MODE_MODEL};},
+    data() {return {icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, obj, MODE_STEPS, MODE_MODEL};},
     mounted() {
         setup();
         // set the callback to show the machine pagination window
@@ -178,7 +244,7 @@ export default {
             this.$refs["machinePagination"].show();
         });
     },
-    methods: {saveScenario, addStep, addMachineSelection, updateMode, setControlMode}
+    methods: {saveScenario, addStep, addMachineSelection, updateMode, toogleControls}
 };
 </script>
 
