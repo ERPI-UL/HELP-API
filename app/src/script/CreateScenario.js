@@ -558,6 +558,11 @@ let scenarioBlocks = [];
             if (leftRedirect) newBlock.querySelector("select[name='btn-left-redirect']").value = leftRedirect.id+"";
             if (rightRedirect) newBlock.querySelector("select[name='btn-right-redirect']").value = rightRedirect.id+"";
         }
+
+        // set the listener for the edit position button
+        newBlock.querySelector("#edit-position").addEventListener("click", ev => {
+            editPositionCallback(blockInfoFromDom(newBlock));
+        });
     }, 10);
 }
 
@@ -588,6 +593,11 @@ window.displayJSON = function(str) {
     console.log(JSON.parse(str.replaceAll("\\", "")));
 }
 
+let editPositionCallback = () => {};
+function setEditPositionCallback(callback) {
+    editPositionCallback = callback;
+}
+
 export {
     BlockInfo,
     logMessage,
@@ -612,5 +622,6 @@ export {
     addStepTarget,
     createScenarioBlock,
     addMachineSelection,
-    setDisplayMachinesCallback
+    setDisplayMachinesCallback,
+    setEditPositionCallback
 };
