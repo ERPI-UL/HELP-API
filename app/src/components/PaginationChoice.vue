@@ -161,12 +161,12 @@ export default {
         nextPage() {
             // increases the page number (clamped to max page number) and updates the pagination
             this.obj.pageNumber = Math.min(this.obj.pageNumber + 1, this.obj.pageNbr_max);
-            updatePagination(this);
+            updatePagination(this, false);
         },
         prevPage() {
             // decreases the page number (clamped to min page number) and updates the pagination
             this.obj.pageNumber = Math.max(this.obj.pageNumber - 1, this.obj.pageNbr_min);
-            updatePagination(this);
+            updatePagination(this, false);
         }
     }
 }
