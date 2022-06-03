@@ -6,13 +6,13 @@
                 <div class="flex center">
                     <!-- Modal Title -->
                     <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
-                    <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6">
+                    <h2 class="text-2xl font-extrabold text-indigo-600 px-6">
                         S'inscrire
                     </h2>
                 </div>
                 <div>
                     <!-- Modal content, inputs to register -->
-                    <div class="space-y-1 md:space-y-4 py-8 text-base leading-7 text-gray-400 max-h-full">
+                    <div class="space-y-1 md:space-y-4 py-2 md:py-8 text-base text-gray-400 max-h-full">
                         <!-- Firstname input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Prénom: </p>
