@@ -11,17 +11,20 @@ async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenar
     if idUser != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
-    session_count = await Models.Session.filter(user__id=idUser).count()
-    if session_count < per_page:
-        per_page = session_count
     # check for zero per_page
     if per_page == 0:
         per_page = 1
     if id_scenario:
+        session_count = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).count()
+        if session_count < per_page:
+            per_page = session_count
         sessions = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
     else:
+        session_count = await Models.Session.filter(user__id=idUser).count()
+        if session_count < per_page:
+            per_page = session_count
         sessions = await Models.Session.filter(user__id=idUser).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
-    #calculate the number of pages
+    # calculate the number of pages
     lastPage = session_count // per_page
     if session_count % per_page != 0:
         lastPage += 1
