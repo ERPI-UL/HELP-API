@@ -115,7 +115,7 @@ class User {
     email = "";
     firstname = "";
     lastname = "";
-    token = "";
+    token = null;
     permissions = 0;
 
     constructor(username="", password="", email="", firstname="", lastname="", token=null, permissions=User.PERMISSIONS.VISITOR, id=0) {
@@ -133,10 +133,10 @@ class User {
      * Fetches all the user's informations from the server with an API call
      * @returns {Promise} a promise containing the user's informations, resolving when the API call is done
      */
-    fetchInformations() {
+    fetchInformations(debugFunction=m=>{}) {
         return new Promise((resolve, reject) => {
             if (!this.token && !(this.username && this.password)) {
-                    reject("User not connected");
+                    reject({message: "Fetch error : User not connected"});
                     return;
             }
             API.execute_logged(API.ROUTE.USER, API.METHOD_GET, this.getCredentials()).then(data => {
@@ -150,7 +150,7 @@ class User {
                 User.forgetUser();
                 User.saveUser(this);
                 resolve(this);
-            }).catch(reject);
+            }).catch(err => {reject({message: err.message})});
         });
     }
 
