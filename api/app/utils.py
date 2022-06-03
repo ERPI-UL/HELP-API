@@ -4,7 +4,7 @@ from passlib.hash import bcrypt
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from customScheme import CustomOAuth2PasswordBearer
 import tortoise
 import Models
 from pydantic import BaseModel
@@ -14,7 +14,7 @@ JWT_SECRET = os.getenv('SECRET_KEY')
 DB_URL = os.getenv('DB_HOST')
 DATA_DIRECTORY = './data/'
 MODELS_DIRECTORY = DATA_DIRECTORY+'models/'
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
+oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):

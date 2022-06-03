@@ -11,22 +11,25 @@ router = APIRouter()
 
 @router.get("/", response_model=Models.pagination)
 async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10):
-    scenario_count = await Models.Scenario.all().count()
-    if scenario_count < per_page:
-        per_page = scenario_count
     # check for zero per_page
     if per_page == 0:
         per_page = 1
-    #calculate the number of pages
+    if idMachine:
+        scenario_count = await Models.Scenario.filter(machine=idMachine).count()
+        if scenario_count < per_page:
+            per_page = scenario_count
+        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
+    else:
+        scenario_count = await Models.Scenario.all().count()
+        if scenario_count < per_page:
+            per_page = scenario_count
+        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
+    # calculate the number of pages
     lastPage = scenario_count // per_page
     if scenario_count % per_page != 0:
         lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
-    if idMachine:
-        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
-    else:
-        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
     return {
         'total': scenario_count,
         'per_page': per_page,
@@ -53,7 +56,7 @@ async def getMachines(page: int = 1, per_page: int = 10):
     # check for zero per_page
     if per_page == 0:
         per_page = 1
-    #calculate the number of pages
+    # calculate the number of pages
     lastPage = machine_count // per_page
     if machine_count % per_page != 0:
         lastPage += 1
