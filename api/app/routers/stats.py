@@ -14,7 +14,7 @@ async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenar
     query = Models.Session.filter(user__id=idUser)
     if id_scenario:
         query = query.filter(scenario__id=id_scenario)
-    if vrmode:
+    if vrmode is not None:
         query = query.filter(vrmode=vrmode)
     query.prefetch_related('user', 'scenario')
     session_count = await query.count()
