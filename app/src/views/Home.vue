@@ -96,7 +96,7 @@
                             </CardTitle>
                             <p class="whitespace-wrap text-gray-600">Voir et modifier mon profil</p>
                             <div class="flex grow-0 md:justify-end justify-center">
-                                <RedirectButton href="/statistics#learning">Mon profil</RedirectButton>
+                                <RedirectButton href="/profile">Mon profil</RedirectButton>
                             </div>
                         </MenuCard>
                         <MenuCard>
@@ -108,7 +108,7 @@
                             </CardTitle>
                             <p class="whitespace-wrap text-gray-600">Connecter un appareil</p>
                             <div class="flex grow-0 md:justify-end justify-center">
-                                <RedirectButton href="/statistics#learning">Connecter</RedirectButton>
+                                <RedirectButton href="/easyconnect">Connecter</RedirectButton>
                             </div>
                         </MenuCard>
                         <MenuCard v-if="User.currentUser.canAdmin()">
@@ -120,7 +120,7 @@
                             </CardTitle>
                             <p class="whitespace-wrap text-gray-600">Voir le panneau d'administration</p>
                             <div class="flex grow-0 md:justify-end justify-center">
-                                <RedirectButton href="/statistics#learning">Afficher le panneau</RedirectButton>
+                                <RedirectButton href="/admin">Afficher le panneau</RedirectButton>
                             </div>
                         </MenuCard>
                     </MenuDiv>
@@ -202,7 +202,7 @@
                             </CardTitle>
                             <p class="whitespace-wrap text-gray-600">Voir les machines disponibles</p>
                             <div class="flex grow-0 md:justify-end justify-center">
-                                <RedirectButton href="/machines">Voir les machines</RedirectButton>
+                                <RedirectButton href="/machines#all">Voir les machines</RedirectButton>
                             </div>
                         </MenuCard>
                         <MenuCard v-if="User.currentUser.canTeacher()">
@@ -214,7 +214,7 @@
                             </CardTitle>
                             <p class="whitespace-wrap text-gray-600">Modifier ou supprimer une machine</p>
                             <div class="flex grow-0 md:justify-end justify-center">
-                                <RedirectButton href="/machines">Modifier une machine</RedirectButton>
+                                <RedirectButton href="/machines#editing">Modifier une machine</RedirectButton>
                             </div>
                         </MenuCard>
                         <MenuCard v-if="User.currentUser.canTeacher()">
@@ -226,7 +226,7 @@
                             </CardTitle>
                             <p class="whitespace-wrap text-gray-600">Créer une nouvelle machine</p>
                             <div class="flex grow-0 md:justify-end justify-center">
-                                <RedirectButton href="/machines">Créer une machine</RedirectButton>
+                                <RedirectButton href="/machines/create">Créer une machine</RedirectButton>
                             </div>
                         </MenuCard>
                     </MenuDiv>
