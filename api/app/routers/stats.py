@@ -7,23 +7,23 @@ router = APIRouter()
 
 
 @router.get("/users/{idUser}/sessions", response_model=Models.pagination)
-async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenario: int = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenario: int = None, vrmode: bool = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     if idUser != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+    query = Models.Session.filter(user__id=idUser)
+    if id_scenario:
+        query = query.filter(scenario__id=id_scenario)
+    if vrmode:
+        query = query.filter(vrmode=vrmode)
+    query.prefetch_related('user', 'scenario')
+    session_count = await query.count()
+    if session_count < per_page:
+        per_page = session_count
+    sessions = await query.offset((page - 1) * per_page).limit(per_page)
     # check for zero per_page
     if per_page == 0:
         per_page = 1
-    if id_scenario:
-        session_count = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).count()
-        if session_count < per_page:
-            per_page = session_count
-        sessions = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
-    else:
-        session_count = await Models.Session.filter(user__id=idUser).count()
-        if session_count < per_page:
-            per_page = session_count
-        sessions = await Models.Session.filter(user__id=idUser).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
     # calculate the number of pages
     lastPage = session_count // per_page
     if session_count % per_page != 0:
