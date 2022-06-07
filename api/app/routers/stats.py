@@ -152,18 +152,21 @@ async def skipRate(idScenario: int,vrmode:bool=None, current_user: Models.User =
 
 
 @router.get('/scenarios/backwardRate')
-async def backwardRate(idScenario: int, idUser: int = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    conn = tortoise.Tortoise.get_connection("default")
-    if idUser:
-        distinct = await conn.execute_query_dict('select  count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1) and user_id=($2);', [idScenario, idUser])
-        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1) and user_id=($2);', [idScenario, idUser])
-    else:
-        distinct = await conn.execute_query_dict('select  count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1);', [idScenario])
-        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where scenario_id=($1);', [idScenario])
-    if total[0]['count'] == 0:
+async def backwardRate(idScenario: int, idUser: int = None,vrmode:bool=None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+    distinctQuery = Models.playedStep.filter(session__scenario_id=idScenario)
+    totalQuery = Models.playedStep.filter(session__scenario_id=idScenario)
+    if idUser is not None:
+        distinctQuery = distinctQuery.filter(session__user_id=idUser)
+        totalQuery = totalQuery.filter(session__user_id=idUser)
+    if vrmode is not None:
+        distinctQuery = distinctQuery.filter(session__vrmode=vrmode)
+        totalQuery = totalQuery.filter(session__vrmode=vrmode)
+    distinct = await distinctQuery.distinct().count()
+    total = await totalQuery.count()
+    if total == 0:
         raise HTTPException(
             status_code=404, detail="Aucune donnée trouvée")
-    backwardRate = 1-(distinct[0]['count']/total[0]['count'])
+    backwardRate = 1-(distinct/total)
     return {'scenario': idScenario, 'data': backwardRate}
 
 
