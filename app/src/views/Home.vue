@@ -32,7 +32,7 @@
                         <p class="whitespace-nowrap py-1 px-2 mx-4 my-1 rounded-lg text-base font-semibold text-left text-indigo-800 cursor-pointer"
                            :class="menu.selectedOption == 'recent'? 'bg-indigo-600 text-indigo-50 shadow-md shadow-indigo-600': ''"
                            v-on:click="menu.selectedOption = 'recent'; selectOption()">
-                            Fréquement utilisé
+                            Fréquemment utilisé
                         </p>
                         <p class="whitespace-nowrap py-1 px-2 mx-4 my-1 rounded-lg text-base font-semibold text-left text-indigo-800 cursor-pointer"
                            :class="menu.selectedOption == 'account'? 'bg-indigo-600 text-indigo-50 shadow-md shadow-indigo-600': ''"
@@ -72,7 +72,7 @@
                     </div>
                 </div>
                 <div id="shortcuts" class="flex flex-wrap justify-center">
-                    <MenuDiv title="Fréquement utilisé" v-show="menu.selectedOption == 'recent'">
+                    <MenuDiv title="Fréquemment utilisé" v-show="menu.selectedOption == 'recent'">
                         <MenuCard>
                             <CardTitle>
                                 <template v-slot:path>
