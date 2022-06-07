@@ -1,6 +1,6 @@
 <template>
     <!-- Template Pagination Choice : Used to select one or multiple specific elements in a paginated API request (for example the users's pagination or the scenarios' list) -->
-    <div v-show="this.obj.showing" id="pagination-parent" class="flex flex-col justify-center absolute top-0 left-0 w-screen h-screen bg-black/[0.4]">
+    <div v-show="this.obj.showing" id="pagination-parent" class="z-50 flex flex-col justify-center absolute top-0 left-0 w-screen h-screen bg-black/[0.4]">
         <div class="p-1 flex flex-col min-w-[50vw] min-h-[50vh] md:max-w-[70vw] max-w-[98vw] md:max-h-[70vh] max-h-[98vh] bg_white shadow-lg border border-1 border-gray-200 mx-auto bg-white rounded-lg"> <!-- POPUP -->
             <div class="flex flex-col grow min-h-0">
                 <div class="flex">
