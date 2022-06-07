@@ -1,6 +1,7 @@
 import { data } from "autoprefixer";
 import API from "../script/API";
 import User from "../script/User";
+import { stringTime } from "../script/common";
 
 const TYPE = {
     BAR: "bar",
@@ -46,6 +47,10 @@ function addChartToList(list, title, type, labels, sets) {
                     }
                 })
             }
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false
         }
     });
 }
@@ -68,17 +73,6 @@ function showLoading(...lists) {
     document.getElementById("loadzone").style.display = "block";
     document.getElementById("errorzone").style.display = "none";
     document.getElementById("nodatazone").style.display = "none";
-}
-
-/**
- * Converts a number of seconds to a stringified time
- * @param {number} time time in seconds to convert to a string
- * @returns stringified time (minutes+seconds)
- */
-function stringTime(time) {
-    let nbMinutes = Math.floor(time / 60);
-    let nbSeconds = time % 60;
-    return (nbMinutes > 0 ? `${Math.round(nbMinutes)} minute${nbMinutes >= 2 ? "s" : ""} et ` : ``) + `${Math.round(nbSeconds)} seconde${nbSeconds >= 2 ? "s" : ""}`
 }
 
 /**
