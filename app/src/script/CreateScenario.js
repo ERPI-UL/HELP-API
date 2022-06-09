@@ -1,4 +1,4 @@
-import { getBlockDiv } from "./ScenarioBlock";
+import { getBlockDiv, createStepLink } from "./ScenarioBlock";
 import User from '../script/User';
 import { redirectHome } from '../script/common';
 
@@ -236,7 +236,10 @@ let originalScenario = null;
  * Retreives the original edited scenario (if in edit mode) and stores it in the originalScenario variable
  * Updates the machine selection, available targets, available redirections (steps), etc.
  */
- function fetchScenario() {
+function fetchScenario() {
+    // this function is called at setup, so we can add the first step link here (not clean but works)
+    document.getElementById("steps-zone").appendChild(createStepLink(addStep));
+
     return new Promise((resolve, reject) => {
         const url = window.location.pathname.split("/");
         if (url[url.length-1] == "create") { // create mode, don't fetch anything
@@ -276,8 +279,8 @@ let originalScenario = null;
 /**
  * Adds a new scenario block to the interface
  */
- function addStep() {
-    createScenarioBlock();
+ function addStep(index) {
+    createScenarioBlock(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, index);
 }
 
 /**
@@ -295,25 +298,91 @@ let originalScenario = null;
  */
  function removeScenarioBlock(id) {
     const blockIndex = scenarioBlocks.findIndex(el => el.id == id);
-    const block = scenarioBlocks[blockIndex];
-    if (!block) return;
-    const dom = block.dom;
-    dom.nextElementSibling.remove();
-    dom.remove();
-    let current = block;
-    const prev = scenarioBlocks.find(el => el.next == id);
-    if (prev) prev.next = current.next;
-    while (current.next != 0) {
-        let nextIndex = scenarioBlocks.findIndex(el => el.id == current.next);
-        if (nextIndex < 0 || current.next == 0) {
-            current.next = 0;
-            break;
-        } else {
-            current = scenarioBlocks[nextIndex];
-            document.getElementById("stepname-"+current.id).innerHTML = "Étape "+(nextIndex);
-        }
+    const stepZone = document.getElementById("steps-zone");
+    const dom = stepZone.querySelector("#stepcontainer-"+id);
+    if (dom) {
+        dom.nextElementSibling.remove();
+        dom.remove();
     }
     scenarioBlocks.splice(blockIndex, 1);
+    updateStepIndexes();
+}
+
+/**
+ * Swaps the position of two scenario blocks in the scenario list and in the dom
+ * @param {HTMLDivElement} firstBlockDom first dom element to swap
+ * @param {HTMLDivElement} secondBlockDom second dom element to swap
+ */
+function exchangeBlocks(firstBlockDom, secondBlockDom) {
+    const firstBlockID = firstBlockDom.id.split("-")[1];
+    const firstBlockIndex = scenarioBlocks.findIndex(el => el.id == firstBlockID);
+    const secondBlockID = secondBlockDom.id.split("-")[1];
+    const secondBlockIndex = scenarioBlocks.findIndex(el => el.id == secondBlockID);
+
+    // save the first targets values to apply them after the swap
+    const firstTargets = firstBlockDom.querySelector("#steptargetscontainer-"+firstBlockID);
+    let firstVals = [];
+    for (let i = 0; i < firstTargets.children.length; i++) {
+        const el = firstTargets.children.item(i);
+        firstVals.push(el.value);
+    }
+    // save the second targets values to apply them after the swap
+    const secondTargets = secondBlockDom.querySelector("#steptargetscontainer-"+secondBlockID);
+    let secondVals = [];
+    for (let i = 0; i < secondTargets.children.length; i++) {
+        const el = secondTargets.children.item(i);
+        secondVals.push(el.value);
+    }
+
+    const tmp = firstBlockDom.innerHTML;
+    firstBlockDom.innerHTML = secondBlockDom.innerHTML;
+    secondBlockDom.innerHTML = tmp;
+    
+    secondBlockDom.id = "stepcontainer-"+firstBlockID;
+    firstBlockDom.id = "stepcontainer-"+secondBlockID;
+
+    // apply the first targets values
+    const firstTargetsContainer = firstBlockDom.querySelector("#steptargetscontainer-"+secondBlockID);
+    for (let i = 0; i < firstTargetsContainer.children.length; i++) {
+        const el = firstTargetsContainer.children.item(i);
+        el.value = secondVals[i];
+    }
+    // apply the second targets values
+    const secondTargetsContainer = secondBlockDom.querySelector("#steptargetscontainer-"+firstBlockID);
+    for (let i = 0; i < secondTargetsContainer.children.length; i++) {
+        const el = secondTargetsContainer.children.item(i);
+        el.value = firstVals[i];
+    }
+
+    const tmp2 = scenarioBlocks[firstBlockIndex];
+    scenarioBlocks[firstBlockIndex] = scenarioBlocks[secondBlockIndex];
+    scenarioBlocks[secondBlockIndex] = tmp2;
+
+    updateStepIndexes();
+}
+
+/**
+ * Moves a scenario block upwards in the scenario blocks list
+ * @param {number} id ID of the block to move UP
+ */
+function moveUp(id) {
+    const curBlockDom = document.getElementById("steps-zone").querySelector("#stepcontainer-"+id);
+    const prevBlockDom = curBlockDom.previousElementSibling?.previousElementSibling; // skip two time because of the link
+    if (!prevBlockDom) return;
+    exchangeBlocks(curBlockDom, prevBlockDom);
+    updateStepIndexes();
+}
+
+/**
+ * Moves a scenario block downwards in the scenario blocks list
+ * @param {number} id ID of the block to move DOWN
+ */
+ function moveDown(id) {
+    const curBlockDom = document.getElementById("steps-zone").querySelector("#stepcontainer-"+id);
+    const nextBlockDom = curBlockDom.nextElementSibling?.nextElementSibling; // skip two time because of the link
+    if (!nextBlockDom) return;
+    exchangeBlocks(curBlockDom, nextBlockDom);
+    updateStepIndexes();
 }
 
 /**
@@ -337,11 +406,11 @@ function blockInfoFromDom(dom) {
         {
             option_left: {
                 label: dom.querySelector("input[name='btn-left-label']")?.value,
-                redirect: availableRedirects.find(r => r.id == parseInt(dom.querySelector("select[name='btn-left-redirect']")?.value)).name
+                redirect: availableRedirects.find(r => r.id == parseInt(dom.querySelector("select[name='btn-left-redirect']")?.value))?.name
             },
             option_right: {
                 label: dom.querySelector("input[name='btn-right-label']")?.value,
-                redirect: availableRedirects.find(r => r.id == parseInt(dom.querySelector("select[name='btn-right-redirect']")?.value)).name
+                redirect: availableRedirects.find(r => r.id == parseInt(dom.querySelector("select[name='btn-right-redirect']")?.value))?.name
             }
         }
     );
@@ -397,9 +466,16 @@ function blockInfoFromDom(dom) {
 
     button.innerHTML = "...";
     API.execute_logged(API.ROUTE.SCENARIOS, API.METHOD_POST, User.currentUser.getCredentials(), scenario, API.TYPE_JSON).then(res => {
-        button.innerHTML = "Enregistré !";
+        logMessage("Scénario créé avec succès");
+        button.innerHTML = "Enregistrer";
         redirectHome();
-    }).catch(err => err.json().then(console.error));
+    }).catch(err => {
+        if (err.json)
+            err.json().then(console.error)
+        else console.error(err);
+        logMessage("Erreur lors de la création du scénario");
+        button.innerHTML = "Enregistrer";
+    });
 }
 
 /**
@@ -431,50 +507,95 @@ function blockInfoFromDom(dom) {
         if (index < 0) removedSteps.push(step);
     });
 
+    // console.log("addedSteps: "+addedSteps.map(s => s.id).join(", "));
+    // console.log("modifiedSteps: "+modifiedSteps.map(s => s.id).join(", "));
+    // console.log("removedSteps: "+removedSteps.map(s => s.id).join(", "));
+    modifiedSteps = modifiedSteps.sort((a, b) => b.ordernumber - a.ordernumber);
+
+    let beforeModification = [];
+
     let deleteCounter = 0;
     let modifyCounter = 0;
     let addCounter = 0;
     const checkForDelete = () => {
         if (deleteCounter++ >= removedSteps.length) {
-            if (modifiedSteps.length > 0) {
-                modifiedSteps.forEach(step => {
-                    API.execute_logged(API.ROUTE.STEPS + step.id, API.METHOD_PUT, User.currentUser.getCredentials(), {
-                        name: step.name,
-                        label: step.label,
-                        description: step.description,
-                        ordernumber: step.ordernumber,
-                        position: step.position,
-                        type: step.type,
-                        targets: step.targets,
-                        choice: step.choice
-                    }, API.TYPE_JSON).then(res => {
-                        // modified
-                    }).catch(err => console.log(err)).finally(checkForModify);
-                });
-            } else checkForModify();
+            checkForModify();
         }
     };
     const checkForModify = () => {
-        if (modifyCounter++ >= removedSteps.length) {
+        if (modifyCounter++ >= modifiedSteps.length) {
             if (addedSteps.length > 0) {
                 addedSteps.forEach(step => {
                     API.execute_logged(API.ROUTE.SCENARIOS+scenario.id+API.ROUTE.__STEPS, API.METHOD_POST, User.currentUser.getCredentials(), step, API.TYPE_JSON).then(res => {
-                        // added
+                        // successfully added, add it in the client
+                        originalScenario.steps.push(step);
                     }).catch(err => console.log(err)).finally(checkForAddition);
                 })
             } else checkForAddition();
+        } else {
+            const step = modifiedSteps[modifyCounter-1];
+            
+            const originalOrdernumber = originalScenario.steps.find(el => el.ordernumber === step.ordernumber);
+            if (originalOrdernumber) {
+                // console.log("Conflict detected when saving ordernumber of step "+step.id+" ("+step.ordernumber+")");
+                beforeModification.push({
+                    id: step.id,
+                    name: step.name,
+                    label: step.label,
+                    description: step.description,
+                    ordernumber: parseInt(step.ordernumber+""),
+                    position: step.position,
+                    type: step.type,
+                    targets: step.targets,
+                    choice: step.choice
+                });
+                step.ordernumber = originalScenario.steps.map(el => el.ordernumber).reduce((a, b) => Math.max(a, b))+1;
+            }
+
+            // console.log("Saving step "+step.id+" at ordernumber "+step.ordernumber);
+            API.execute_logged(API.ROUTE.STEPS + step.id, API.METHOD_PUT, User.currentUser.getCredentials(), {
+                name: step.name,
+                label: step.label,
+                description: step.description,
+                ordernumber: step.ordernumber,
+                position: step.position,
+                type: step.type,
+                targets: step.targets,
+                choice: step.choice
+            }, API.TYPE_JSON).then(res => {
+                // successfully modified, modify it in the client
+                let stepIndex = originalScenario.steps.findIndex(el => el.id === step.id);
+                originalScenario.steps[stepIndex] = step;
+
+                // check if this action freed the ordernumber of a step
+                beforeModification.forEach(modif => {
+                    let found = true;
+                    originalScenario.steps.forEach(el => {
+                        if (el.ordernumber === modif.ordernumber) 
+                            found = false;
+                    });
+                    if (found) {
+                        // console.log("Conflict solved for step "+modif.id+" ("+modif.ordernumber+")");
+                        beforeModification.splice(beforeModification.findIndex(el => el.id === modif.id), 1);
+                        modifiedSteps.splice(modifyCounter, 0, modif);
+                    }
+                });
+            }).catch(err => console.log(err)).finally(checkForModify);
         }
     }
     const checkForAddition = () => {
         if (addCounter++ >= addedSteps.length) {
             logMessage("Modifications sauvegardés.");
-            // redirectHome();
+            const button = document.getElementById("save-btn");
+            button.innerHTML = "Enregistrer";
+            redirectHome();
         }
     }
     if (removedSteps.length > 0) {
         removedSteps.forEach(step => {
             API.execute_logged(API.ROUTE.STEPS + step.id, API.METHOD_DELETE, User.currentUser.getCredentials(), undefined, API.TYPE_JSON).then(res => {
-                // removed
+                // successfully removed, remove it in the client
+                originalScenario.steps.splice(originalScenario.steps.findIndex(el => el.id === step.id), 1);
             }).catch(err => console.log(err)).finally(checkForDelete);
         });
     } else checkForDelete();
@@ -490,6 +611,14 @@ function saveScenario() {
     else saveCreations();
 }
 
+function updateStepIndexes() {
+    let index = 1;
+    const stepZone = document.getElementById("steps-zone");
+    stepZone.querySelectorAll(".step-part-container").forEach(block => {
+        block.querySelector("h2").innerHTML = "Étape " + (index++) + " : " + block.id.split("-")[1];
+    });
+}
+
 // scenario block's ID counter (incremented by 1 every time a new block is created)
 let ID_COUNTER = 1;
 // list of all the current displayed scenario blocks
@@ -499,25 +628,32 @@ let scenarioBlocks = [];
  * Creates a new scenario block using the getBlockDiv function, adds it to the scenarioBlocks array,
  * adds it to the DOM and adds the event listeners to it.
  */
- function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id) {
+ function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id, index) {
     if (id) ID_COUNTER = id; // if an ID is given, set the counter accordingly
     const newID = ID_COUNTER++; // inscrease by one the counter
     const stepZone = document.getElementById("steps-zone");
     const newBlock = getBlockDiv(newID, name, title, desc, scenarioBlocks.length+1, pos, mode, btnInfos); // create the new block
 
-    // add the new block and a wire behind it (the wire is only here for aesthetic reasons)
-    stepZone.appendChild(newBlock);
-    stepZone.appendChild(document.createElement("span")).classList.add("step-link");
-    
-    // add the block to the list (wired list so we set the .next attribute to the new block id)
-    if (scenarioBlocks.length > 0)
-        scenarioBlocks[scenarioBlocks.length-1].next = newID;
-    scenarioBlocks.push({
-        dom: newBlock,
-        id: newID,
-        next: 0,
-        previous: (scenarioBlocks.length > 0)? scenarioBlocks[scenarioBlocks.length-1].id: 0
-    });
+    // add the new block and a step link behind it (for the insert button)
+    const child = stepZone.children.item(index*2+1);
+    if (child == null || index == undefined) {
+        stepZone.appendChild(newBlock);
+        stepZone.appendChild(createStepLink(addStep));
+        // add the block to the end of the list
+        scenarioBlocks.push({
+            dom: newBlock,
+            id: newID
+        });
+    } else {
+        stepZone.insertBefore(newBlock, child);
+        stepZone.insertBefore(createStepLink(addStep), child);
+        // insert the block in the list
+        scenarioBlocks.splice(index, 0, {
+            dom: newBlock,
+            id: newID
+        });
+    }
+    updateStepIndexes();
 
     // timeout to be sure that the DOM is updated and ready for modifications
     setTimeout(() => {
@@ -584,9 +720,12 @@ function addStepTarget(stepID, value, label) {
 }
 
 if (window.indico == undefined) window.indico = {};
+window.indico.scenarioBlocks = scenarioBlocks;
 window.indico.removeStepTarget = removeStepTarget;
 window.indico.addStepTarget = addStepTarget;
 window.indico.removeScenarioBlock = removeScenarioBlock;
+window.indico.moveUp = moveUp;
+window.indico.moveDown = moveDown;
 
 // FOR DEBUG PURPOSE, DELETE IT LATER
 window.displayJSON = function(str) {

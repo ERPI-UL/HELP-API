@@ -57,16 +57,9 @@
                         <component :is="icon.flag" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
                         <p>Début</p>
                     </div>
-                    <span class="step-link"></span> <!-- link between steps -->
                     <div id="steps-zone">
                         <!-- step blocks goes here -->
                     </div>
-                    <!-- ADD STEP BUTTON -->
-                    <ValidateButton v-on:click="addStep">
-                        <component :is="icon.plus" class="flex-shrink-0 h-5 text-white mr-2" aria-hidden="true" />
-                        <p>Ajouter une étape</p>
-                    </ValidateButton>
-                    <span class="step-link"></span> <!-- link between steps -->
                     <!-- END FLAG ELEMENT -->
                     <div class="h-fit whitespace-nowrap inline-flex items-center justify-center px-4 py-2 w-fit rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white">
                         <component :is="icon.stop" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
@@ -176,7 +169,6 @@ function updateMode(newMode) {
                 dom.querySelector("input[name='pos-x']").value = editedBlock.position.x;
                 dom.querySelector("input[name='pos-y']").value = editedBlock.position.y;
                 dom.querySelector("input[name='pos-z']").value = editedBlock.position.z;
-                console.log(dom);
                 editedBlock = null;
                 clearLabels();
             }
@@ -274,7 +266,7 @@ export default {
 }
 
 .step-link {
-    margin: 0.5em 1em;
+    margin: 0.5em 0.5em 0.5em 1em;
     width: 0.2em;
     height: 2em;
     min-height: 2em;
@@ -292,5 +284,24 @@ export default {
     background-color: white;
     box-shadow: 0px 4px 8px #0001;
     animation: spawn-in 200ms ease;
+}
+.insert-btn {
+    display: flex;
+    margin-top: auto;
+    margin-bottom: auto;
+    cursor: pointer;
+    color: #4B556380;
+    transform: translateX(0em);
+    padding: 0.2em;
+    border-radius: 0.375em;
+} .insert-btn:hover {
+    transform: translateX(0.3em);
+    color: #4F46E5;
+    background-color: #4B556310;
+}
+.insert-btn > p {
+    color: #4B556300;
+} .insert-btn:hover > p {
+    color: inherit;
 }
 </style>

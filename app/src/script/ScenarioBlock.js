@@ -16,11 +16,23 @@
     container.innerHTML = 
     `<div class="flex justify-between m-1">
         <h2 id="stepname-${id}" class="text-sm m-1 text-indigo-600 font-extrabold">Étape ${ordernumber}</h2>
-        <button onclick="window.indico.removeScenarioBlock(${id});" id="steprem-${id}" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+        <div class="flex space-x-4">
+            <button onclick="window.indico.moveUp(${id});" id="steprem-${id}" class="bg-gray-600/[0.1] h-fit w-fit flex flex-row shadow rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                </svg>
+            </button>
+            <button onclick="window.indico.moveDown(${id});" id="steprem-${id}" class="bg-gray-600/[0.1] h-fit w-fit flex flex-row shadow rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <button onclick="window.indico.removeScenarioBlock(${id});" id="steprem-${id}" class="bg-red-600 p-0.5 h-fit w-fit flex flex-row shadow rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
     </div>
     <div class="flex flex-col grow p-1 rounded w-fit min-w-0 min-h-0 max-w-full">
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
@@ -116,4 +128,40 @@
     return container;
 }
 
-export {getBlockDiv};
+/**
+ * Creates a new step link
+ * @param {Function} callback the callback function called when the step link is clicked (insert new block)
+ * @returns {HTMLDivElement} the created step link
+ */
+function createStepLink(callback) {
+    let container = document.createElement("div");
+    container.classList.add("flex");
+    container.innerHTML = `
+    <span class="step-link"></span>
+    <div class="insert-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 my-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <p class="ml-1 my-auto font-semibold mb-0.5 mr-1">Insérer une étape</p>
+    </div>
+    `;
+    setTimeout(() => {
+        container.querySelector(".insert-btn").addEventListener("click", ev => {
+            let index = 0;
+            for (let i = 0; i < container.parentElement.children.length; i++) {
+                const el = container.parentElement.children.item(i);
+                if (el == container) {
+                    index = i;
+                    break;
+                }
+            }
+            // each step link is separated by a scenario block, so to get the step link insert index,
+            // we just divide it's dom position by 2
+            let insertionIndex = Math.floor(index / 2); 
+            callback(insertionIndex);
+        });
+    }, 10);
+    return container;
+}
+
+export { getBlockDiv, createStepLink };
