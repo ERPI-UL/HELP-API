@@ -3,6 +3,7 @@ from pydantic import parse_obj_as
 import tortoise
 import utils
 import Models
+from tortoise.functions import Count
 router = APIRouter()
 
 
@@ -181,7 +182,6 @@ async def performRate(idScenario: int,vrmode:bool=None, current_user: Models.Use
     scenario = await scenario
     numberOfTimeScenarioPlayed = await Models.Session.filter(scenario_id=idScenario).count()
     list = []
-    numberOfTimeScenarioPlayed = await conn.execute_query_dict('select count(*) from session where scenario_id=($1);', [idScenario])
     for step in scenario.steps:
         playedSteps = await conn.execute_query_dict('select count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where step_id = ($1) and scenario_id = ($2);', [step.id, idScenario])
         if playedSteps[0]['count'] == 0:

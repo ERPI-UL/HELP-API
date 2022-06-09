@@ -26,8 +26,8 @@ async def create_user(user: Models.UserNew):
 #     return await Models.User.all().limit(5).get_or_none()
 
 # list all users
-@transactions.atomic()
 @router.get('/', response_model=Models.pagination)
+@transactions.atomic()
 async def get_users(page: int = 1, per_page: int = 10, res: any = Depends(utils.InstructorRequired)):
     users_count = await Models.User.all().count()
     if users_count < per_page:
