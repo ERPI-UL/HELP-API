@@ -1,6 +1,6 @@
 class API {
     // API constants
-    static API_URL = window.location.protocol + '//indico-api.lf2l.fr';
+    static API_URL = window.location.protocol + '//indico-api.lf2l.fr';z
     static get METHOD_GET() { return "GET"; }
     static get METHOD_PUT() { return "PUT"; }
     static get METHOD_POST() { return "POST"; }
@@ -140,14 +140,14 @@ class API {
     static execute_logged(path, method = this.METHOD_GET, credentials, body = null, type = this.TYPE_JSON, headers = null) {
         return new Promise((resolve, reject) => {
             if (!credentials) {
-                reject("Please provide credentials (token/type or username/password)");
+                reject({message: "Please provide credentials (token/type or username/password)"});
                 return;
             }
             const login_mode = (credentials.password != undefined && credentials.username != undefined)
             const token_mode = (credentials.token != undefined && credentials.type != undefined)
 
             if (!login_mode && !token_mode) {
-                reject("Error: Invalid credentials");
+                reject({message: "Error: Invalid credentials"});
                 return;
             }
 
@@ -156,14 +156,16 @@ class API {
                 for (let key in headers)
                     reqHeaders[key] = headers[key];
 
+            const AuthorizationHeader = "x-indico-authorization";
+
             if (token_mode) {
-                reqHeaders.Authorization = credentials.type + " " + credentials.token;
-                this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
+                reqHeaders[AuthorizationHeader] = credentials.type + " " + credentials.token;
+                this.execute(path, method, body, type, reqHeaders).then(resolve).catch(err => reject({message: err}));
             } else {
                 this.execute(API.ROUTE.LOGIN, this.METHOD_POST, { username: credentials.username, password: credentials.password }, this.TYPE_FORM).then(data => {
-                    reqHeaders.Authorization = data.token_type + " " + data.access_token;
-                    this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
-                }).catch(reject);
+                    reqHeaders[AuthorizationHeader] = data.token_type + " " + data.access_token;
+                    this.execute(path, method, body, type, reqHeaders).then(resolve).catch(err => reject({message: "password Status: "+err.status}));
+                }).catch(err => reject({message: "Status: "+err.status}));
             }
         });
     }

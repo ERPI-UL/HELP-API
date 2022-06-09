@@ -41,6 +41,15 @@
                             <option value="<loading>">Chargement ...</option>
                         </select>
                     </div>
+                    <!-- AR/VR selection -->
+                    <div class="flex md:justify-left justify-between md:mr-6">
+                        <h2 class="m-1 p-1">Mode: </h2>
+                        <select id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
+                            <option value="mode_all">Tous</option>
+                            <option value="mode_ar">AR</option>
+                            <option value="mode_vr">VR</option>
+                        </select>
+                    </div>
                     <!-- Search button -->
                     <div class="flex grow justify-between">
                         <span></span>

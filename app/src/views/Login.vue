@@ -6,12 +6,12 @@
                 <!-- Modal title -->
                 <div class="flex center">
                     <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
-                    <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 whitespace-nowrap">
+                    <h2 class="text-2xl font-extrabold text-indigo-600 px-6 whitespace-nowrap">
                         Se connecter
                     </h2>
                 </div>
                 <div class="divide-y divide-gray-300/50">
-                    <div class="space-y-6 pt-8 text-base leading-7 text-gray-400">
+                    <div class="space-y-6 py-2 md:py-8 text-base text-gray-400">
                         <!-- Username input -->
                         <div class="md:flex block justify-between">
                             <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
@@ -88,7 +88,7 @@ function logMessage(msg) {
         liste.pop();
         txt.innerHTML = liste.join("<br>");
         div.style.height = "0px";
-    }, 3000);
+    }, 8000);
 }
 
 /**
@@ -118,14 +118,19 @@ function onValidate() {
     }
 
     API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {grant_type: "password", username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(data => {
-        if (data.error) logMessage(data.error);
+        if (data.error) {
+            logMessage("Une erreur s'est produite: "+data.error);
+        }
         else {
-            User.fromToken({token: data.access_token, type: data.token_type}).fetchInformations().then(user => {
-                User.saveUser(user);
-                logMessage("Connecté à "+user.username);
+            let user = User.fromToken({token: data.access_token, type: data.token_type})
+            logMessage("Récuperation des informations ...");
+            user.fetchInformations(logMessage).then(user => {
+                logMessage("Connecté !");
                 btn.innerHTML = "Valider";
+                User.saveUser(user);
                 redirectHome();
             }).catch(err => {
+                logMessage("Une erreur s'est produite: "+err.message);
                 console.error(err);
             });
         }

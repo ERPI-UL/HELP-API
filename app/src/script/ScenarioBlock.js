@@ -95,18 +95,21 @@
         <div class="justify-between mb-1">
             <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Position du texte : </p>
             <div class="flex justify-between">
-                <div id="shift" class="flex">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">X: </p>
+                <div class="flex">
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">X: </p>
                     <input type="number" name="pos-x" id="input-stepposx-${id}" value="${pos!=undefined?pos.x:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
-                <div id="shift" class="flex">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Y: </p>
+                <div class="flex">
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">Y: </p>
                     <input type="number" name="pos-y" id="input-stepposy-${id}" value="${pos!=undefined?pos.y:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
-                <div id="shift" class="flex">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Z: </p>
+                <div class="flex">
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">Z: </p>
                     <input type="number" name="pos-z" id="input-stepposz-${id}" value="${pos!=undefined?pos.z:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
+                <div class="flex">
+                    <button id="edit-position" class="bg-indigo-600 p-4 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg">Editer</button>
+                </div>                
             </div>
         </div>
     </div>`;

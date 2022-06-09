@@ -122,7 +122,10 @@ function updateUserDeleteSelect(selectValue) {
     let val = userSelect.value;
     userSelect.innerHTML = "";
     const userOptions = [];
-    if (availableUsersDelete.length == 0) userSelect.value = "";
+    if (availableUsersDelete.length == 0) {
+        userOptions.push({value: "", text: "- - - - - - - -"});
+        userSelect.value = "";
+    }
     availableUsersDelete.forEach(user => userOptions.push(user));
     userOptions.push({value: "<select>", text: "Selectionner ..."});
 
@@ -166,7 +169,9 @@ function updateUserRoleSelect(selectValue) {
     let val = userSelect.value;
     userSelect.innerHTML = "";
     const userOptions = [];
-    if (availableUsersDelete.length == 0) userSelect.value = "";
+    if (availableUsersDelete.length == 0) {
+        userOptions.push({value: "", text: "- - - - - - - -"});
+    }
     availableUsersRole.forEach(user => userOptions.push(user));
     userOptions.push({value: "<select>", text: "Selectionner ..."});
 
