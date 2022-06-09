@@ -4,6 +4,7 @@ import tortoise
 import utils
 import Models
 from tortoise.functions import Count
+from tortoise import transactions
 router = APIRouter()
 
 
@@ -87,6 +88,7 @@ async def deletePlayedStep(idPlayedStep: int, current_user: Models.User = Depend
 
 
 @router.delete('/sessions/{idSession}/playedSteps')
+@transactions.atomic()
 async def deletePlayedSteps(idSession: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     session = await Models.Session.get(id=idSession).prefetch_related('user')
     if session.user.id != current_user.id:

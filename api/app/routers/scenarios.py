@@ -6,6 +6,7 @@ import Models
 import utils
 import aiofiles
 import aiofiles.os
+from tortoise import transactions
 router = APIRouter()
 
 
@@ -100,18 +101,20 @@ async def postMachineModel(machine_id: int, model: UploadFile = File(...), user:
     if not machine:
         raise HTTPException(status_code=404, detail="Machine introuvable")
     machine.path = utils.MODELS_DIRECTORY+str(machine.id)+"/machine.fbx"
-    try:
-        contents = await model.read()
-        # create the directory if it doesn't exist
-        await aiofiles.os.makedirs(utils.MODELS_DIRECTORY+str(machine.id), exist_ok=True)
-        async with aiofiles.open(machine.path, 'wb') as f:
-            await f.write(contents)
-        await machine.save()
-    except Exception:
-        raise HTTPException(
-            status_code=500, detail="Erreur lors de l'enregistrement du fichier")
-    finally:
-        await model.close()
+    async with transactions.in_transaction()  as connection:
+        try:
+            contents = await model.read()
+            # create the directory if it doesn't exist
+            await aiofiles.os.makedirs(utils.MODELS_DIRECTORY+str(machine.id), exist_ok=True)
+            async with aiofiles.open(machine.path, 'wb') as f:
+                await f.write(contents)
+            await machine.save()
+        except Exception:
+            connection.rollback()
+            raise HTTPException(
+                status_code=500, detail="Erreur lors de l'enregistrement du fichier")
+        finally:
+            await model.close()
 
     return {"ok": f" fichier envoyé : {model.filename}"}
 
@@ -179,6 +182,7 @@ async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: 
 
 
 @router.post('/')
+@transactions.atomic()
 async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
@@ -198,6 +202,7 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
 
 
 @router.post('/{idScenario}/steps')
+@transactions.atomic()
 async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
@@ -218,6 +223,7 @@ async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = D
 
 
 @router.put('/steps/{idStep}')
+@transactions.atomic()
 async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(

@@ -74,7 +74,6 @@ async def root():
 
 @app.get('/ping')
 async def ping():
-    await simple_send("fanta.r55000@gmail.com")
     return {'ping': 'pong'}
 
 @app.get('/test')
