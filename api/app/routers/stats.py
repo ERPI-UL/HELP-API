@@ -3,27 +3,29 @@ from pydantic import parse_obj_as
 import tortoise
 import utils
 import Models
+from tortoise.functions import Count
+from tortoise import transactions
 router = APIRouter()
 
 
 @router.get("/users/{idUser}/sessions", response_model=Models.pagination)
-async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenario: int = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenario: int = None, vrmode: bool = None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     if idUser != current_user.id and current_user.adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+    query = Models.Session.filter(user__id=idUser)
+    if id_scenario:
+        query = query.filter(scenario__id=id_scenario)
+    if vrmode is not None:
+        query = query.filter(vrmode=vrmode)
+    query.prefetch_related('user', 'scenario')
+    session_count = await query.count()
+    if session_count < per_page:
+        per_page = session_count
+    sessions = await query.offset((page - 1) * per_page).limit(per_page)
     # check for zero per_page
     if per_page == 0:
         per_page = 1
-    if id_scenario:
-        session_count = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).count()
-        if session_count < per_page:
-            per_page = session_count
-        sessions = await Models.Session.filter(user__id=idUser, scenario__id=id_scenario).prefetch_related('user', 'scenario__steps', 'playedSteps', 'playedSteps__step').offset((page - 1) * per_page).limit(per_page)
-    else:
-        session_count = await Models.Session.filter(user__id=idUser).count()
-        if session_count < per_page:
-            per_page = session_count
-        sessions = await Models.Session.filter(user__id=idUser).prefetch_related('user', 'scenario').offset((page - 1) * per_page).limit(per_page)
     # calculate the number of pages
     lastPage = session_count // per_page
     if session_count % per_page != 0:
@@ -86,6 +88,7 @@ async def deletePlayedStep(idPlayedStep: int, current_user: Models.User = Depend
 
 
 @router.delete('/sessions/{idSession}/playedSteps')
+@transactions.atomic()
 async def deletePlayedSteps(idSession: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     session = await Models.Session.get(id=idSession).prefetch_related('user')
     if session.user.id != current_user.id:
@@ -131,18 +134,21 @@ async def averageTime(idScenario: int, current_user: Models.User = Depends(utils
 
 
 @router.get('/scenarios/skipRate')
-async def skipRate(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
-    conn = tortoise.Tortoise.get_connection("default")
+async def skipRate(idScenario: int,vrmode:bool=None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
-    print(scenario)
     list = []
     # FIXME: make this with full SQL query not 2 queries for each step
     for step in scenario.steps:
-        skipped = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where skipped = true and step_id = ($1) and session.scenario_id = ($2);', [step.id, idScenario])
-        total = await conn.execute_query_dict('select count(*) from "playedSteps" inner join session on session_id = session.id where step_id = ($1) and session.scenario_id = ($2);', [step.id, idScenario])
-        if total[0]['count'] != 0:
+        skippedQuery = Models.playedStep.filter(skipped=True, step_id=step.id, session__scenario_id=idScenario)
+        totalQuery = Models.playedStep.filter(step_id=step.id, session__scenario_id=idScenario)
+        if vrmode is not None:
+            skippedQuery = skippedQuery.filter(session__vrmode=vrmode)
+            totalQuery = totalQuery.filter(session__vrmode=vrmode)
+        skipped = await skippedQuery.count()
+        total = await totalQuery.count()
+        if total != 0:
             list.append({'id': step.id, 'name': step.name,
-                        'skipRate': skipped[0]['count']/total[0]['count']})
+                        'skipRate': skipped/total})
         else:
             list.append({'id': step.id, 'name': step.name, 'skipRate': -1})
     return {'scenario': scenario.id, 'data': list}
@@ -166,19 +172,22 @@ async def backwardRate(idScenario: int, idUser: int = None, current_user: Models
 
 @router.get('/scenarios/performRate')
 # poucentage des utiliseurs qui réalise l'étape par scénario
-async def performRate(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def performRate(idScenario: int,vrmode:bool=None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     # pour chaques étapes, un nombre entre 1-0 indicant le taux de personnes ayant fait cette etape du scenario
     conn = tortoise.Tortoise.get_connection("default")
-    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    scenario = Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    if vrmode is not None:
+        scenario = scenario.filter(vrmode=vrmode)
+    scenario = await scenario
+    numberOfTimeScenarioPlayed = await Models.Session.filter(scenario_id=idScenario).count()
     list = []
-    numberOfTimeScenarioPlayed = await conn.execute_query_dict('select count(*) from session where scenario_id=($1);', [idScenario])
     for step in scenario.steps:
         playedSteps = await conn.execute_query_dict('select count(distinct step_id) from "playedSteps" inner join session s on s.id = "playedSteps".session_id where step_id = ($1) and scenario_id = ($2);', [step.id, idScenario])
         if playedSteps[0]['count'] == 0:
             list.append({'id': step.id, 'name': step.name, 'performRate': 0})
         else:
             list.append({'id': step.id, 'name': step.name,
-                        'performRate': playedSteps[0]['count']/numberOfTimeScenarioPlayed[0]['count']})
+                        'performRate': playedSteps[0]['count']/numberOfTimeScenarioPlayed})
     return {'scenario': scenario.id, 'data': list}
 
 

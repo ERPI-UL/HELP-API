@@ -13,6 +13,7 @@ router = APIRouter()
 
 
 @router.post('/', response_model=Models.UserinFront)
+@transactions.atomic()
 async def create_user(user: Models.UserNew):
     user = utils.sanitizer(user)
     user_obj = Models.User(username=user.username,
@@ -26,7 +27,6 @@ async def create_user(user: Models.UserNew):
 #     return await Models.User.all().limit(5).get_or_none()
 
 # list all users
-@transactions.atomic()
 @router.get('/', response_model=Models.pagination)
 async def get_users(page: int = 1, per_page: int = 10, res: any = Depends(utils.InstructorRequired)):
     users_count = await Models.User.all().count()
@@ -61,6 +61,7 @@ async def get_user(current_user: Models.User = Depends(utils.get_current_user_in
 
 
 @router.delete('/me')
+@transactions.atomic()
 async def delete_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
     user = await Models.User.get(id=current_user.id)
     await user.delete()
