@@ -172,10 +172,14 @@ async def backwardRate(idScenario: int, idUser: int = None,vrmode:bool=None, cur
 
 @router.get('/scenarios/performRate')
 # poucentage des utiliseurs qui réalise l'étape par scénario
-async def performRate(idScenario: int, current_user: Models.User = Depends(utils.get_current_user_in_token)):
+async def performRate(idScenario: int,vrmode:bool=None, current_user: Models.User = Depends(utils.get_current_user_in_token)):
     # pour chaques étapes, un nombre entre 1-0 indicant le taux de personnes ayant fait cette etape du scenario
     conn = tortoise.Tortoise.get_connection("default")
-    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    scenario = Models.Scenario.get(id=idScenario).prefetch_related('steps')
+    if vrmode is not None:
+        scenario = scenario.filter(vrmode=vrmode)
+    scenario = await scenario
+    numberOfTimeScenarioPlayed = await Models.Session.filter(scenario_id=idScenario).count()
     list = []
     numberOfTimeScenarioPlayed = await conn.execute_query_dict('select count(*) from session where scenario_id=($1);', [idScenario])
     for step in scenario.steps:
@@ -184,7 +188,7 @@ async def performRate(idScenario: int, current_user: Models.User = Depends(utils
             list.append({'id': step.id, 'name': step.name, 'performRate': 0})
         else:
             list.append({'id': step.id, 'name': step.name,
-                        'performRate': playedSteps[0]['count']/numberOfTimeScenarioPlayed[0]['count']})
+                        'performRate': playedSteps[0]['count']/numberOfTimeScenarioPlayed})
     return {'scenario': scenario.id, 'data': list}
 
 
