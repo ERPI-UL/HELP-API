@@ -176,16 +176,13 @@
         EyeIcon,
         RefreshIcon,
         PencilAltIcon,
-        TerminalIcon
+        TerminalIcon,
+        InformationCircleIcon
     } from '@heroicons/vue/outline';
     import { ChevronDownIcon, UserIcon } from '@heroicons/vue/solid';
 
     /** Variable containing all the menu's options */
     let menu = [
-        { // home button
-            name: "Accueil",
-            href: "/",
-        },
         { // scenarios options (the other options are added later in the script depending on the user's role)
             name: "Scénarios",
             elements: [
@@ -232,7 +229,13 @@
                     name: 'Connecter un appareil',
                     description: 'Connecter un appareil à votre compte',
                     href: '/easyconnect',
-                    icon: LinkIcon,
+                    icon: LinkIcon
+                },
+                {
+                    name: 'A propos',
+                    description: 'Informations diverses sur Indico',
+                    href: '/about',
+                    icon: InformationCircleIcon
                 }
             ]
         }
