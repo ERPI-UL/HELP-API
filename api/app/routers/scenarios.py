@@ -89,7 +89,7 @@ async def getMachineModel(machine_id: int):
         # test if file exists
         await aiofiles.os.stat(machine.path)
         return FileResponse(
-            machine.path, media_type='application/octet-stream', filename=machine.name+'.fbx')  # FastApi will automatically find the file and return it
+            machine.path, media_type='application/octet-stream', filename=machine.name+'.glb')  # FastApi will automatically find the file and return it
     except Exception:
         raise HTTPException(status_code=404, detail="Model introuvable")
 
