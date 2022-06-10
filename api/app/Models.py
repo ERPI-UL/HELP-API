@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from random import randint
 from tortoise import OneToOneFieldInstance, Tortoise, fields, run_async
 from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
@@ -6,6 +7,7 @@ from passlib.hash import bcrypt
 from pydantic import BaseModel, validator
 
 import typing
+import utils
 
 
 class User(Model):
@@ -295,6 +297,23 @@ class PasswordReset(BaseModel):
     token:str
     password:str
     # playedSteps:list[playedStepIn]
+
+class Invite(BaseModel):
+    email: str
+    firstname: str
+    lastname: str
+    adminLevel: int = None
+    username: str = None
+    @validator('adminLevel')
+    def adminlvl_validator(cls, v):
+        if v not in [1,2]:
+            raise ValueError('adminLevel must be 1 or 2')
+        return 1
+    @validator('username')
+    def username_validator(cls, v, values):
+        if v is None or v == '':
+            v = values['firstname'] + '.' + values['lastname'] + str(randint(1, 1000))
+        return v
 SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)
 playedStepIn = pydantic_model_creator(

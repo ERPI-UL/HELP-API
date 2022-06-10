@@ -43,3 +43,12 @@ async def sendResetLink(email: str,token:str,firstname:str,lastname:str):
     fm = FastMail(conf)
     await fm.send_message(message,template_name="reset.html")
     return {"message": "Mail sent"}
+async def sendInviteLink(email:str,username:str,token:str,firstname:str,lastname:str,senderFirstname:str,senderLastname:str,role:str):
+    message = MessageSchema(
+        subject="Indico - Invitation",
+        recipients=[email],  # List of recipients, as many as you can pass 
+        template_body={"URL": f"https://indico.lf2l.fr/invite?token={token}","USERNAME":username,"PRENOM":firstname,"NOM":lastname,"SENDER":f"{senderFirstname} {senderLastname}","ROLE":role},
+        )
+    fm = FastMail(conf)
+    await fm.send_message(message,template_name="invite.html")
+    return {"message": "Mail sent"}
