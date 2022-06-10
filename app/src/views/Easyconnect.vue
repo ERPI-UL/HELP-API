@@ -72,6 +72,7 @@ import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
 import User from "../script/User";
+import { redirectHome } from "../script/common";
 
 /**
  * Setup all number input listeners
@@ -210,6 +211,7 @@ function onValidate() {
 function sendEasyConnectRequest(data) {
     API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, User.currentUser.getCredentials(), data, API.TYPE_JSON).then(res => {
         logMessage("Appareil connecté au compte.");
+        redirectHome();
     }).catch(err => {
         console.error(err);
         switch (err.status) {
