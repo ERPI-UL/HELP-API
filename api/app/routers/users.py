@@ -1,3 +1,7 @@
+import base64
+from datetime import datetime, timedelta
+import mail
+import random
 from fastapi import APIRouter, Depends, HTTPException, status
 from passlib.hash import bcrypt
 import tortoise
@@ -120,3 +124,34 @@ async def update_user(user: Models.UserinPut, current_user: Models.User = Depend
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Adresse déjà utilisée.")
     return await Models.UserinFront.from_tortoise_orm(user_obj)
+
+@router.post("/invite", tags=["auth"])
+async def invite_user(invite: Models.Invite, userInDB=Depends(utils.get_current_user), required=Depends(utils.InstructorRequired)):
+    async with transactions.in_transaction() as transaction:
+        try:
+            token = base64.b16encode(random.getrandbits(
+                256).to_bytes(32, byteorder='little')).decode('utf-8')
+            newUser = Models.User(username=invite.username, email=invite.email, password_hash=Models.User.encrypt_password(
+                token), firstname=invite.firstname, lastname=invite.lastname, adminLevel=invite.adminLevel)
+            await newUser.save()
+            inviteInDB = Models.Reset(user=newUser, token=token,
+                                expiration=datetime.now() + timedelta(days=14))
+            await inviteInDB.save()
+            if(invite.adminLevel==1):
+                role = "apprenti"
+            elif(invite.adminLevel==2):
+                role = "enseignant"
+            await mail.sendInviteLink(invite.email,invite.username,token,invite.firstname,invite.lastname,userInDB.firstname,userInDB.lastname,role)
+        except tortoise.exceptions.IntegrityError as err:
+            await transaction.rollback()
+            if "username" in err.__str__():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Ce nom d'utilisateur est déjà utilisé")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Adresse déjà utilisée.")
+        except Exception as e:
+            await transaction.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Erreur lors de l'envoi de l'invitation"
+            )
