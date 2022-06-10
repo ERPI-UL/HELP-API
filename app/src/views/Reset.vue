@@ -7,7 +7,7 @@
                 <div class="flex center max-w-full">
                     <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6">
-                        Réinitialiser le mot de passe
+                        {{ action }} le mot de passe
                     </h2>
                 </div>
                 <!-- Modal content -->
@@ -32,7 +32,7 @@
                     <div class="pt-8 flex justify-between">
                         <BackButton>Retour</BackButton> <!-- Cancel button -->
                         <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                            Réinitialiser <!-- Validate button -->
+                            {{ action }} <!-- Validate button -->
                         </button>
                     </div>
                 </div>
@@ -156,11 +156,14 @@ function onValidate() {
 
 }
 
+let action = window.location.pathname.split("/").pop() === "reset" ? "Réinitialiser" : "Définir";
+
 export default {
     name: "Reset",
     components: {
         BackButton
     },
+    data() { return {action} },
     mounted() {
         setup();
     },
