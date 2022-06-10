@@ -15,6 +15,7 @@ import CreateMachine from "./views/CreateMachine.vue";
 import Reset from "./views/Reset.vue";
 import ForgotPassword from "./views/ForgotPassword.vue";
 import About from "./views/About.vue";
+import GenerateInvite from "./views/GenerateInvite.vue";
 
 import './index.css'
 import "flowbite"
@@ -44,6 +45,7 @@ const router = createRouter({
         { path: '/reset', name: 'Reset', component: Reset },
         { path: '/invite', name: 'Invite', component: Reset },
         { path: '/forgotPassword', name: 'ForgotPassword', component: ForgotPassword },
+        { path: '/generateInvite', name: 'GenerateInvite', component: GenerateInvite },
         { path: '/about', name: 'About', component: About }
     ]
 });

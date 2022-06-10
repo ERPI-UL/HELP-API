@@ -177,7 +177,8 @@
         RefreshIcon,
         PencilAltIcon,
         TerminalIcon,
-        InformationCircleIcon
+        InformationCircleIcon,
+        MailOpenIcon
     } from '@heroicons/vue/outline';
     import { ChevronDownIcon, UserIcon } from '@heroicons/vue/solid';
 
@@ -275,6 +276,12 @@
                     description: 'Créer ou modifier une machine',
                     href: '/machines#editing',
                     icon: PencilAltIcon
+                });
+                menu[menu.findIndex(el => el.name == "Autre")].elements.push({
+                    name: 'Inviter un utilisateur',
+                    description: 'Générer un lien d\'invitation utilisateur',
+                    href: '/generateInvite',
+                    icon: MailOpenIcon
                 });
             }
             if (User.currentUser.canAdmin()) { // if the user is an administrator, add the administrator panel to the menu
