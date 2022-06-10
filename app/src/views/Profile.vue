@@ -21,7 +21,7 @@
                     <!-- Username input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
                         <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nom d'utilisateur: </p>
-                        <input disabled="disabled" type="text" id="input-username" name="username" :value="User.currentUser.username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md shadow-sm text-base font-medium text-gray-500 bg-gray-50">
+                        <input type="text" id="input-username" name="username" :value="User.currentUser.username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <!-- Firstname input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
@@ -117,12 +117,14 @@ function onAccountSave(ev) {
     const infos = {
         firstname: document.getElementById("input-firstname"),
         lastname: document.getElementById("input-lastname"),
+        username: document.getElementById("input-username"),
         email: document.getElementById("input-email")
     }
     API.execute_logged(API.ROUTE.USER, API.METHOD_PUT, User.currentUser.getCredentials(), {
         firstname: infos.firstname.value,
         lastname: infos.lastname.value,
-        email: infos.email.value
+        username: infos.username.value,
+        email: infos.email.value,
     }, API.TYPE_JSON).then(data => {
         infos.firstname.value = data.firstname;
         infos.lastname.value = data.lastname;

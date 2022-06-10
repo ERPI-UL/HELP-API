@@ -42,6 +42,7 @@ const router = createRouter({
         { path: '/machines/create', name: 'CreateMachine', component: CreateMachine },
         { path: '/machines/edit', name: 'EditMachine', component: CreateMachine },
         { path: '/reset', name: 'Reset', component: Reset },
+        { path: '/invite', name: 'Invite', component: Reset },
         { path: '/forgotPassword', name: 'ForgotPassword', component: ForgotPassword },
         { path: '/about', name: 'About', component: About }
     ]
