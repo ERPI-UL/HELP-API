@@ -14,6 +14,7 @@ import CreateScenario from "./views/CreateScenario.vue";
 import CreateMachine from "./views/CreateMachine.vue";
 import Reset from "./views/Reset.vue";
 import ForgotPassword from "./views/ForgotPassword.vue";
+import About from "./views/About.vue";
 
 import './index.css'
 import "flowbite"
@@ -41,7 +42,8 @@ const router = createRouter({
         { path: '/machines/create', name: 'CreateMachine', component: CreateMachine },
         { path: '/machines/edit', name: 'EditMachine', component: CreateMachine },
         { path: '/reset', name: 'Reset', component: Reset },
-        { path: '/forgotPassword', name: 'ForgotPassword', component: ForgotPassword }
+        { path: '/forgotPassword', name: 'ForgotPassword', component: ForgotPassword },
+        { path: '/about', name: 'About', component: About }
     ]
 });
 
