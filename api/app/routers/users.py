@@ -109,9 +109,14 @@ async def update_user(user: Models.UserinPut, current_user: Models.User = Depend
         user_obj.lastname = user.lastname
     if(len(user.email) > 0):
         user_obj.email = user.email
+    if(len(user.username) > 0):
+        user_obj.username = user.username
     try:
         await user_obj.save()
-    except tortoise.exceptions.IntegrityError:
+    except tortoise.exceptions.IntegrityError as err:
+        if "username" in err.__str__():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Ce nom d'utilisateur est déjà utilisé")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Adresse déjà utilisée.")
     return await Models.UserinFront.from_tortoise_orm(user_obj)
