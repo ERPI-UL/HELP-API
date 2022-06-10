@@ -22,7 +22,7 @@ async def readSessions(idUser: int, page: int = 1, per_page: int = 10, id_scenar
     session_count = await query.count()
     if session_count < per_page:
         per_page = session_count
-    sessions = await query.offset((page - 1) * per_page).limit(per_page)
+    sessions = await query.offset((page - 1) * per_page).limit(per_page).order_by('-date')
     # check for zero per_page
     if per_page == 0:
         per_page = 1
