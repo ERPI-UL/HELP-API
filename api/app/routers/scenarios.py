@@ -19,12 +19,12 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         scenario_count = await Models.Scenario.filter(machine=idMachine).count()
         if scenario_count < per_page:
             per_page = scenario_count
-        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
+        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine').order_by('id')
     else:
         scenario_count = await Models.Scenario.all().count()
         if scenario_count < per_page:
             per_page = scenario_count
-        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine')
+        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine').order_by('id')
     # calculate the number of pages
     lastPage = scenario_count // per_page
     if scenario_count % per_page != 0:
@@ -38,8 +38,17 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         'last_page': lastPage,
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
-
-
+@router.put("/{idScenario}")
+async def update_scenario(id: int,scenario:Models.ScenarioUpdate):
+    scenarioInDB = await Models.Scenario.get(id=id)
+    if(scenario.name.strip() != ""):
+        scenarioInDB.name = scenario.name
+    if(scenario.description.strip() != ""):
+        scenarioInDB.description = scenario.description
+    machine = await Models.Machine.get(id=scenario.idMachine)
+    scenarioInDB.machine = machine
+    await scenarioInDB.save()
+    return {'ok': "scenario mis à jour"}
 @router.delete('/machines/{machine_id}')
 async def delete_machine(machine_id: int, user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)

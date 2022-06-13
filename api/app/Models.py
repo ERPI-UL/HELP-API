@@ -297,7 +297,10 @@ class PasswordReset(BaseModel):
     token:str
     password:str
     # playedSteps:list[playedStepIn]
-
+class ScenarioUpdate(BaseModel):
+    name: str
+    description: str
+    idMachine: int
 class Invite(BaseModel):
     email: str
     firstname: str
