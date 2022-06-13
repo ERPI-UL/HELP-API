@@ -187,19 +187,22 @@ class API {
                     if (!res.data) reject("No data found");
                     progressCallback(pageIndex / res.last_page);
                     let dataRetreived = res.current_page == res.last_page;
-                    if (!dataRetreived)
-                        retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);
+                    if (!dataRetreived) {
+                        API.retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);
+                    }
                     else resolve(data.concat(res.data));
                 }).catch(reject);
             }
-            else API.execute(route + API.createParameters({ page: pageIndex }), API.METHOD_GET, undefined, API.TYPE_JSON).then(res => {
-                if (!res.data) reject("No data found");
-                progressCallback(pageIndex / res.last_page);
-                let dataRetreived = res.current_page >= res.last_page;
-                if (!dataRetreived)
-                    retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);
-                else resolve(data.concat(res.data));
-            }).catch(reject);
+            else {
+                API.execute(route + API.createParameters({ page: pageIndex }), API.METHOD_GET, undefined, API.TYPE_JSON).then(res => {
+                    if (!res.data) reject("No data found");
+                    progressCallback(pageIndex / res.last_page);
+                    let dataRetreived = res.current_page >= res.last_page;
+                    if (!dataRetreived)
+                        API.retreiveAll(route, progressCallback, logged, pageIndex + 1, data.concat(res.data)).then(resolve).catch(reject);
+                    else resolve(data.concat(res.data));
+                }).catch(reject);
+            }
         });
     }
 

@@ -214,9 +214,10 @@ function generateScenarioStatistics(graphList, InfoBoxList, scenarioID) {
 function generateUserStatistics(charts, infoBoxes, selectedUser) {
     showLoading(charts, infoBoxes);
     return new Promise((resolve, reject) => {
-        API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS, progress => { console.log("loading progress: " + progress*100 + "%") }, true, 1, []).then(res => {
+        API.retreiveAll(API.ROUTE.STATS.USERS + selectedUser + API.ROUTE.STATS.__SESSIONS, progress => { /*console.log("loading progress: " + progress*100 + "%")*/ }, true, 1, []).then(res => {
             let retreiveCounter = 0;
             let sessions = [];
+            if (res.length == 0) checkForEnd();
             res.forEach(session => {
                 API.execute_logged(API.ROUTE.STATS.SESSIONS+session.id, API.METHOD_GET, User.currentUser.getCredentials()).then(res2 => {
                     sessions.push(res2);
@@ -237,8 +238,9 @@ function generateUserStatistics(charts, infoBoxes, selectedUser) {
                 addInfoBoxToList(infoBoxes, "Nombre de sessions", res.length);
                 addInfoBoxToList(infoBoxes, "Nombre de scénarios", scenarios.length);
                 resolve();
+                hideLoading();
             };
-        }).catch(reject).finally(() => { hideLoading(); });
+        }).catch(reject);
     });
 }
 
