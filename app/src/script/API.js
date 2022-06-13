@@ -17,6 +17,7 @@ class API {
         PASSWORD: "/auth/password/",
         USER: "/users/me/",
         USERS: "/users/",
+        INVITE: "/users/invite/",
         SCENARIOS: "/scenarios/",
         EASY_CONNECT: "/easy/connect",
         MACHINES: "/scenarios/machines/",

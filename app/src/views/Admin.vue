@@ -34,7 +34,7 @@
                         <select id="role-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
                             <option value="0">Visiteur</option>
                             <option value="1">Apprenti</option>
-                            <option value="2">Formateur</option>
+                            <option value="2">Enseignant</option>
                             <option value="3">Administrateur</option>
                         </select>
                         <ValidateButton v-on:click="updateUserRole();">Valider</ValidateButton>
