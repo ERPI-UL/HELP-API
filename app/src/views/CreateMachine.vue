@@ -10,7 +10,7 @@
                         <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ action }} une machine</h2>
                         <div class="flex md:flex-row flex-col p-2 min-h-0">
                             <!-- Machien's basic informations -->
-                            <div class="flex flex-col h-full bg-white rounded-lg p-2 max-w-full">
+                            <div class="flex flex-col h-full bg-white rounded-lg p-2 max-w-full space-y-2">
                                 <div class="flex md:flex-row flex-col justify-between"> <!-- Machine name input (input label and input zone) -->
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Nom de la machine : </p>
                                     <input type="text" id="input-machinename" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
@@ -19,10 +19,22 @@
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Description de la machine : </p>
                                     <textarea id="input-machinedesc" rows="5" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                                 </div>
+                                <div class="flex justify-between grow-0"> <!-- Machine description input (input label and input zone) -->
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Modèle 3D : </p>
+                                    <input type="file" name="" id="model-input" accept=".glb">
+                                    <label for="model-input">
+                                        <p class="md:size-to-parent border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 cursor-pointer">Ajouter un modèle 3D</p>
+                                    </label>
+                                </div>
                             </div>
                             <!-- Machine's targets -->
-                            <div class="flex grow flex-col md:mt-0 mt-2 md:ml-2 ml-0 bg-white rounded-lg p-2 min-h-0 max-h-screen">
-                                <p class="text-gray-500 font-base text-lg p-2 mr-4">Cibles de la machine : </p>
+                            <div class="flex grow flex-col md:mt-0 mt-2 md:ml-2 ml-0 bg-white rounded-lg p-2 min-h-0 max-h-screen space-y-2">
+                                <div class="flex flex-row">
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Cibles de la machine : </p>
+                                    <p id="generate-btn" class="border whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md text-base font-medium text-gray-500 bg-gray-50 cursor-default">
+                                        Générer
+                                    </p>
+                                </div>
                                 <div class="flex grow flex-col min-h-0">
                                     <div class="flex flex-col grow space-y-2 p-2 h-fit min-h-0 overflow-y-scroll overflow-x-hidden border border-gray-200 rounded">
                                         <div v-for="el in machineTargets"> <!-- For each target, display an input with the target's name in it -->
@@ -76,6 +88,8 @@ import API from '../script/API';
 import User from '../script/User';
 import { redirectHome } from '../script/common';
 
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+
 /**
  * Displays a message to the user (in the log-zone html element)
  * @param {string} msg - The message to display
@@ -97,6 +111,47 @@ function logMessage(msg) {
         txt.innerHTML = liste.join("<br>");
         div.style.height = "0px";
     }, 3000);
+}
+
+function setup() {
+    const modelInput = document.getElementById("model-input");
+    modelInput.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        const modelLabel = document.querySelector("label[for='model-input']");
+        modelLabel.firstElementChild.innerHTML = file.name;
+        modelLabel.firstElementChild.classList.remove("text-black", "bg-gray-50", "hover:bg-gray-100");
+        modelLabel.firstElementChild.classList.add("text-white", "bg-indigo-600", "hover:bg-indigo-700");
+
+        const generateBtn = document.getElementById("generate-btn");
+        generateBtn.classList.remove("border-gray-100", "text-gray-500", "cursor-default");
+        generateBtn.classList.add("border-gray-200", "text-black", "cursor-pointer", "hover:bg-gray-100", "shadow-sm");
+        generateBtn.addEventListener("click", () => { generateTargets(file); });
+    });
+}
+
+function generateTargets(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = e.target.result;
+        const model = new Blob([data], {type: file.type});
+        const loader = new GLTFLoader();
+        loader.load(URL.createObjectURL(model), gltf => {
+            gltf.scene.traverse(node => {
+                if (node.isMesh) {
+                    /**@type {string} */
+                    const name = node.name.toLowerCase();
+                    const conditions = [
+                        !name.match(/^(plane|circle)[0-9]+(_[0-9]+)*$/)
+                    ];
+                    if (conditions.every(condition => condition)) {
+                        // add the target (it's a valid name)
+                        addMachineTarget({name: node.name});
+                    }
+                }
+            })
+        });
+    };
+    reader.readAsArrayBuffer(file);
 }
 
 /**
@@ -357,7 +412,7 @@ function addMachineTarget(target=null) {
     let name = "";
     // if a target is provided, use it and modify the id counter to match the current provided ID
     if (target != null) {
-        id = target.id;
+        id = target.id ?? id;
         name = target.name;
         IDCounter = id+1;
     }
@@ -413,11 +468,12 @@ const action = urlPath[urlPath.length-1] == "edit"? "Modifier": "Créer";
 
 // retreive the query parameters (do get the machine's id from the url)
 let parts = window.location.href.split("?");
-if (parts[1])
+if (parts[1]) {
     parts[1].split("&").forEach(part => {
         let item = part.split("=");
         queryParameters[item[0]] = decodeURIComponent(item[1]);
     });
+}
 
 export default {
     name: "CreateScenario",
@@ -431,6 +487,7 @@ export default {
         
     },
     mounted() {
+        setup();
         dom = this;
         retreiveMachineInfos();
     },
@@ -439,4 +496,12 @@ export default {
 </script>
 
 <style>
+#model-input {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
 </style>
