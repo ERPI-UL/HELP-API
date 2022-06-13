@@ -147,13 +147,20 @@ function sendInvite() {
         lastname: credentials.familyName.value.trim(),
         username: credentials.username.value.trim(),
         adminLevel: credentials.role.value
-    }, API.TYPE_FORM).then(() => {
+    }, API.TYPE_JSON).then(() => {
         logMessage("Invitation envoyée avec succès.");
         btn.innerHTML = "Envoyer l'invitation";
         redirectHome();
     }).catch(err => {
-        console.error("Invite error: ", err);
-        logMessage("Erreur lors de l'envoie de l'invitation.");
+        if (err.message.json) {
+            err.message.json().then(e => {
+                logMessage("Erreur : "+e.detail);
+            });
+        }
+        else {
+            console.error("Invite error: ", err);
+            logMessage("Erreur lors de l'envoie de l'invitation.");
+        }
         btn.innerHTML = "Envoyer l'invitation";
     });
 }

@@ -485,8 +485,12 @@ function blockInfoFromDom(dom) {
  function saveModifications() {
     // logMessage("Erreur: Modification de scénario non supportée");
     const scenario = compileScenario();
-    if (scenario.name != originalScenario.name || scenario.description != originalScenario.description) {
-        API.execute_logged(API.ROUTE.MACHINES, API.METHOD_PUT, User.currentUser.getCredentials(), {name: scenario.name, description: scenario.description}, API.TYPE_JSON).then(res => {
+    if (scenario.name != originalScenario.name || scenario.description != originalScenario.description || scenario.machine.id != originalScenario.machine.id) {
+        API.execute_logged(API.ROUTE.SCENARIOS+scenario.id, API.METHOD_PUT, User.currentUser.getCredentials(),{
+            name: scenario.name,
+            description: scenario.description,
+            machine: scenario.machine.id
+        }, API.TYPE_JSON).then(res => {
             // basic infos modified
         }).catch(err => console.log(err));
     }
