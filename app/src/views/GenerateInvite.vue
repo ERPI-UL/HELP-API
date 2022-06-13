@@ -91,7 +91,7 @@ function setup() {
  */
 function logMessage(msg) {
     const btn = document.getElementById("btn-validate");
-    btn.innerHTML = "S'inscrire";
+    btn.innerHTML = "Envoyer l'invitation";
     const div = document.getElementById("log-zone");
     const txt = div.firstElementChild;
     if (txt.innerHTML.length < 1)
