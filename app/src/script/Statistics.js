@@ -49,7 +49,7 @@ function addChartToList(list, title, type, labels, sets) {
             }
         },
         options: {
-            responsive: false,
+            responsive: true,
             maintainAspectRatio: false
         }
     });
