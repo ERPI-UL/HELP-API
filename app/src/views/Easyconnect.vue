@@ -195,7 +195,6 @@ function onValidate() {
             console.error(err);
             logMessage("Nom d'utilisateur ou mot de passe incorrect.");
         });
-        
     } else {
         sendEasyConnectRequest({
             token: User.currentUser.token.type + " " + User.currentUser.token.token,
@@ -209,17 +208,20 @@ function onValidate() {
  * @param {{token:string,code:number}} data data to use in the call (user token and easyconnect code)
  */
 function sendEasyConnectRequest(data) {
-    API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, User.currentUser.getCredentials(), data, API.TYPE_JSON).then(res => {
+    API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, {type: data.token.split(" ")[0], token: data.token.split(" ")[1]}, data, API.TYPE_JSON).then(res => {
         logMessage("Appareil connecté au compte.");
         redirectHome();
     }).catch(err => {
-        console.error(err);
-        switch (err.status) {
+        switch (err.message.status) {
             case 404:
                 logMessage("Erreur: Appareil inconnu.");
                 break;
             default:
-                logMessage("Erreur lors de la connexion.");
+                if (err.message.json) {
+                    err.message.json().then(e => logMessage("Erreur : "+e.detail));
+                    console.error(e);
+                }
+                else logMessage("Erreur lors de la connexion.");
                 break;
         }
     });

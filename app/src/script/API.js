@@ -9,6 +9,7 @@ class API {
     static get TYPE_FORM() { return "application/x-www-form-urlencoded"; }
     static get TYPE_JSON() { return "application/json"; }
     static get TYPE_NONE() { return undefined; }
+    static get AuthorizationHeader() { return "x-indico-authorization"; };
 
     // API routes
     static ROUTE = {
@@ -74,6 +75,7 @@ class API {
             if (headers)
                 for (let key in headers)
                     reqHeaders[key] = headers[key];
+
             let reqBody = type == this.TYPE_FORM ? "" : {};
             if (body) {
                 switch (typeof (body)) {
@@ -100,14 +102,14 @@ class API {
                 mode: "cors"
             }).then(response => {
                 if (response.status != 200)
-                    reject(response);
+                    reject({message: response});
                 else {
                     response.json().then(data => {
                         resolve(data);
-                    }).catch(reject);
+                    }).catch(err => reject({message: err}));
                 }
             }).catch(err => {
-                // is the request fails, test the same request but without a / at the end (in case the error it just a 307 shitty redirection)
+                // is the request fails, test the same request but without "/" at the end (in case the error it just a 307 shitty redirection)
                 fetch(API.API_URL + path.replace("?", "/?"), {
                     credentials: "omit",
                     method: method,
@@ -123,7 +125,8 @@ class API {
                             resolve(data);
                         }).catch(reject);
                     }
-                }).catch(reject);
+                }).catch(err => reject({message: err})).finally(() => {
+                });
             });
         });
     }
@@ -157,15 +160,13 @@ class API {
                 for (let key in headers)
                     reqHeaders[key] = headers[key];
 
-            const AuthorizationHeader = "x-indico-authorization";
-
             if (token_mode) {
-                reqHeaders[AuthorizationHeader] = credentials.type + " " + credentials.token;
-                this.execute(path, method, body, type, reqHeaders).then(resolve).catch(err => reject({message: err}));
+                reqHeaders[API.AuthorizationHeader] = credentials.type + " " + credentials.token;
+                this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
             } else {
                 this.execute(API.ROUTE.LOGIN, this.METHOD_POST, { username: credentials.username, password: credentials.password }, this.TYPE_FORM).then(data => {
-                    reqHeaders[AuthorizationHeader] = data.token_type + " " + data.access_token;
-                    this.execute(path, method, body, type, reqHeaders).then(resolve).catch(err => reject({message: "password Status: "+err.status}));
+                    reqHeaders[API.AuthorizationHeader] = data.token_type + " " + data.access_token;
+                    this.execute(path, method, body, type, reqHeaders).then(resolve).catch(reject);
                 }).catch(err => reject({message: "Status: "+err.status}));
             }
         });

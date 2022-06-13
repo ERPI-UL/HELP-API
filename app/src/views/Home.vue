@@ -125,6 +125,8 @@ function selectOption(option) {
 }
 
 function setup() {
+    if (!User.isConnected(User.currentUser)) return;
+    
     let data = [];
     let labels = [];
     API.execute_logged(API.ROUTE.STATS.USERS + User.currentUser.id + API.ROUTE.STATS.__SESSIONS, API.METHOD_GET, User.currentUser.getCredentials()).then(sessions => {
