@@ -619,7 +619,7 @@ function updateStepIndexes() {
     let index = 1;
     const stepZone = document.getElementById("steps-zone");
     stepZone.querySelectorAll(".step-part-container").forEach(block => {
-        block.querySelector("h2").innerHTML = "Étape " + (index++) + " : " + block.id.split("-")[1];
+        block.querySelector("h2").innerHTML = "Étape " + (index++); // + " : " + block.id.split("-")[1];
     });
 }
 
