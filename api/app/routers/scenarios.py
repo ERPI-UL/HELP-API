@@ -39,8 +39,8 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
 @router.put("/{idScenario}")
-async def update_scenario(id: int,scenario:Models.ScenarioUpdate):
-    scenarioInDB = await Models.Scenario.get(id=id)
+async def update_scenario(idScenario: int,scenario:Models.ScenarioUpdate,user: Models.User = Depends(utils.InstructorRequired)):
+    scenarioInDB = await Models.Scenario.get(id=idScenario)
     if(scenario.name.strip() != ""):
         scenarioInDB.name = scenario.name
     if(scenario.description.strip() != ""):
