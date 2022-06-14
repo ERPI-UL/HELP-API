@@ -1,7 +1,10 @@
 <template>
     <!-- Template Pagination Choice : Used to select one or multiple specific elements in a paginated API request (for example the users's pagination or the scenarios' list) -->
-    <div v-show="this.obj.showing" id="pagination-parent" class="z-50 flex flex-col justify-center absolute top-0 left-0 w-screen h-screen bg-black/[0.4]">
-        <div class="p-1 flex flex-col min-w-[50vw] min-h-[50vh] md:max-w-[70vw] max-w-[98vw] md:max-h-[70vh] max-h-[98vh] bg_white shadow-lg border border-1 border-gray-200 mx-auto bg-white rounded-lg"> <!-- POPUP -->
+    <div v-show="this.obj.showing" id="pagination-parent" class="z-50 flex flex-col justify-center fixed top-0 left-0 w-screen h-screen bg-black/[0.4]">
+        <div 
+          class="p-1 flex flex-col min-w-[50vw] min-h-[50vh] md:max-w-[70vw] max-w-[98vw] md:max-h-[70vh] max-h-[98vh] shadow-lg border border-1 border-black/[0.1] mx-auto rounded-lg"
+          :class="darkMode ? 'bg-gray-700' : 'bg-white'"
+          > <!-- POPUP -->
             <div class="flex flex-col grow min-h-0">
                 <div class="flex">
                     <!-- Pagination title -->
@@ -32,9 +35,15 @@
                     </div>
                 </div>
                 <!-- Pagination's page current content -->
-                <div class="flex flex-col overflow-x-hidden overflow-y-scroll grow border border-1 border-gray-300 rounded-lg bg-indigo-50 min-h-0">
-                    <div v-for="el in this.obj.paginationContent[this.obj.pageNumber]" class="flex px-2 py-1 hover:bg-indigo-200 select-none space-x-2" v-on:click="el.selected = !el.selected">
-                        <p class="flex grow text-base">{{ el.label }}</p> <!-- item label (generated with the displayAttribute callback) -->
+                <div
+                  class="flex flex-col overflow-x-hidden overflow-y-scroll grow border border-1 border-black/[0.1] rounded-lg min-h-0"
+                  :class="darkMode ? 'bg-gray-800' : 'bg-indigo-50'"
+                  >
+                    <div
+                      v-for="el in this.obj.paginationContent[this.obj.pageNumber]" class="flex px-2 py-1 select-none space-x-2 cursor-pointer"
+                      :class="darkMode ? 'hover:bg-gray-900' : 'hover:bg-indigo-200'" v-on:click="el.selected = !el.selected"
+                      >
+                        <p class="flex grow text-base" :class="darkMode ? 'text-gray-200' : 'text-black'">{{ el.label }}</p> <!-- item label (generated with the displayAttribute callback) -->
                         <div v-show="el.selected"> <!-- item selected icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -44,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="flex grow-0 m-1 justify-between"> <!-- BUTTONS -->
+            <div class="flex grow-0 m-1 mt-2 justify-between"> <!-- BUTTONS -->
                 <!-- cancel button -->
                 <CancelButton v-on:click="this.hide();">Annuler</CancelButton>
                 <!-- refresh button (Mobile) -->
@@ -109,7 +118,7 @@ class PaginationController {
 
 export default {
     name: "PaginationChoice",
-    props: ["displayAttribute", "identifier", "selectedValues", "callback", "route", "selectID", "title"],
+    props: ["displayAttribute", "identifier", "selectedValues", "callback", "route", "selectID", "title", "darkMode"],
     data: () => {return {obj: new PaginationController()}},
     components: {
         CancelButton,
