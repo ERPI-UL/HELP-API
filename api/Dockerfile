@@ -3,7 +3,8 @@ FROM python:3.10
 ENV IN_DOCKER=1 \
     PYTHONDONTWRITEBYTECODE=1\
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=off
+    PIP_NO_CACHE_DIR=off \
+    TZ="Europe/Paris"
 
 RUN apt-get update && apt-get install -y netcat
 
