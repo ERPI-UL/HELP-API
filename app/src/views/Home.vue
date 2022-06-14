@@ -69,13 +69,13 @@
                 </div>
             </div>
             <div class="flex flex-col grow min-h-0 min-w-0">
-                <div id="overview" class="flex grow min-h-0 min-w-fit max-w-[full] w-[50%] m-auto">
+                <div id="overview" class="flex grow min-h-fit min-w-fit max-w-[full] w-[50%] m-auto">
                     <div class="flex grow flex-col bg-white rounded-lg border border-gray-200">
                         <div class="flex flex-col mx-4 my-2">
                             <h2 class="md:text-2xl text-xl font-extrabold text-indigo-600">Dernière session</h2>
                             <div id="stat-zone" class="flex flex-col space-y-2"></div>
                         </div>
-                        <div class="md:flex hidden grow m-4 min-h-0 max-h-full max-w-full min-w-0">
+                        <div class="md:flex hidden grow m-4 min-h-fit max-h-full max-w-full min-w-0">
                             <div id="loading-zone" class="flex grow">
                                 <div class="flex m-auto">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="rotate h-6 w-6 text-indigo-600 my-1 md:block hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -372,8 +372,12 @@ export default {
     setup() {
         let recent = shortcuts.find(sc => sc.name == "recent");
         recent.data.push(shortcuts.find(sc => sc.name == "account").data.find(el => el.redirect.href == "/easyconnect"));
-        recent.data.push(shortcuts.find(sc => sc.name == "statistics").data.find(el => el.redirect.href == "/statistics#learning"));
-        recent.data.push(shortcuts.find(sc => sc.name == "scenarios").data.find(el => el.redirect.href == "/scenarios#all"));
+
+        // if desktop version (landscape mode), display all frequently used shortcut
+        if (window.innerWidth > window.innerHeight) {
+            recent.data.push(shortcuts.find(sc => sc.name == "statistics").data.find(el => el.redirect.href == "/statistics#learning"));
+            recent.data.push(shortcuts.find(sc => sc.name == "scenarios").data.find(el => el.redirect.href == "/scenarios#all"));
+        }
     },
     mounted() {
         setup();
