@@ -8,6 +8,7 @@ class API {
     static get METHOD_DELETE() { return "DELETE"; }
     static get TYPE_FORM() { return "application/x-www-form-urlencoded"; }
     static get TYPE_JSON() { return "application/json"; }
+    static get TYPE_FILE() { return "multipart/form-data"; }
     static get TYPE_NONE() { return undefined; }
     static get AuthorizationHeader() { return "x-indico-authorization"; };
 
@@ -70,14 +71,14 @@ class API {
                 "Accept": "application/json",
                 "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3"
             };
-            if (type != this.TYPE_NONE) reqHeaders["Content-Type"] = type;
+            if (type != this.TYPE_NONE && type != this.TYPE_FILE) reqHeaders["Content-Type"] = type;
 
             if (headers)
                 for (let key in headers)
                     reqHeaders[key] = headers[key];
 
             let reqBody = type == this.TYPE_FORM ? "" : {};
-            if (body) {
+            if (body && type != this.TYPE_FILE) {
                 switch (typeof (body)) {
                     case "string":
                         if (body.startsWith("{") && body.endsWith("}"))
@@ -90,6 +91,11 @@ class API {
                         break;
                     default: break;
                 }
+            }
+
+            if (type == this.TYPE_FILE) { // create a form data from the body
+                reqBody = new FormData();
+                reqBody.append("model", body);
             }
             
             // try with / at the request end
