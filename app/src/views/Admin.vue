@@ -171,7 +171,7 @@ function createUserSession(session) {
     container.classList.add("flex", "flex-col", "grow-0", "h-fit", "p-2", "m-2", "border", "border-gray-700");
     container.innerHTML = `
         <div class="flex grow-0 justify-between">
-            <p id="date" class="text-gray-200 text-semibold">${new Date(Date.parse(session.date)).toLocaleString()}</p>
+            <p id="date" class="text-gray-200 text-semibold">${new Date(session.date).toLocaleString()}</p>
             <p id="idSession" class="text-gray-100 text-bold">${session.id}</p>
         </div>
         <p id="scenario" class="text-gray-200 text-semibold">Scenario : ...</p>
