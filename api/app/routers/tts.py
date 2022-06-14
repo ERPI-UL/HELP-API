@@ -1,7 +1,7 @@
 from enum import Enum
 import random
 import aiohttp
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, Response
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, status, Response
 from fastapi.responses import FileResponse
 from aiogtts import aiogTTS
 from aiofiles import os
@@ -37,7 +37,7 @@ async def cleanup(filename):
 
 
 @router.post("/", response_class=FileResponse)
-async def tts(language: str, text: str, bg_tasks: BackgroundTasks,currentUser:Models.User= Depends(utils.get_current_user_in_token)):
+async def tts(bg_tasks: BackgroundTasks,language: str=Body(...),text:str=Body(...),currentUser:Models.User= Depends(utils.get_current_user_in_token)):
     # TODO: legal problem ?
     aiogtts = aiogTTS()
     filename = 'temp'+str(random.randint(10, 100000000))+'.mp3'
