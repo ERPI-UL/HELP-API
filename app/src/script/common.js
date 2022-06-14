@@ -21,6 +21,16 @@ export function stringTime(time) {
     return (nbMinutes > 0 ? `${Math.round(nbMinutes)} minute${nbMinutes >= 2 ? "s" : ""} et ` : ``) + `${Math.round(nbSeconds)} seconde${nbSeconds >= 2 ? "s" : ""}`
 }
 
+
+/**
+ * Disables an element (and his hover effects)
+ * @param {HTMLElement} el element to disable
+ */
+export function disableEl(el) {
+    el.disabled = true;
+    el.classList.remove("hover:bg-gray-100");
+};
+
 /** FOR EXIT PREVENT POPUP **/
 // window.addEventListener("beforeunload", function (e) {
 //     var confirmationMessage = "Certaines modifications ne seront pas enregistrés si vous quittez la page maintenant.\n"+

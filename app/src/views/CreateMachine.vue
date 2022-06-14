@@ -7,7 +7,7 @@
             <div class="flex m-auto grow-0 w-fit m-2 mx-auto max-w-full">
                 <div class="flex grow flex-col my-auto min-h-0 max-h-inherit md:max-h-full">
                     <div id="scenario-header" class="flex flex-col grow max-h-full min-h-0">
-                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ action }} une machine</h2>
+                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ pageMode == MODE_VIEW ? "Voir" : pageMode == MODE_EDIT ? "Modifier" : "Créer" }} une machine</h2>
                         <div class="flex md:flex-row flex-col p-2 min-h-0">
                             <!-- Machien's basic informations -->
                             <div class="flex flex-col h-full bg-white rounded-lg p-2 max-w-full space-y-2">
@@ -19,9 +19,9 @@
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Description de la machine : </p>
                                     <textarea id="input-machinedesc" rows="5" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                                 </div>
-                                <div class="flex justify-between grow-0"> <!-- Machine description input (input label and input zone) -->
+                                <div class="edit-zone flex justify-between grow-0"> <!-- Machine description input (input label and input zone) -->
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Modèle 3D : </p>
-                                    <input type="file" name="" id="model-input" accept=".glb">
+                                    <input type="file" name="" id="model-input" accept=".glb,.gltf">
                                     <label for="model-input">
                                         <p class="md:size-to-parent border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 cursor-pointer">Ajouter un modèle 3D</p>
                                     </label>
@@ -31,7 +31,7 @@
                             <div class="flex grow flex-col md:mt-0 mt-2 md:ml-2 ml-0 bg-white rounded-lg p-2 min-h-0 max-h-screen space-y-2">
                                 <div class="flex flex-row">
                                     <p class="text-gray-500 font-base text-lg p-2 mr-4">Cibles de la machine : </p>
-                                    <p id="generate-btn" class="border whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md text-base font-medium text-gray-500 bg-gray-50 cursor-default">
+                                    <p id="generate-btn" class="edit-zone border whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md text-base font-medium text-gray-500 bg-gray-50 cursor-default">
                                         Générer
                                     </p>
                                 </div>
@@ -46,7 +46,7 @@
                                         </div>
                                     </div>
                                     <!-- Target deletion / addition buttons -->
-                                    <div class="flex justify-between space-x-1 pt-2">
+                                    <div class="edit-zone flex justify-between space-x-1 pt-2">
                                         <button ref="delete-btn" v-on:click="removeMachineTarget();" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded opacity-50 cursor-auto">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /> <!-- Remove button icon -->
@@ -69,8 +69,8 @@
                                 <p class="opacity-0 text-center text-indigo-600"></p>
                             </div>
                             <div class="flex grow justify-between"> <!-- Buttons -->
-                                <BackButton>Annuler</BackButton> <!-- Cancel button -->
-                                <ValidateButton id="validate-button" v-on:click="saveMachine">{{action}}</ValidateButton> <!-- Save button -->
+                                <BackButton>{{ pageMode == MODE_VIEW ? "Retour" : "Annuler" }}</BackButton> <!-- Cancel button -->
+                                <ValidateButton id="validate-button" v-on:click="saveMachine" v-if="pageMode != MODE_VIEW">{{ pageMode == MODE_EDIT ? "Modifier" : "Créer" }}</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@ import BackButton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
 import User from '../script/User';
-import { redirectHome } from '../script/common';
+import { disableEl, redirectHome } from '../script/common';
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
@@ -113,10 +113,16 @@ function logMessage(msg) {
     }, 3000);
 }
 
+let machineModelFile = null;
+/**
+ * Setup the page, adds the event listener for the file input and shows the "auto generate targets" button
+ * when the file is uploaded (if the file is a gltf or glb model)
+ */
 function setup() {
     const modelInput = document.getElementById("model-input");
-    modelInput.addEventListener("change", function(e) {
+    modelInput?.addEventListener("change", function(e) {
         const file = e.target.files[0];
+        machineModelFile = file;
         const modelLabel = document.querySelector("label[for='model-input']");
         modelLabel.firstElementChild.innerHTML = file.name;
         modelLabel.firstElementChild.classList.remove("text-black", "bg-gray-50", "hover:bg-gray-100");
@@ -127,6 +133,10 @@ function setup() {
         generateBtn.classList.add("border-gray-200", "text-black", "cursor-pointer", "hover:bg-gray-100", "shadow-sm");
         generateBtn.addEventListener("click", () => { generateTargets(file); });
     });
+
+    if (pageMode == MODE_VIEW) {
+        document.querySelectorAll(".edit-zone").forEach(el => el.remove());
+    }
 }
 
 function generateTargets(file) {
@@ -192,6 +202,28 @@ function updateDom() {
     });
 }
 
+function saveMachineModel(machineID) {
+    return new Promise((resolve, reject) => {
+        // model not specified (don't save it, obviously)
+        if (machineModelFile == null || machineModelFile == undefined) {
+            resolve();
+            return;
+        }
+
+        API.execute_logged(
+            API.ROUTE.MACHINES+machineID+API.ROUTE.__MODEL,
+            API.METHOD_POST,
+            User.currentUser.getCredentials(),
+            machineModelFile,
+            API.TYPE_FILE
+        ).then(() => {
+            resolve();
+        }).catch(err => {
+            reject(err);
+        });
+    });
+}
+
 /**@type {Machine} original machine retreived from API (used to detect changes for modification mode)*/
 let originalMachine = null;
 
@@ -199,18 +231,21 @@ let originalMachine = null;
  * Retreives the current edited machine's informations with an API call, and store it in the originalMachine variable 
  */
 function retreiveMachineInfos() {
-    if (action=="Modifier")
-        API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
-            document.getElementById('input-machinename').value = res.name;
-            document.getElementById('input-machinedesc').value = res.description;
-            machineTargets.splice(0, machineTargets.length);
-            console.log(res.targets.map(t => t.id+" - "+t.name).join("\n"));
-            res.targets.forEach(target => addMachineTarget(target))
-            originalMachine = new Machine(res.id, res.name, res.description, res.targets);
-        }).catch(err => {
-            redirectHome();
-            console.error(err);
-        });
+    return new Promise((resolve, reject) => {
+        if (pageMode == MODE_VIEW || pageMode == MODE_EDIT)
+            API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
+                document.getElementById('input-machinename').value = res.name;
+                document.getElementById('input-machinedesc').value = res.description;
+                machineTargets.splice(0, machineTargets.length);
+                res.targets.forEach(target => addMachineTarget(target))
+                originalMachine = new Machine(res.id, res.name, res.description, res.targets);
+                resolve();
+            }).catch(err => {
+                redirectHome();
+                console.error(err);
+                reject(err);
+            });
+    });
 }
 
 /**
@@ -228,6 +263,13 @@ function saveModifications(name, description, targets) {
             // logMessage("Informations de la machine modifiées");
         }).catch(console.error);
     } // else logMessage("Aucune information machine à sauvegarder.")
+
+    saveMachineModel(originalMachine.id).then(() => {
+        // model uploaded
+    }).catch(err => {
+        logMessage("Erreur lors de la sauvegarde du modèle 3D");
+        console.error(err);
+    });
 
     let targetsToDelete = [];
     let targetsToAdd = [];
@@ -248,7 +290,7 @@ function saveModifications(name, description, targets) {
 
     const setTaskDone = () => {
         logMessage("Modifications sauvegardées");
-        redirectHome();
+        // redirectHome();
         // retreiveMachineInfos();
     };
 
@@ -357,10 +399,14 @@ function saveMachine() {
          * and if so goes back home after displaying success message
          */
         const checkForAddition = () => {
-            console.log("checking : "+additionCounter+" out of "+machineTargs.length);
             if (++additionCounter >= machineTargs.length) {
-                logMessage("Machine créée");
-                redirectHome();
+                // send the machine model if specified
+                saveMachineModel(res.id).then(() => {
+                    logMessage("Machine créée");
+                    redirectHome();
+                }).catch(err => {
+                    logMessage("Erreur : "+err.message);
+                })
             }
         }
         
@@ -375,7 +421,6 @@ function saveMachine() {
         } else checkForAddition();
 
     }).catch(err => { // error, notify the user
-
         logMessage("Erreur lors de la création de la machine.");
         if (!err.json) console.error(err);
         else err.json().then(json => {
@@ -463,9 +508,6 @@ let machineTargets = []; // current machine targets
 let urlPath = window.location.pathname.split('/'); // current url path
 let queryParameters = {};
 
-// if the url says the page is accessed for edition, set the action to "Modifier"
-const action = urlPath[urlPath.length-1] == "edit"? "Modifier": "Créer";
-
 // retreive the query parameters (do get the machine's id from the url)
 let parts = window.location.href.split("?");
 if (parts[1]) {
@@ -475,6 +517,11 @@ if (parts[1]) {
     });
 }
 
+const pageMode = window.location.pathname.split("/").pop();
+const MODE_VIEW = "view";
+const MODE_EDIT = "edit";
+const MODE_CREATE = "create";
+
 export default {
     name: "CreateScenario",
     components: {
@@ -482,14 +529,20 @@ export default {
         BackButton,
         ValidateButton
     },
-    data() {return {action, machineTargets};},
+    data() {return {machineTargets, pageMode, MODE_VIEW, MODE_CREATE, MODE_EDIT};},
     setup() {
         
     },
     mounted() {
         setup();
         dom = this;
-        retreiveMachineInfos();
+        retreiveMachineInfos().then(() => {
+            // if the page is in view mode, disable all the inputs, textareas, etc...
+            if (pageMode == MODE_VIEW) {
+                document.querySelectorAll("input").forEach(el => disableEl(el));
+                document.querySelectorAll("textarea").forEach(el => disableEl(el));
+            }
+        });
     },
     methods: {saveMachine, addMachineTarget, removeMachineTarget, setMachineTarget, setSelectedTarget}
 };

@@ -16,7 +16,7 @@
     container.innerHTML = 
     `<div class="flex justify-between m-1">
         <h2 id="stepname-${id}" class="text-sm m-1 text-indigo-600 font-extrabold">Étape ${ordernumber}</h2>
-        <div class="flex space-x-4">
+        <div class="edit-zone flex space-x-4">
             <button onclick="window.indico.moveUp(${id});" id="steprem-${id}" class="bg-gray-600/[0.1] h-fit w-fit flex flex-row shadow rounded">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
@@ -50,7 +50,7 @@
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
             <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Cibles de l'étape : </p>
             <div id="steptargets-${id}" class="md:size-to-parent flex grow min-w-0 min-h-0 px-2 py-2 space-x-2 border border-gray-200 rounded-md text-base font-medium text-black">
-                <div class="flex flex-col justify-left space-y-1">
+                <div class="edit-zone flex flex-col justify-left space-y-1">
                     <button onclick="window.indico.addStepTarget(${id});" id="steptargetsadd-${id}" class="bg-indigo-600 p-1 h-fit flex justify-left shadow rounded">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -119,7 +119,7 @@
                     <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">Z: </p>
                     <input type="number" name="pos-z" id="input-stepposz-${id}" value="${pos!=undefined?pos.z:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
-                <div class="flex">
+                <div class="edit-zone flex">
                     <button id="edit-position" class="bg-indigo-600 p-4 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg">Editer</button>
                 </div>                
             </div>

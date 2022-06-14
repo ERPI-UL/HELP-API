@@ -37,12 +37,13 @@
                     <MachineCard v-if="window.location.href.split('#')[1] == 'all'" v-for="item in obj.machines.all">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
+                        <template v-slot:href><RedirectButton :href="item.view">Voir</RedirectButton></template>
                     </MachineCard>
                     <!-- Edit machines list (showed when in #edit mode) -->
                     <MachineCard v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in obj.machines.editing" id="machine-container">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
-                        <template v-slot:href><RedirectButton :href="item.href" v-if="item.id != 1">Editer</RedirectButton></template>
+                        <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 1">Editer</RedirectButton></template>
                         <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">Supprimer</DangerousButton></template>
                     </MachineCard>
                     <!-- Delete popup called when the remove button is pressed on a machine card -->
@@ -102,7 +103,8 @@ function attachListeners(it) {
             id: el.id,
             title: el.name,
             description: el.description,
-            href: `/machines/edit?idMachine=${el.id}`
+            edit: `/machines/edit?idMachine=${el.id}`,
+            view: `/machines/view?idMachine=${el.id}`
         }});
         obj.machines.all = obj.machines.all.concat(data);
         obj.machines.editing = obj.machines.editing.concat(data);

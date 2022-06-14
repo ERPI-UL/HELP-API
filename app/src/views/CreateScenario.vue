@@ -38,8 +38,8 @@
                             </div>
                             <!-- BUTTONS -->
                             <div class="flex grow-0 justify-between">
-                                <BackButton>Annuler</BackButton> <!-- Cancel button -->
-                                <ValidateButton id="save-btn" v-on:click="saveScenario">Enregistrer</ValidateButton> <!-- Save button -->
+                                <BackButton>{{pageMode==MODE_VIEW? "Retour" : "Annuler"}}</BackButton> <!-- Cancel button -->
+                                <ValidateButton id="save-btn" v-if="pageMode != MODE_VIEW" v-on:click="saveScenario">Enregistrer</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>
@@ -126,6 +126,7 @@ import  {
     clearLabels,
     resetCameraTransform
 } from "../script/Scenario3DEditor";
+import { disableEl } from '../script/common';
 
 /**
  * Setup function, called at the beginning.
@@ -133,7 +134,14 @@ import  {
  * and attaches all the required event listeners
  */
 function setup() {
-        fetchScenario().then(res => {
+    // if view mode, disable all the inputs, textarea, selects
+    if (pageMode == MODE_VIEW) {
+        disableEl(document.getElementById("input-scenarioname"));
+        disableEl(document.getElementById("input-scenariodesc"));
+        disableEl(document.getElementById("select-machines"));
+    }
+
+    fetchScenario().then(res => {
         updateAvailableMachines();
         updateAvailableTargets();
         const machineSelect = document.getElementById("select-machines");
@@ -233,6 +241,9 @@ function resetControls(el) {
     const state = resetCameraTransform();
 }
 
+const pageMode = window.location.pathname.split("/").pop();
+const MODE_VIEW = "view";
+
 export default {
     name: "CreateScenario",
     components: {
@@ -241,7 +252,7 @@ export default {
         ValidateButton,
         PaginationChoice
     },
-    data() {return {icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, obj, MODE_STEPS, MODE_MODEL};},
+    data() {return {icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, obj, MODE_STEPS, MODE_MODEL, pageMode, MODE_VIEW};},
     mounted() {
         setup();
         // set the callback to show the machine pagination window

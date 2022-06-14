@@ -1,6 +1,6 @@
 import { getBlockDiv, createStepLink } from "./ScenarioBlock";
 import User from '../script/User';
-import { redirectHome } from '../script/common';
+import { redirectHome, disableEl } from '../script/common';
 
 /**
  * BlockInfo class, represents a visual scenario step
@@ -489,7 +489,7 @@ function blockInfoFromDom(dom) {
         API.execute_logged(API.ROUTE.SCENARIOS+scenario.id, API.METHOD_PUT, User.currentUser.getCredentials(),{
             name: scenario.name,
             description: scenario.description,
-            machine: scenario.machine.id
+            idMachine: scenario.machine.id
         }, API.TYPE_JSON).then(res => {
             // basic infos modified
         }).catch(err => console.log(err));
@@ -592,7 +592,7 @@ function blockInfoFromDom(dom) {
             logMessage("Modifications sauvegardés.");
             const button = document.getElementById("save-btn");
             button.innerHTML = "Enregistrer";
-            redirectHome();
+            // redirectHome();
         }
     }
     if (removedSteps.length > 0) {
@@ -637,6 +637,14 @@ let scenarioBlocks = [];
     const newID = ID_COUNTER++; // inscrease by one the counter
     const stepZone = document.getElementById("steps-zone");
     const newBlock = getBlockDiv(newID, name, title, desc, scenarioBlocks.length+1, pos, mode, btnInfos); // create the new block
+
+    // if view mode, disable and hide all buttons and inputs
+    if (window.location.pathname.split("/").pop() == "view") {
+        newBlock.querySelectorAll(".edit-zone").forEach(el => el.remove());
+        newBlock.querySelectorAll("input").forEach(el => disableEl(el));
+        newBlock.querySelectorAll("textarea").forEach(el => disableEl(el));
+        newBlock.querySelectorAll("select").forEach(el => disableEl(el));
+    }
 
     // add the new block and a step link behind it (for the insert button)
     const child = stepZone.children.item(index*2+1);
@@ -700,7 +708,7 @@ let scenarioBlocks = [];
         }
 
         // set the listener for the edit position button
-        newBlock.querySelector("#edit-position").addEventListener("click", ev => {
+        newBlock.querySelector("#edit-position")?.addEventListener("click", ev => {
             editPositionCallback(blockInfoFromDom(newBlock));
         });
     }, 10);
@@ -714,6 +722,7 @@ function addStepTarget(stepID, value, label) {
     const select = document.createElement("select");
     select.name = "select-targets";
     select.classList.add("md:size-to-parent", "whitespace-nowrap", "inline-flex", "px-4", "py-2", "pr-10", "border-gray-200", "rounded-md", "shadow-sm", "text-base", "font-medium", "text-black", "bg-gray-50", "hover:bg-gray-100");
+    if (window.location.pathname.split("/").pop() == "view") disableEl(select);
     // set his value and label
     if (value) select.value = value;
     if (label) select.innerHTML = label;

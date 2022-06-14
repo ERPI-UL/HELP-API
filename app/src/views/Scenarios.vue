@@ -69,13 +69,14 @@
                             <template v-slot:title>{{item.title}}</template>
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
+                            <template v-slot:href><RedirectButton :href="item.view">Voir</RedirectButton></template>
                         </Scenario>
                         <!-- Scenarios in #edit mode -->
                         <Scenario v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in scenarios.editing">
                             <template v-slot:title>{{item.title}}</template>
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
-                            <template v-slot:href><RedirectButton :href="item.href" v-if="item.id != 6">Editer</RedirectButton></template>
+                            <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 6">Editer</RedirectButton></template>
                             <template v-slot:remove><DangerousButton v-on:click="removeScenario(item.id, $event.target)" v-if="item.id != 6">Supprimer</DangerousButton></template>
                         </Scenario>
                         <!-- Scenarios in #pending mode -->
@@ -147,7 +148,8 @@ function attachAllListeners(it) {
             title: el.name??"Titre inconnu",
             description: el.description??"Description inconnue",
             machine: el.machine.name??"Machine inconnue",
-            href: "/scenarios/edit?idScenario="+el.id
+            edit: "/scenarios/edit?idScenario="+el.id,
+            view: "/scenarios/view?idScenario="+el.id
         }});
         scenarios.all = scenarios.all.concat(data);
         scenarios.editing = scenarios.editing.concat(data);
