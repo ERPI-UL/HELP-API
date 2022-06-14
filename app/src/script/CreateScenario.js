@@ -633,7 +633,7 @@ let scenarioBlocks = [];
  * adds it to the DOM and adds the event listeners to it.
  */
  function createScenarioBlock(name, title, desc, targets, pos, mode, btnInfos, id, index) {
-    if (id) ID_COUNTER = id; // if an ID is given, set the counter accordingly
+    if (id) ID_COUNTER = Math.max(ID_COUNTER, id); // if an ID is given, set the counter accordingly
     const newID = ID_COUNTER++; // inscrease by one the counter
     const stepZone = document.getElementById("steps-zone");
     const newBlock = getBlockDiv(newID, name, title, desc, scenarioBlocks.length+1, pos, mode, btnInfos); // create the new block
