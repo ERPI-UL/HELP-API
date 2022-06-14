@@ -284,6 +284,9 @@ const gameloop = (time) => {
  * @param {number} machineID ID of the machine to show
  */
 function set3DMachineModel(machineID) {
+    if (machineModel != null)
+        scene.remove(machineModel);
+
     // we could use the API url directly in the loader,
     // but just to be able to see if the status code is correct,
     // we do a fetch in the url and recreate a blob url for the loader after
