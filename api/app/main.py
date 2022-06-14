@@ -8,6 +8,7 @@ from routers import scenarios
 from routers import stats
 from routers import auth
 from routers import easy
+from routers import tts
 
 import utils
 
@@ -64,6 +65,7 @@ app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
+app.include_router(tts.router, prefix="/tts", tags=["tts"])
 
 # redirect root to docs
 @app.get("/")

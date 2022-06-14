@@ -24,3 +24,5 @@ python-dotenv
 fastapi-mail==1.0.8
 jinja2
 aiofiles # async file IO
+aiohttp # async web requests
+aiogTTS # async text to speech
