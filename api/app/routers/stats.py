@@ -57,7 +57,7 @@ async def createSession(idUser: int, session: Models.SessionIn, current_user: Mo
             status_code=403, detail="Vous n'avez pas les droits pour créer une session sur cette utilisateur")
     user = await Models.User.get(id=idUser)
     scenario = await Models.Scenario.get(id=session.scenarioid)
-    session = await Models.Session.create(user=user, scenario=scenario, date=session.date, evaluation=session.evaluation)
+    session = await Models.Session.create(user=user, scenario=scenario, date=session.date, evaluation=session.evaluation, vrmode=session.vrmode)
     return {
         'id': session.id,
     }
