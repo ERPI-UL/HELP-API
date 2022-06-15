@@ -69,7 +69,7 @@
                             <template v-slot:title>{{item.title}}</template>
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
-                            <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.SEE }}</RedirectButton></template>
+                            <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.VIEW }}</RedirectButton></template>
                         </Scenario>
                         <!-- Scenarios in #edit mode -->
                         <Scenario v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in scenarios.editing">

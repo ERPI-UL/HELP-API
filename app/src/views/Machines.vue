@@ -37,7 +37,7 @@
                     <MachineCard v-if="window.location.href.split('#')[1] == 'all'" v-for="item in obj.machines.all">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
-                        <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.SEE }}</RedirectButton></template>
+                        <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.VIEW }}</RedirectButton></template>
                     </MachineCard>
                     <!-- Edit machines list (showed when in #edit mode) -->
                     <MachineCard v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in obj.machines.editing" id="machine-container">
