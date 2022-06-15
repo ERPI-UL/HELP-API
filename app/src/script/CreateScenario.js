@@ -428,10 +428,10 @@ function blockInfoFromDom(dom) {
     };
 
     const checks = [
-        {msg: User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SPECIFY_NAME, el: informations.name, cond: el => el.value.length > 0},
-        {msg: User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SPECIFY_DESCRIPTION, el: informations.description, cond: el => el.value.length > 0},
-        {msg: User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SELECT_MACHINE, el: informations.machine, cond: el => el.value.length > 0},
-        {msg: User.LANGUAGE.DATA.SCENARIOS.MESSAGES.AVOID_MACHINE_NAME, el: informations.name, cond: el => !el.value.includes(availableMachines.find(m => m.id == informations.machine.value).name)},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.SPECIFY_NAME, el: informations.name, cond: el => el.value.length > 0},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.SPECIFY_DESCRIPTION, el: informations.description, cond: el => el.value.length > 0},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.SELECT_MACHINE, el: informations.machine, cond: el => el.value.length > 0},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.AVOID_MACHINE_NAME, el: informations.name, cond: el => !el.value.includes(availableMachines.find(m => m.id == informations.machine.value).name)},
     ];
     
     for (let i = 0; i < checks.length; i++) {
@@ -466,14 +466,14 @@ function blockInfoFromDom(dom) {
 
     button.innerHTML = "...";
     API.execute_logged(API.ROUTE.SCENARIOS, API.METHOD_POST, User.currentUser.getCredentials(), scenario, API.TYPE_JSON).then(res => {
-        logMessage(User.LANGUAGE.DATA.SCENARIOS.MESSAGES.CREATED);
+        logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.CREATED);
         button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
         redirectHome();
     }).catch(err => {
         if (err.json)
             err.json().then(console.error)
         else console.error(err);
-        logMessage(User.LANGUAGE.DATA.SCENARIOS.MESSAGES.ERROR_CREATION);
+        logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.ERROR_CREATION);
         button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
     });
 }
@@ -589,7 +589,7 @@ function blockInfoFromDom(dom) {
     }
     const checkForAddition = () => {
         if (addCounter++ >= addedSteps.length) {
-            logMessage(User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MODIFIED);
+            logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.MODIFIED);
             const button = document.getElementById("save-btn");
             button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
             // redirectHome();
