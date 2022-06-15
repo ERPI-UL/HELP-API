@@ -257,7 +257,7 @@ function updateMachinesSelect(selectValue) {
     const userSelect = document.getElementById("machines-select");
     let val = userSelect.value;
     userSelect.innerHTML = "";
-    const userOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.WORDS.ALL}];
+    const userOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.ALL}];
     availableMachines.forEach(machine => userOptions.push(machine));
     userOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 
