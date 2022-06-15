@@ -7,7 +7,7 @@
         <div class="flex flex-col grow bg-white my-8 rounded-lg shadow-lg w-fit px-4 mx-auto divide-y max-w-full">
             <!-- Title -->
             <div class="flex justify-between">
-                <h3 class="font-bold md:text-2xl text-xl text-gray-500 m-4 text-left">Mon profile</h3>
+                <h3 class="font-bold md:text-2xl text-xl text-gray-500 m-4 text-left">{{User.LANGUAGE.DATA.PROFILE.TITLE}}</h3>
             </div>
             <div class="flex flex-col grow">
                 <div class="flex flex-col h-full">
@@ -20,30 +20,30 @@
                     </div>
                     <!-- Username input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nom d'utilisateur: </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{User.LANGUAGE.DATA.COMMON.USERNAME}}: </p>
                         <input type="text" id="input-username" name="username" :value="User.currentUser.username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <!-- Firstname input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Prénom: </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{User.LANGUAGE.DATA.COMMON.FIRSTNAME}}: </p>
                         <input type="text" id="input-firstname" name="given-name" :value="User.currentUser.firstname" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <!-- Name input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nom: </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{User.LANGUAGE.DATA.COMMON.LASTNAME}}: </p>
                         <input type="text" id="input-lastname" name="family-name" :value="User.currentUser.lastname" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <!-- Email input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Email: </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{User.LANGUAGE.DATA.COMMON.EMAIL}}: </p>
                         <input type="text" id="input-email" :value="User.currentUser.email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                 </div>
                 <!-- Basic informations buttons -->
                 <div class="flex justify-between h-fit pt-2 pb-4">
-                    <DangerousButton id="delete-btn" v-on:click="removeAccount">Supprimer</DangerousButton> <!-- Remove user button -->
+                    <DangerousButton id="delete-btn" v-on:click="removeAccount">{{User.LANGUAGE.DATA.ACTIONS.REMOVE}}</DangerousButton> <!-- Remove user button -->
                     <ValidateButton v-on:click="onAccountSave"> <!-- Update informations button -->
-                        Mettre à jour
+                        {{User.LANGUAGE.DATA.ACTIONS.UPDATE}}
                     </ValidateButton>
                 </div>
                 <ValidatePopup ref="delete-popup"></ValidatePopup> <!-- Delete user validation popup -->
@@ -51,28 +51,28 @@
             <div>
                 <!-- Password edition zone -->
                 <div class="flex flex-col grow h-full">
-                    <p class="text-gray-600 font-base text-base p-2 mr-8">Modifier le mot de passe:</p>
+                    <p class="text-gray-600 font-base text-base p-2 mr-8">{{ User.LANGUAGE.DATA.PROFILE.MESSAGES.MODIFY_PASSWORD }}:</p>
                     <!-- Old password -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Ancien Mot de passe : </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{ User.LANGUAGE.DATA.PROFILE.MESSAGES.OLD_PASSWORD }} : </p>
                         <input type="password" id="input-oldpassword" name="old-password" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <!-- New password -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Nouveau Mot de passe : </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{ User.LANGUAGE.DATA.PROFILE.MESSAGES.NEW_PASSWORD }} : </p>
                         <input type="password" id="input-newpassword" name="new-password" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                     <!-- Password confirmation -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
-                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">Confirmez le mot de passe: </p>
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{ User.LANGUAGE.DATA.REGISTER.MESSAGES.CONFIRM_PASSWORD }}: </p>
                         <input type="password" id="input-confirm" name="password-confirm" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                     </div>
                 </div>
                 <!-- Password buttons -->
                 <div class="flex grow justify-between h-fit pt-2 pb-4">
-                    <Backbutton>Retour</Backbutton> <!-- Cancel button (go back in history) -->
+                    <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel button (go back in history) -->
                     <ValidateButton v-on:click="onMDPChange"> <!-- Update user password (disconnects the user) -->
-                        Mettre à jour
+                        {{ User.LANGUAGE.DATA.ACTIONS.UPDATE }}
                     </ValidateButton>
                 </div>
             </div>
