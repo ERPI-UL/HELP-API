@@ -10,6 +10,7 @@ from tortoise import transactions
 router = APIRouter()
 
 
+# TODO:TRANSLATE SUPPORT
 @router.get("/", response_model=Models.pagination)
 async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10):
     # check for zero per_page
@@ -38,8 +39,10 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         'last_page': lastPage,
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
+
+# TODO:TRANSLATE SUPPORT
 @router.put("/{idScenario}")
-async def update_scenario(idScenario: int,scenario:Models.ScenarioUpdate,user: Models.User = Depends(utils.InstructorRequired)):
+async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate, user: Models.User = Depends(utils.InstructorRequired)):
     scenarioInDB = await Models.Scenario.get(id=idScenario)
     if(scenario.name.strip() != ""):
         scenarioInDB.name = scenario.name
@@ -49,6 +52,8 @@ async def update_scenario(idScenario: int,scenario:Models.ScenarioUpdate,user: M
     scenarioInDB.machine = machine
     await scenarioInDB.save()
     return {'ok': "scenario mis à jour"}
+
+
 @router.delete('/machines/{machine_id}')
 async def delete_machine(machine_id: int, user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
@@ -57,7 +62,7 @@ async def delete_machine(machine_id: int, user: Models.User = Depends(utils.Inst
     await machine.delete()
     return {'ok': 'machine supprimée'}
 
-
+# TODO:TRANSLATE SUPPORT
 @router.get('/machines', response_model=Models.pagination)
 async def getMachines(page: int = 1, per_page: int = 10):
     machine_count = await Models.Machine.all().count()
@@ -81,7 +86,7 @@ async def getMachines(page: int = 1, per_page: int = 10):
         'data': parse_obj_as(list[Models.MachineOut], machines)
     }
 
-
+# TODO:TRANSLATE SUPPORT
 @router.get('/machines/{machine_id}')
 async def getMachine(machine_id: int):
     machine = await Models.Machine.get(id=machine_id).prefetch_related('targets')
@@ -110,7 +115,7 @@ async def postMachineModel(machine_id: int, model: UploadFile = File(...), user:
     if not machine:
         raise HTTPException(status_code=404, detail="Machine introuvable")
     machine.path = utils.MODELS_DIRECTORY+str(machine.id)+"/machine.fbx"
-    async with transactions.in_transaction()  as connection:
+    async with transactions.in_transaction() as connection:
         try:
             contents = await model.read()
             # create the directory if it doesn't exist
@@ -156,7 +161,7 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
     await targetInDB.save()
     return {'ok': 'Cible mise à jour'}
 
-
+# TODO:TRANSLATE SUPPORT
 @router.get('/{idScenario}')
 async def getScenario(idScenario: int):
     scenario = await Models.Scenario.get(id=idScenario).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
@@ -172,7 +177,7 @@ async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.Ins
     await scenario.delete()
     return {'ok': 'scenario et objets référencés supprimés'}
 
-
+# TODO:TRANSLATE SUPPORT
 @router.post("/machines")
 async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -180,7 +185,7 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return await Models.MachineOut.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
 
-
+# TODO:TRANSLATE SUPPORT
 @router.put('/machines/{idMachine}')
 async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -189,7 +194,7 @@ async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: 
     await Models.Machine.filter(id=idMachine).update(name=machine.name, description=machine.description)
     return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=idMachine))
 
-
+# TODO:TRANSLATE SUPPORT
 @router.post('/')
 @transactions.atomic()
 async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depends(utils.getAdminLevel)):
@@ -209,7 +214,7 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
             await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': scenarioDB.id}
 
-
+# TODO:TRANSLATE SUPPORT
 @router.post('/{idScenario}/steps')
 @transactions.atomic()
 async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
@@ -230,7 +235,7 @@ async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = D
         await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': stepDB.id}
 
-
+# TODO:TRANSLATE SUPPORT
 @router.put('/steps/{idStep}')
 @transactions.atomic()
 async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
