@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 # TODO:TRANSLATE SUPPORT
-@router.get("/", response_model=Models.pagination)
+@router.get("/", response_model=Models.pagination,summary="Récupérer la liste des scénarios , avec de la pagination")
 async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10):
     # check for zero per_page
     if per_page == 0:
@@ -41,7 +41,7 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
     }
 
 # TODO:TRANSLATE SUPPORT
-@router.put("/{idScenario}")
+@router.put("/{idScenario}",summary="Mettre a jour les informations d'un scenario")
 async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate, user: Models.User = Depends(utils.InstructorRequired)):
     scenarioInDB = await Models.Scenario.get(id=idScenario)
     if(scenario.name.strip() != ""):
@@ -54,7 +54,7 @@ async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate, user
     return {'ok': "scenario mis à jour"}
 
 
-@router.delete('/machines/{machine_id}')
+@router.delete('/machines/{machine_id}',summary="Supprimer une machine")
 async def delete_machine(machine_id: int, user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
@@ -63,7 +63,7 @@ async def delete_machine(machine_id: int, user: Models.User = Depends(utils.Inst
     return {'ok': 'machine supprimée'}
 
 # TODO:TRANSLATE SUPPORT
-@router.get('/machines', response_model=Models.pagination)
+@router.get('/machines', response_model=Models.pagination,summary="Récupérer la liste des machines , avec de la pagination")
 async def getMachines(page: int = 1, per_page: int = 10):
     machine_count = await Models.Machine.all().count()
     if machine_count < per_page:
@@ -87,7 +87,7 @@ async def getMachines(page: int = 1, per_page: int = 10):
     }
 
 # TODO:TRANSLATE SUPPORT
-@router.get('/machines/{machine_id}')
+@router.get('/machines/{machine_id}',summary="Récupérer une machine")
 async def getMachine(machine_id: int):
     machine = await Models.Machine.get(id=machine_id).prefetch_related('targets')
     if not machine:
@@ -95,7 +95,7 @@ async def getMachine(machine_id: int):
     return await machineWithTargetsToJSON(machine)
 
 
-@router.get('/machines/{machine_id}/model', response_class=FileResponse)
+@router.get('/machines/{machine_id}/model', response_class=FileResponse,summary="Récupérer le modèle 3D de la machine au format GLTF Binaire .glb")
 async def getMachineModel(machine_id: int):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
@@ -109,7 +109,7 @@ async def getMachineModel(machine_id: int):
         raise HTTPException(status_code=404, detail="Model introuvable")
 
 
-@router.post('/machines/{machine_id}/model')
+@router.post('/machines/{machine_id}/model',summary="Envoyer le modèle 3D de la machine au format GLTF Binaire .glb")
 async def postMachineModel(machine_id: int, model: UploadFile = File(...), user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
@@ -133,7 +133,7 @@ async def postMachineModel(machine_id: int, model: UploadFile = File(...), user:
     return {"ok": f" fichier envoyé : {model.filename}"}
 
 
-@router.post('/machines/{machine_id}/targets', response_model=Models.TargetOut)
+@router.post('/machines/{machine_id}/targets', response_model=Models.TargetOut,summary="Ajouter une cible à une machine")
 async def createTarget(machine_id: int, name: str = Body(..., embed=True), user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
@@ -143,7 +143,7 @@ async def createTarget(machine_id: int, name: str = Body(..., embed=True), user:
     return parse_obj_as(Models.TargetOut, target)
 
 
-@router.delete('/machines/targets/{target_id}')
+@router.delete('/machines/targets/{target_id}',summary="Supprimer une cible")
 async def deleteTarget(target_id: int, user: Models.User = Depends(utils.InstructorRequired)):
     target = await Models.Target.get(id=target_id)
     if not target:
@@ -152,7 +152,7 @@ async def deleteTarget(target_id: int, user: Models.User = Depends(utils.Instruc
     return {'ok': 'target supprimée'}
 
 
-@router.put('/machines/targets/{target_id}')
+@router.put('/machines/targets/{target_id}',summary="Mettre à jour une cible")
 async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.User = Depends(utils.InstructorRequired)):
     targetInDB = await Models.Target.get(id=target_id)
     if not target:
@@ -162,14 +162,14 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
     return {'ok': 'Cible mise à jour'}
 
 # TODO:TRANSLATE SUPPORT
-@router.get('/{idScenario}')
+@router.get('/{idScenario}',summary="Récupère un scénario sous forme de JSON")
 async def getScenario(idScenario: int):
     scenario = await Models.Scenario.get(id=idScenario).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     return await scenarioToJSON(scenario)
 
 
-@router.delete('/{idScenario}')
+@router.delete('/{idScenario}',summary="Supprimer un scénario")
 async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.InstructorRequired)):
     scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
@@ -178,7 +178,7 @@ async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.Ins
     return {'ok': 'scenario et objets référencés supprimés'}
 
 # TODO:TRANSLATE SUPPORT
-@router.post("/machines")
+@router.post("/machines",summary="Créer une machine")
 async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
@@ -186,7 +186,7 @@ async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(ut
     return await Models.MachineOut.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
 
 # TODO:TRANSLATE SUPPORT
-@router.put('/machines/{idMachine}')
+@router.put('/machines/{idMachine}',summary="Mettre à jour une machine")
 async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
@@ -195,7 +195,7 @@ async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: 
     return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=idMachine))
 
 # TODO:TRANSLATE SUPPORT
-@router.post('/')
+@router.post('/',summary="Créer un scénario dans la base de données depuis un JSON")
 @transactions.atomic()
 async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -215,7 +215,7 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
     return {'id': scenarioDB.id}
 
 # TODO:TRANSLATE SUPPORT
-@router.post('/{idScenario}/steps')
+@router.post('/{idScenario}/steps',summary="Ajoute une nouvelle étape au scénario")
 @transactions.atomic()
 async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -236,7 +236,7 @@ async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = D
     return {'id': stepDB.id}
 
 # TODO:TRANSLATE SUPPORT
-@router.put('/steps/{idStep}')
+@router.put('/steps/{idStep}',summary="Met à jour une étape du scénario")
 @transactions.atomic()
 async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -277,7 +277,7 @@ async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depen
     return await stepToJSON(await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice'))
 
 
-@router.delete('/steps/{idStep}')
+@router.delete('/steps/{idStep}',summary="Supprime une étape du scénario")
 async def deleteStep(idStep: int, user: Models.User = Depends(utils.InstructorRequired)):
     await Models.Step.filter(id=idStep).delete()
     return {'ok': 'étape supprimée'}
