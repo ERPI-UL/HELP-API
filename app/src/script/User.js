@@ -1,9 +1,17 @@
 import API from "./API";
+import English from "../assets/languages/English";
+import { CapitalizeObject } from "../script/common";
 
 /**
  * User class, used to store user information.
  */
 class User {
+    static LANGUAGE = {CODE: "en", DATA: CapitalizeObject(English)};
+
+    static LoadLanguage(language) {
+        User.LANGUAGE = CapitalizeObject(language);
+    }
+
     // User available permissions
     static PERMISSIONS = {
         VISITOR: 0,
