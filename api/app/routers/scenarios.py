@@ -187,6 +187,7 @@ async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.Ins
     return {'ok': 'scenario et objets référencés supprimés'}
 
 @router.post("/machines",summary="Créer une machine")
+@transactions.atomic()
 async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
