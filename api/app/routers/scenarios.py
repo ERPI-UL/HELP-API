@@ -192,7 +192,12 @@ async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int =
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    return await Models.MachineOut.from_tortoise_orm(await Models.Machine.create(name=machine.name, description=machine.description))
+    if iso639 is None:
+        iso639 = "fr"
+    lang = await Models.Language.get(code=iso639)
+    machineDB = await Models.Machine.create(name=machine.name, description=machine.description)
+    await Models.MachineText.create(machine=machineDB, language=lang, name=machine.name, description=machine.description)
+    return await Models.MachineOut.from_tortoise_orm(machineDB)
 
 # TODO:TRANSLATE SUPPORT
 @router.put('/machines/{idMachine}',summary="Mettre à jour une machine")

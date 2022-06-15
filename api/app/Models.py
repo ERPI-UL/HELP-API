@@ -50,6 +50,17 @@ class Language(Model):
         table = "languages"
 
 
+class MachineText(Model):
+    id = fields.IntField(pk=True)
+    name = fields.TextField()
+    description = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='machineTexts')
+    machine = fields.ForeignKeyField(
+        'models.Machine', related_name='texts')
+    class Meta:
+        table = "machinetext"
+
 class Machine(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(50, unique=True)
