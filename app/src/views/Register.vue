@@ -5,7 +5,7 @@
             <div class="max-h-full">
                 <div class="flex center">
                     <!-- Modal Title -->
-                    <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
+                    <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl font-extrabold text-indigo-600 px-6">
                         S'inscrire
                     </h2>

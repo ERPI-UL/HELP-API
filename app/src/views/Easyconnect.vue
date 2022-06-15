@@ -4,7 +4,7 @@
         <div class="bg-white p-4 md:p-8 shadow-xl mx-auto rounded-lg">
             <div class="mx-auto max-w-md">
                 <div class="flex center"> <!-- Modal title -->
-                    <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
+                    <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 whitespace-wrap md:whitespace-nowrap">
                         Connecter un appareil
                     </h2>
