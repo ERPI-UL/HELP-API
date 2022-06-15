@@ -389,7 +389,7 @@ function saveMachine() {
     const button = document.getElementById("validate-button");
     button.innerHTML = "...";
 
-    if (action == "Modifier") { // modification mode, should execute saveModifications instead of this function
+    if (pageMode == MODE_EDIT) { // modification mode, should execute saveModifications instead of this function
         saveModifications(machineName.value, machineDesc.value, machineTargs);
         return;
     }
@@ -409,10 +409,10 @@ function saveMachine() {
             if (++additionCounter >= machineTargs.length) {
                 // send the machine model if specified
                 saveMachineModel(res.id).then(() => {
-                    logMessage("Machine créée");
+                    logMessage(User.LANGUAGE.DATA.MACHINE.LOGS.CREATED);
                     redirectHome();
                 }).catch(err => {
-                    logMessage("Erreur : "+err.message);
+                    logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 })
             }
         }
@@ -429,13 +429,13 @@ function saveMachine() {
 
     }).catch(err => { // error, notify the user
         logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.ERROR_CREATION);
-        if (!err.json) console.error(err);
-        else err.json().then(json => {
+        if (!err.message.json) console.error(err);
+        else err.message.json().then(json => {
             console.error(json)
             switch (json.detail[0].type) {
                 case "IntegrityError":
                     machineName.focus();
-                    logMessage("Le nom ["+document.getElementById('input-machinename').value+"] existe déjà.");
+                    logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.ALREADY_EXISTS);
                     break;
                 default: break;
             }

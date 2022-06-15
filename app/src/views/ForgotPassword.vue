@@ -97,7 +97,7 @@ function onValidate() {
                 logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.INCORRECT_USERNAME_EMAIL);
                 break;
             default:
-                logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.SERVER_ERROR);
+                logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SERVER_ERROR);
                 break;
         }
     });

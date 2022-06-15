@@ -121,12 +121,12 @@ function onValidate() {
     };
 
     if (credentials.newPassword.value.trim().length < 8) {
-        logMessage("Veuillez renseigner un mot de passe d'au moins 8 caractères.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_PASSWORD);
         credentials.newPassword.focus();
         return;
     }
     if (credentials.newPassword.value != credentials.passwordConfirm.value) {
-        logMessage("Les deux mots de passe ne correspondent pas.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_CONFIRM_PASSWORD);
         credentials.passwordConfirm.focus();
         return;
     }
@@ -135,21 +135,21 @@ function onValidate() {
     API.execute(API.ROUTE.RESET, API.METHOD_POST, {token: token, password: credentials.newPassword.value}, API.TYPE_JSON).then(data => {
         if (data.error) logMessage(data.error);
         else {
-            logMessage("Votre mot de passe a été réinitialisé.");
+            logMessage(User.LANGUAGE.DATA.RESET.LOGS.PASSWORD_RESET);
             redirectHome();
         }
     }).catch(err => {
         btn.innerHTML = "Valider";
         switch (err.status) {
             case 401:
-                logMessage("Token de réinitialisation invalide.");
+                logMessage(User.LANGUAGE.DATA.RESET.LOGS.TOKEN_ERROR);
                 break;
             case 422:
                 res.json().then(logMessage);
                 break;
         
             default:
-                logMessage("Erreur lors de la connexion au serveur");
+                logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SERVER_ERROR);
                 break;
         }
     });

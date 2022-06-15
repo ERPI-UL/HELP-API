@@ -171,6 +171,8 @@ const LANGUAGE = {
             SPECIFY_TARGET_NAME: "Please specify a target name",
             DUPLICATE_TARGET_NAME: "Please specify unique target names",
             ERROR_CREATION: "Error while creating the machine",
+            CREATED: "Machine successfully created",
+            ALREADY_EXISTS: "Machine already exists",
         }
     },
 
@@ -252,6 +254,12 @@ const LANGUAGE = {
         MESSAGES: {
             CONNECT_DEVICE: "connect a device",
             DEVICE_CODE: "device code"
+        },
+        LOGS: {
+            SPECIFY_CODE: "Please specify a device code",
+            INVALID_CREDENTIALS: "Incorrect username or password",
+            UNKNOWN_DEVICE: "Unknown device code",
+            CONNECTED: "Device successfully connected",
         }
     },
 
@@ -262,6 +270,10 @@ const LANGUAGE = {
         MESSAGES: {
             GENERATE_INVITE: "Generate invite",
             VALIDATION_DELAY: "This invitation will be valid for 14 days from its creation date"
+        },
+        LOGS: {
+            INVITE_SENT: "Invite successfully sent",
+            INVITE_ERROR: "Error while sending the invite",
         }
     },
 
@@ -306,10 +318,9 @@ const LANGUAGE = {
         LOGS: {
             SPECIFY_USERNAME_EMAIL: "Please specify a username or email",
             INCORRECT_USERNAME_EMAIL: "Incorrect username or email",
-            SERVER_ERROR: "Error during server communication"
         }
     },
-
+    
     REGISTER: {
         MESSAGES: {
             CONFIRM_PASSWORD: "Confirm password",
@@ -322,13 +333,26 @@ const LANGUAGE = {
             SPECIFY_PASSWORD: "Please specify a password of at least 8 characters",
             SPECIFY_CONFIRM_PASSWORD: "Both passwords must match",
             CREATION_SUCCESS: "Account successfully created",
-            CREATION_ERROR: "Error while creating the account"
+            CREATION_ERROR: "Error while creating the account",
+            SERVER_ERROR: "Error during server communication",
+            ERROR_MESSAGE: "An error has occurred",
+        }
+    },
+
+    LOGIN: {
+        LOGS: {
+            INVALID_PASSWORD: "Invalid password",
+            INVALID_USERNAME: "Invalid username"
         }
     },
 
     RESET: {
         MESSAGES: {
             TITLE: "{action} password"
+        },
+        LOGS: {
+            PASSWORD_RESET: "Password successfully reset",
+            TOKEN_ERROR: "The reset token is invalid",
         }
     }
 }

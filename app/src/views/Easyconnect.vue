@@ -168,19 +168,19 @@ function onValidate() {
 
     if (usingCredentials) { // check for user credentials
         if (credentials.username.value.trim() == "") {
-            logMessage("Veuillez renseigner un nom d'utilisateur.");
+            logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_USERNAME);
             credentials.username.focus();
             return;
         }
         if (credentials.password.value.trim() == "") {
-            logMessage("Veuillez renseigner un mot de passe.");
+            logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_PASSWORD);
             credentials.password.focus();
             return;
         }
     }
 
     if (credentials.number.value.trim().length < 5) {
-        logMessage("Veuillez renseigner un code appareil valide.");
+        logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.SPECIFY_CODE);
         credentials.number.focus();
         return;
     }
@@ -193,7 +193,7 @@ function onValidate() {
             });
         }).catch(err => {
             console.error(err);
-            logMessage("Nom d'utilisateur ou mot de passe incorrect.");
+            logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.INVALID_CREDENTIALS);
         });
     } else {
         sendEasyConnectRequest({
@@ -209,19 +209,19 @@ function onValidate() {
  */
 function sendEasyConnectRequest(data) {
     API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, {type: data.token.split(" ")[0], token: data.token.split(" ")[1]}, data, API.TYPE_JSON).then(res => {
-        logMessage("Appareil connecté au compte.");
+        logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.CONNECTED);
         redirectHome();
     }).catch(err => {
         switch (err.message.status) {
             case 404:
-                logMessage("Erreur: Appareil inconnu.");
+                logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.UNKNOWN_DEVICE);
                 break;
             default:
                 if (err.message.json) {
-                    err.message.json().then(e => logMessage("Erreur : "+e.detail));
+                    err.message.json().then(e => logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+e.detail));
                     console.error(e);
                 }
-                else logMessage("Erreur lors de la connexion.");
+                else logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SERVER_ERROR);
                 break;
         }
     });
