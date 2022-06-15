@@ -6,6 +6,7 @@ const LANGUAGE = {
         CREATE: "create",
         EDIT: "edit",
         DELETE: "delete",
+        ADD: "add",
         SAVE: "save",
         CANCEL: "cancel",
         VALIDATE: "validate",
@@ -16,12 +17,13 @@ const LANGUAGE = {
         CONNECT: "connect",
         MORE: "more",
         SELECT: "select",
-        SEE: "see",
+        VIEW: "view",
         CHANGE: "change",
         SEND: "send",
         RESET: "reset",
         CHANGE: "change",
-        UPDATE: "update"
+        UPDATE: "update",
+        GENERATE: "generate"
     },
 
     EVENTS: {
@@ -53,6 +55,10 @@ const LANGUAGE = {
         TEACHER: "teacher",
         LEARNER: "learner",
         VISITOR: "visitor"
+    },
+
+    LOGS: {
+        MODIFICATIONS_SAVED: "Modifications saved",
     },
 
     COMMON: {
@@ -148,6 +154,22 @@ const LANGUAGE = {
         },
         ACTIONS: {
             NEW: "new machine",
+        },
+        MESSAGES: {
+            TITLE: "{action} a machine",
+            MACHINE_NAME: "machine's name",
+            MACHINE_DESCRIPTION: "machine's description",
+            MACHINE_MODEL: "3D model",
+            MACHINE_TARGETS: "machine's targets",
+            ADD_MODEL: "add a model",
+        },
+        LOGS: {
+            ERROR_MODEL_SAVING: "Error while saving the 3D model",
+            SPECIFY_MACHINE_NAME: "Please specify a machine name",
+            SPECIFY_MACHINE_DESCRIPTION: "Please specify a machine description",
+            SPECIFY_TARGET_NAME: "Please specify a target name",
+            DUPLICATE_TARGET_NAME: "Please specify unique target names",
+            ERROR_CREATION: "Error while creating the machine",
         }
     },
 
