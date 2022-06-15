@@ -224,13 +224,15 @@ async def createScenario(scenario: Models.ScenarioPost,iso639:str|None=None, adm
             await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': scenarioDB.id}
 
-# TODO:TRANSLATE SUPPORT
 @router.post('/{idScenario}/steps',summary="Ajoute une nouvelle étape au scénario")
 @transactions.atomic()
-async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
+async def createStep(idScenario: int, step: Models.StepPost,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
+    if iso639 is None:
+        iso639 = "fr"
+    lang = await Models.Language.get(code=iso639)
     scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
@@ -240,7 +242,9 @@ async def createStep(idScenario: int, step: Models.StepPost, adminLevel: int = D
                          name=step.name, description=step.description, ordernumber=step.ordernumber)
     if step.type.name == 'choice':
         stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+        await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=lang, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
     await stepDB.save()
+    await Models.StepText.create(step_id=stepDB.id, language=lang, label=step.label, description=step.description)
     for target in step.targets:
         await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': stepDB.id}
