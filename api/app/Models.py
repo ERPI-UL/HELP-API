@@ -18,6 +18,7 @@ class User(Model):
     lastname = fields.TextField()
     email = fields.CharField(128, unique=True)
     adminLevel = fields.IntField(default=0)
+    language = fields.ForeignKeyField("models.Language",related_name="users",null=True)
 
     def verify_password(self, password):
         return bcrypt.verify(password, self.password_hash)
@@ -27,6 +28,26 @@ class User(Model):
 
     class Meta:
         table = "users"
+
+
+class ScenarioText(Model):
+    id = fields.IntField(pk=True)
+    name = fields.TextField()
+    description = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='scenarioTexts')
+    scenario = fields.ForeignKeyField(
+        'models.Scenario', related_name='texts')
+    class Meta:
+        table = "scenariotext"
+
+class Language(Model):
+    id = fields.IntField(pk=True)
+    unicode = fields.CharField(128)  # \uD83C\uDDEB\uD83C\uDDF7 -> 🇫🇷
+    name = fields.CharField(42)  # Français English Español
+    code = fields.CharField(2)  # ISO 639-1 en fr en de it etc..
+    class Meta:
+        table = "languages"
 
 
 class Machine(Model):
@@ -51,7 +72,17 @@ class Scenario(Model):
         table = "scenarios"
         # unique_together = ('name', 'scenarios.machineName')
 
-
+class StepText(Model):
+    id = fields.IntField(pk=True)
+    label = fields.TextField()
+    description = fields.TextField()
+    description = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='stepTexts')
+    step = fields.ForeignKeyField(
+        'models.Step', related_name='texts', on_delete=fields.CASCADE)
+    class Meta:
+        table = "steptext"
 class Step(Model):
     id = fields.IntField(pk=True)
     label = fields.TextField()
@@ -92,7 +123,18 @@ class Type(Model):
     class Meta:
         table = "types"
 
-
+class ChoiceText(Model):
+    id = fields.IntField(pk=True)
+    labelleft = fields.TextField()
+    labelright = fields.TextField()
+    redirectleft = fields.TextField()
+    redirectright = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='choiceTexts')
+    choice = fields.ForeignKeyField(
+        'models.Choice', related_name='texts', on_delete=fields.CASCADE)
+    class Meta:
+        table = "choicetext"
 class Choice(Model):
     id = fields.IntField(pk=True)
     labelleft = fields.TextField()
@@ -178,26 +220,6 @@ class Reset(Model):
 
     class Meta:
         table = "reset"
-
-
-class Translation(Model):
-    id = fields.IntField(pk=True)
-    value = fields.TextField()
-    language = fields.ForeignKeyField(
-        'models.Language', related_name='translations')
-
-    class Meta:
-        table = "translations"
-
-
-class Language(Model):
-    id = fields.IntField(pk=True)
-    unicode = fields.CharField(128)  # \uD83C\uDDEB\uD83C\uDDF7 -> 🇫🇷
-    name = fields.CharField(42)  # Français English Español
-    code = fields.CharField(2)  # ISO 639-1 en fr en de it etc..
-
-    class Meta:
-        table = "languages"
 
 
 User_Pydantic = pydantic_model_creator(User, name='User')
@@ -356,3 +378,5 @@ SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)
 playedStepIn = pydantic_model_creator(
     playedStep, name='playedStepIn')
+LanguageOut = pydantic_model_creator(
+    Language, name='LanguageFront', exclude_readonly=True)

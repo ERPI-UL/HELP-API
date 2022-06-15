@@ -168,6 +168,10 @@ async def getScenario(idScenario: int):
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     return await scenarioToJSON(scenario)
 
+@router.get("/{idScenario}/languages", summary="Récupère les langues disponibles pour un scénario")
+async def getScenarioLanguages(idScenario: int):
+    texts = await Models.ScenarioText.filter(scenario_id=idScenario).prefetch_related('language')
+    return [parse_obj_as(Models.LanguageOut, text.language) for text in texts]
 
 @router.delete('/{idScenario}',summary="Supprimer un scénario")
 async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.InstructorRequired)):
@@ -179,7 +183,7 @@ async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.Ins
 
 # TODO:TRANSLATE SUPPORT
 @router.post("/machines",summary="Créer une machine")
-async def create_machine(machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
+async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -194,14 +198,18 @@ async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: 
     await Models.Machine.filter(id=idMachine).update(name=machine.name, description=machine.description)
     return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=idMachine))
 
-# TODO:TRANSLATE SUPPORT
+
 @router.post('/',summary="Créer un scénario dans la base de données depuis un JSON")
 @transactions.atomic()
-async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depends(utils.getAdminLevel)):
+async def createScenario(scenario: Models.ScenarioPost,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
+    if iso639 is None:
+        iso639 = "fr"
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
+    lang = await Models.Language.get(code=iso639)
     scenarioDB = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
+    await Models.ScenarioText.create(scenario_id=scenarioDB.id, language=lang, name=scenario.name, description=scenario.description)
     for step in scenario.steps:
         position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
         type = await Models.Type.get(name=step.type.name).first()
@@ -209,7 +217,9 @@ async def createScenario(scenario: Models.ScenarioPost, adminLevel: int = Depend
                              name=step.name, description=step.description, ordernumber=step.ordernumber)
         if step.type.name == 'choice':
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+            await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=lang, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         await stepDB.save()
+        await Models.StepText.create(step_id=stepDB.id, language=lang, label=step.label, description=step.description)
         for target in step.targets:
             await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': scenarioDB.id}

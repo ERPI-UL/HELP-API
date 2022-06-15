@@ -57,11 +57,21 @@ async def get_users(page: int = 1, per_page: int = 10, res: any = Depends(utils.
     }
 
 
-@router.get('/me', response_model=Models.UserinFront)
+@router.get('/me')
 async def get_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
     # user = await Models.UserinFront.from_tortoise_orm(Models.User.get(id=current_user.id))
-    user = await Models.User.get(id=current_user.id)
-    return await Models.UserinFront.from_tortoise_orm(user)
+    user = await Models.User.get(id=current_user.id).prefetch_related('language')
+    return {
+        'id': user.id,
+        'username': user.username,
+        'firstname': user.firstname,
+        'lastname': user.lastname,
+        'email': user.email,
+        'adminLevel': user.adminLevel,
+        'language': user.language.name,
+        'flag': user.language.unicode,
+        'language_code': user.language.code,
+    }
 
 
 @router.delete('/me')
