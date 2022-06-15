@@ -119,7 +119,7 @@ function setup() {
                     labels = scenario.steps.map(step => step.name);
                     data = scenario.steps.map(step => session.playedSteps.filter(playedSteps => playedSteps.step_id === step.id).map(playedStep => playedStep.time).reduce((a, b) => a+b, 0));
                     generateChart(data, labels);
-                    addStat(`- ${User.LANGUAGE.DATA.SCENARIO} :`, scenario.name);
+                    addStat(`- ${User.LANGUAGE.DATA.COMMON.SCENARIO} :`, scenario.name);
                     addStat(`- ${User.LANGUAGE.DATA.TIME.DATE} :`, new Date(session.date).toLocaleString());
                     addStat(`- ${User.LANGUAGE.DATA.TIME.TIME} :`, stringTime(session.playedSteps.map(playedStep => playedStep.time).reduce((a, b) => a+b, 0)));
                 }).catch(console.error);
