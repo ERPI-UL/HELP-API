@@ -67,9 +67,8 @@ async def delete_machine(machine_id: int, user: Models.User = Depends(utils.Inst
     await machine.delete()
     return {'ok': 'machine supprimée'}
 
-# TODO:TRANSLATE SUPPORT
 @router.get('/machines', response_model=Models.pagination,summary="Récupérer la liste des machines , avec de la pagination")
-async def getMachines(page: int = 1, per_page: int = 10):
+async def getMachines(page: int = 1, per_page: int = 10,iso639:str|None=None):
     machine_count = await Models.Machine.all().count()
     if machine_count < per_page:
         per_page = machine_count
@@ -82,7 +81,20 @@ async def getMachines(page: int = 1, per_page: int = 10):
         lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
-    machines = await Models.Machine.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('scenarios')
+    if iso639 is None:
+        iso639 = "fr"
+    machines = await Models.Machine.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('texts','texts__language')
+    for machine in machines:
+        # text = (x for x in machine.texts if machine.texts.language.code == iso639)
+        # text = next((x for x in machine.texts if machine.texts.language.code == iso639), None)
+        # print(text)
+        # if text:
+        #     machine.name = text.name
+        #     machine.description = text.description
+        for text in machine.texts:
+            if text.language.code == iso639:
+                machine.name = text.name
+                machine.description = text.description
     return {
         'total': machine_count,
         'per_page': per_page,
@@ -171,7 +183,6 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
     await targetInDB.save()
     return {'ok': 'Cible mise à jour'}
 
-# TODO:TRANSLATE SUPPORT
 @router.get('/{idScenario}',summary="Récupère un scénario sous forme de JSON")
 async def getScenario(idScenario: int,iso639:str|None=None):
     scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps__targets', 'steps__position', 'steps__choice','steps__type','machine')
