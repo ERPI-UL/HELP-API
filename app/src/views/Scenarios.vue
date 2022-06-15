@@ -42,7 +42,7 @@
                         </select>
                         <!-- Paginatioon modal for the machines -->
                         <PaginationChoice 
-                            ref="machinePagination" :title="'Sélection machines'"
+                            ref="machinePagination" :title="User.LANGUAGE.DATA.PAGINATION.MACHINE_SELECTION"
                             :selectID="'#machines-select'" :callback="addMachineSelection" :route="API.ROUTE.MACHINES"
                             :displayAttribute="el => el.name" :identifier="el => el.id" :selectedValues="availableMachines.map(el => el.id)">
                         </PaginationChoice>

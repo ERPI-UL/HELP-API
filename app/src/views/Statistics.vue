@@ -89,13 +89,13 @@
         </div>
         <!-- User pagination modal -->
         <PaginationChoice v-if="User.currentUser.canTeacher()"
-            ref="userPagination" :title="'Sélection utilisateurs'"
+            ref="userPagination" :title="User.LANGUAGE.DATA.PAGINATION.USER_SELECTION"
             :selectID="'#user-select'" :callback="addUserSelection" :route="API.ROUTE.USERS"
             :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsers.map(el => el.id)">
         </PaginationChoice>
         <!-- Scenarios pagination modal -->
         <PaginationChoice
-            ref="scenarioPagination" :title="'Sélection scénarios'"
+            ref="scenarioPagination" :title="User.LANGUAGE.DATA.PAGINATION.SCENARIO_SELECTION"
             :selectID="'#scenario-select'" :callback="addScenarioSelection" :route="API.ROUTE.SCENARIOS"
             :displayAttribute="el => el.name" :identifier="el => el.id" :selectedValues="availableScenarios.map(el => el.id)">
         </PaginationChoice>
