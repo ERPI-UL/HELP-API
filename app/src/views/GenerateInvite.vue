@@ -45,7 +45,7 @@
                     <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
                         <p class="opacity-0 text-center text-indigo-600"></p>
                     </div>
-                    <p class="text-gray-400 pt-8">{{ User.LANGUAGE.DATA.INVITE.MESSAGES.VALIDATION_DELAY }}</p>
+                    <p class="text-gray-400 pt-8 text-center">{{ User.LANGUAGE.DATA.INVITE.MESSAGES.VALIDATION_DELAY }}</p>
                     <!-- Buttons -->
                     <div class="pt-2 flex justify-between">
                         <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel button -->
