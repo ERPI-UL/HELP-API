@@ -10,15 +10,10 @@
                     <img class="max-h-[50vw] md:max-h-[30vh] w-auto" src="../assets/images/icon_full.png" alt="" />
                 </div>
                 <div class="w-full md:w-[30vw] md:p-4 p-2">
-                    <h1 class="text-gray-600 text-2xl font-bold text-center">Indico - Interface Web</h1>
+                    <h1 class="text-gray-600 text-2xl font-bold text-center">{{ User.LANGUAGE.DATA.HOME.MESSAGES.MODAL.TITLE }}</h1>
                     <br>
-                    <p class="text-gray-500 text-lg text-center">Bienvenue sur l'interface web de l'application <span class="font-bold">Indico</span> !</p>
                     <p class="text-gray-500 text-lg text-center">
-                        Pour accéder à toutes les fonctionnalités,
-                        <a class="text-indigo-600 hover:underline cursor-pointer" href="/login">connectez-vous</a>
-                        à l'application, ou
-                        <a class="text-indigo-600 hover:underline cursor-pointer" href="/register">créez un compte</a>
-                        .
+                        {{ User.LANGUAGE.DATA.HOME.MESSAGES.MODAL.DESCRIPTION }}
                     </p>
                 </div>
             </div>
@@ -33,7 +28,7 @@
             <div class="md:mr-2 m-0 min-w-min max-w-full md:flex flex-col hidden w-min justify-between">
                 <!-- Left panel containing the different scenario view modes -->
                 <div class="bg-white rounded min-w-[12vw] divide-y min-w-0 w-fit" ref="menu">
-                    <h2 class="text-2xl font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap min-w-fit">{{ User.LANGUAGE.DATA.HOME.QUICK_ACCESS }}</h2>
+                    <h2 class="text-2xl font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap min-w-fit">{{ User.LANGUAGE.DATA.HOME.MESSAGES.QUICK_ACCESS }}</h2>
                     <div class="flex md:flex-col md:overflow-x-visible overflow-x-scroll justify-between py-2">
                         <p class="whitespace-nowrap py-1 px-2 mx-4 my-1 rounded-lg text-base font-semibold text-left text-indigo-800 cursor-pointer"
                            :class="menu.selectedOption == el.name? 'bg-indigo-600 text-indigo-50 shadow-md shadow-indigo-600': ''"
@@ -50,13 +45,13 @@
                 </div>
             </div>
             <div class="flex flex-col grow min-h-0 min-w-0">
-                <div id="overview" class="flex grow min-h-fit min-w-fit max-w-[full] w-[50%] m-auto">
+                <div id="overview" class="flex grow min-h-0 min-w-fit max-w-[full] w-[50%] m-auto">
                     <div class="flex grow flex-col bg-white rounded-lg border border-gray-200">
                         <div class="flex flex-col mx-4 my-2">
-                            <h2 class="md:text-2xl text-xl font-extrabold text-indigo-600">{{ User.LANGUAGE.DATA.HOME.LAST_SESSION }}</h2>
+                            <h2 class="md:text-2xl text-xl font-extrabold text-indigo-600">{{ User.LANGUAGE.DATA.HOME.MESSAGES.LAST_SESSION }}</h2>
                             <div id="stat-zone" class="flex flex-col space-y-2"></div>
                         </div>
-                        <div class="md:flex hidden grow m-4 min-h-fit max-h-full max-w-full min-w-0">
+                        <div class="md:flex hidden grow m-4 min-h-0 max-h-full max-w-full min-w-0">
                             <div id="loading-zone" class="flex grow">
                                 <div class="flex m-auto">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="rotate h-6 w-6 text-indigo-600 my-1 md:block hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -69,7 +64,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="shortcuts" class="flex flex-wrap justify-center">
+                <div id="shortcuts" class="flex flex-wrap justify-center min-h-fit max-h-full">
                     <MenuDiv v-for="categ in shortcuts" :title="categ.title" v-show="menu.selectedOption == categ.name">
                         <MenuCard v-for="el in categ.data">
                             <CardTitle :icon="el.icon">
@@ -194,7 +189,7 @@ function generateChart(data, labels) {
 const shortcuts = [
     {
         name: "recent",
-        title: User.LANGUAGE.DATA.HOME.FREQUENTLY_USED,
+        title: User.LANGUAGE.DATA.HOME.MESSAGES.FREQUENTLY_USED,
         data: []
     },
     {
