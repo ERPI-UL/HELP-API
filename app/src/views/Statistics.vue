@@ -13,13 +13,13 @@
                         <a class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
                             :class="(window.location.href.split('#')[1] == 'learning')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#learning">
-                            Apprentissage
+                            {{ User.LANGUAGE.DATA.STATISTICS.PAGES.LEARNING.TITLE }}
                         </a>
                         <!-- Testing mode -->
                         <a class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
                             :class="(window.location.href.split('#')[1] == 'testing')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#testing">
-                            Évaluations
+                            {{ User.LANGUAGE.DATA.STATISTICS.PAGES.TESTING.TITLE }}
                         </a>
                     </div>
                 </div>
@@ -29,23 +29,23 @@
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit flex md:flex-row flex-col grow">
                     <!-- User selection (only in admin/teacher mode) -->
                     <div class="flex md:justify-left justify-between md:mr-6" v-show="user.canTeacher()">
-                        <h2 class="m-1 p-1">Utilisateurs: </h2>
+                        <h2 class="m-1 p-1">{{ User.LANGUAGE.DATA.PAGES.USERS }}: </h2>
                         <select id="user-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
-                            <option value="<loading>">Chargement ...</option>
+                            <option value="<loading>">{{ User.LANGUAGE.DATA.ACTIONS.LOADING }} ...</option>
                         </select>
                     </div>
                     <!-- Scenario selection -->
                     <div class="flex md:justify-left justify-between md:mr-6">
-                        <h2 class="m-1 p-1">Scénarios: </h2>
+                        <h2 class="m-1 p-1">{{ User.LANGUAGE.DATA.PAGES.SCENARIOS }}: </h2>
                         <select id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
-                            <option value="<loading>">Chargement ...</option>
+                            <option value="<loading>">{{ User.LANGUAGE.DATA.ACTIONS.LOADING }} ...</option>
                         </select>
                     </div>
                     <!-- AR/VR selection -->
                     <div class="flex md:justify-left justify-between md:mr-6">
-                        <h2 class="m-1 p-1">Mode: </h2>
+                        <h2 class="m-1 p-1">{{ User.LANGUAGE.DATA.COMMON.WORDS.MODE }}: </h2>
                         <select id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
-                            <option value="mode_all">Tous</option>
+                            <option value="mode_all">{{ User.LANGUAGE.DATA.COMMON.WORDS.ALL }}</option>
                             <option value="mode_ar">AR</option>
                             <option value="mode_vr">VR</option>
                         </select>
@@ -53,25 +53,25 @@
                     <!-- Search button -->
                     <div class="flex grow justify-between">
                         <span></span>
-                        <ValidateButton v-on:click="search">Chercher</ValidateButton>
+                        <ValidateButton v-on:click="search">{{ User.LANGUAGE.DATA.ACTIONS.SEARCH }}</ValidateButton>
                     </div>
                 </div>
                 <!-- Statistics list content -->
                 <div class="m-2 ml-4 flex flex-col flex-wrap justify-evenly grow">
                     <!-- Loading dom information element -->
                     <div class="mt-10 overflow-hidden" id="loadzone" style="display: none;">
-                        <p class="text-center md:text-4xl text-2xl text-gray-500">Chargement ...</p>
-                        <p class="text-center md:text-2xl text-xl text-gray-400">Chargement des données</p>
+                        <p class="text-center md:text-4xl text-2xl text-gray-500">{{ User.LANGUAGE.DATA.STATISTICS.MESSAGES.LOADING_DATA.TITLE }}</p>
+                        <p class="text-center md:text-2xl text-xl text-gray-400">{{ User.LANGUAGE.DATA.STATISTICS.MESSAGES.LOADING_DATA.DESCRIPTION }}</p>
                     </div>
                     <!-- No data dom information element -->
                     <div class="mt-10 overflow-hidden" id="nodatazone" style="display: none;">
-                        <p class="text-center md:text-4xl text-2xl text-gray-500">Aucune donnée :/</p>
-                        <p class="text-center md:text-2xl text-xl text-gray-400">Aucune donnée disponible pour les filtres sélectionnés</p>
+                        <p class="text-center md:text-4xl text-2xl text-gray-500">{{ User.LANGUAGE.DATA.STATISTICS.MESSAGES.NO_DATA.TITLE }}</p>
+                        <p class="text-center md:text-2xl text-xl text-gray-400">{{ User.LANGUAGE.DATA.STATISTICS.MESSAGES.NO_DATA.DESCRIPTION }}</p>
                     </div>
                     <!-- Error dom information element -->
                     <div class="mt-10 overflow-hidden" id="errorzone" style="display: none;">
-                        <p class="text-center md:text-4xl text-2xl text-gray-500">Houston, on a un problème !</p>
-                        <p class="text-center md:text-2xl text-xl text-gray-400">Impossible de récupérer les statistiques</p>
+                        <p class="text-center md:text-4xl text-2xl text-gray-500">{{ User.LANGUAGE.DATA.STATISTICS.MESSAGES.PROBLEM_DATA.TITLE }}</p>
+                        <p class="text-center md:text-2xl text-xl text-gray-400">{{ User.LANGUAGE.DATA.STATISTICS.MESSAGES.PROBLEM_DATA.DESCRIPTION }}</p>
                     </div>
                     <!-- Statistics zone -->
                     <div class="flex flex-col grow max-w-full">
@@ -126,9 +126,9 @@ function updateUserSelect(selectValue) {
     const userSelect = document.getElementById("user-select");
     let val = userSelect.value;
     userSelect.innerHTML = "";
-    const userOptions = [{value: "<all>", text: "Tous"}];
+    const userOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.WORDS.ALL}];
     availableUsers.forEach(user => userOptions.push(user));
-    userOptions.push({value: "<select>", text: "Selectionner ..."});
+    userOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 
     userOptions.forEach(option => {
         let optionElement = document.createElement("option");
@@ -150,9 +150,9 @@ function updateScenarioSelect(selectValue) {
     const scenarioSelect = document.getElementById("scenario-select");
     let val = scenarioSelect.value;
     scenarioSelect.innerHTML = "";
-    const scenarioOptions = [{value: "<all>", text: "Tous"}];
+    const scenarioOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.WORDS.ALL}];
     availableScenarios.forEach(scenario => scenarioOptions.push(scenario));
-    scenarioOptions.push({value: "<select>", text: "Selectionner ..."});
+    scenarioOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 
     scenarioOptions.forEach(option => {
         let optionElement = document.createElement("option");
