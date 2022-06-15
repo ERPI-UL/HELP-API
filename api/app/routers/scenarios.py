@@ -40,17 +40,22 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
     }
 
-# TODO:TRANSLATE SUPPORT
 @router.put("/{idScenario}",summary="Mettre a jour les informations d'un scenario")
-async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate, user: Models.User = Depends(utils.InstructorRequired)):
+async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     scenarioInDB = await Models.Scenario.get(id=idScenario)
+    if iso639 is None:
+        iso639 = "fr"
+    scenarioText = await Models.ScenarioText.get(scenario=scenarioInDB, language__code=iso639)
     if(scenario.name.strip() != ""):
         scenarioInDB.name = scenario.name
+        scenarioText.name = scenario.name
     if(scenario.description.strip() != ""):
         scenarioInDB.description = scenario.description
+        scenarioText.description = scenario.description
     machine = await Models.Machine.get(id=scenario.idMachine)
     scenarioInDB.machine = machine
     await scenarioInDB.save()
+    await scenarioText.save()
     return {'ok': "scenario mis à jour"}
 
 
