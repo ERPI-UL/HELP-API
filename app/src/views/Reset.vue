@@ -7,7 +7,7 @@
                 <div class="flex center max-w-full">
                     <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6">
-                        {{ action }} le mot de passe
+                        {{ User.LANGUAGE.DATA.RESET.MESSAGES.TITLE.replace("{action}", action) }}
                     </h2>
                 </div>
                 <!-- Modal content -->
@@ -15,12 +15,12 @@
                     <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
                         <!-- New password input zone -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.PASSWORD }}: </p>
                             <input type="password" id="input-password" name="new-password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Password confirmation zone -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Confirmez le mot de passe: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.REGISTER.MESSAGES.CONFIRM_PASSWORD }}: </p>
                             <input type="password" id="input-password" name="password-confirm" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                     </div>
@@ -30,7 +30,7 @@
                     </div>
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
-                        <BackButton>Retour</BackButton> <!-- Cancel button -->
+                        <BackButton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel button -->
                         <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                             {{ action }} <!-- Validate button -->
                         </button>
@@ -153,17 +153,16 @@ function onValidate() {
                 break;
         }
     });
-
 }
 
-let action = window.location.pathname.split("/").pop() === "reset" ? "Réinitialiser" : "Définir";
+let action = window.location.pathname.split("/").pop() === "reset" ? User.LANGUAGE.DATA.ACTIONS.RESET : User.LANGUAGE.DATA.ACTIONS.CHANGE;
 
 export default {
     name: "Reset",
     components: {
         BackButton
     },
-    data() { return {action} },
+    data() { return {action, User} },
     mounted() {
         setup();
     },

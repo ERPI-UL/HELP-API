@@ -7,7 +7,7 @@
                     <!-- Modal Title -->
                     <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl font-extrabold text-indigo-600 px-6">
-                        S'inscrire
+                        {{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}
                     </h2>
                 </div>
                 <div>
@@ -15,32 +15,32 @@
                     <div class="space-y-1 md:space-y-4 py-2 md:py-8 text-base text-gray-400 max-h-full">
                         <!-- Firstname input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Prénom: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.FIRSTNAME }}: </p>
                             <input type="text" id="given-name" name="given-name" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Lastname input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.LASTNAME }}: </p>
                             <input type="text" id="family-name" name="family-name" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Username input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.USERNAME }}: </p>
                             <input type="text" id="username" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Email input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Adresse mail: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.EMAIL }}: </p>
                             <input type="email" id="email" name="email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Password input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.PASSWORD }}: </p>
                             <input type="password" id="new-password" name="new-password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Password confirmation input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Confirmez le mot de passe: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.REGISTER.MESSAGES.CONFIRM_PASSWORD }}: </p>
                             <input type="password" id="password-confirm" name="password-confirm" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                     </div>
@@ -50,8 +50,8 @@
                     </div>
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
-                        <Backbutton>Annuler</Backbutton> <!-- Cancel button -->
-                        <ValidateButton id="btn-validate" v-on:click="register">S'inscrire</ValidateButton> <!-- Validate button -->
+                        <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel button -->
+                        <ValidateButton id="btn-validate" v-on:click="register">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</ValidateButton> <!-- Validate button -->
                     </div>
                 </div>
             </div>
@@ -171,6 +171,7 @@ export default {
         Backbutton,
         ValidateButton
     },
+    data() { return {User}; },
     mounted() {
         setup();
     },
