@@ -85,7 +85,8 @@ const LANGUAGE = {
     PAGINATION: {
         USER_SELECTION: "user selection",
         MACHINE_SELECTION: "machine selection",
-        SCENARIO_SELECTION: "scenario selection"
+        SCENARIO_SELECTION: "scenario selection",
+        LOADING_ERROR: "Loading error"
     },
 
     HOME: {

@@ -101,7 +101,7 @@ function updatePagination(self, forceRefresh=false)
                 });
             });
         }).catch(err => { // display error message in the pagination content
-            self.obj.paginationContent[self.obj.pageNumber] = [{label: "Erreur de chargement : "+err.status, infos: null, selected: false}];
+            self.obj.paginationContent[self.obj.pageNumber] = [{label: User.LANGUAGE.DATA.PAGINATION.LOADING_ERROR+" : "+err.status, infos: null, selected: false}];
         });
     }
 }
