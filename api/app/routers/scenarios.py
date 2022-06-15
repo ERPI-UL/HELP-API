@@ -173,9 +173,28 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
 
 # TODO:TRANSLATE SUPPORT
 @router.get('/{idScenario}',summary="Récupère un scénario sous forme de JSON")
-async def getScenario(idScenario: int):
-    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('machine').prefetch_related('steps').prefetch_related('steps__type').prefetch_related('steps__targets', 'steps__position', 'steps__choice')
+async def getScenario(idScenario: int,iso639:str|None=None):
+    scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps__targets', 'steps__position', 'steps__choice','steps__type','machine')
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
+    if iso639 is None:
+        iso639 = "fr"
+    lang = await Models.Language.get(code=iso639)
+    scenarioText = await Models.ScenarioText.get(scenario=scenario, language=lang)
+    scenario.name = scenarioText.name
+    scenario.description = scenarioText.description
+    for step in scenario.steps:
+        stepText = await Models.StepText.get(step=step, language=lang)
+        step.label = stepText.label
+        step.description = stepText.description
+        if step.type.name == "choice":
+            choiceText = await Models.ChoiceText.get(choice=step.choice, language=lang)
+            step.choice.labelleft = choiceText.labelleft
+            step.choice.labelright = choiceText.labelright
+            step.choice.redirectleft = choiceText.redirectleft
+            step.choice.redirectright = choiceText.redirectright
+    machineText = await Models.MachineText.get(machine=scenario.machine, language=lang)
+    scenario.machine.name = machineText.name
+    scenario.machine.description = machineText.description
     return await scenarioToJSON(scenario)
 
 @router.get("/{idScenario}/languages", summary="Récupère les langues disponibles pour un scénario")
@@ -321,7 +340,7 @@ async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, ad
     stepDB.position.y = step.position.y
     stepDB.position.z = step.position.z
     await stepDB.position.save()
-    return await stepToJSON(await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice'))
+    return await stepToJSON(await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice', 'type'))
 
 
 @router.delete('/steps/{idStep}',summary="Supprime une étape du scénario")
@@ -331,7 +350,6 @@ async def deleteStep(idStep: int, user: Models.User = Depends(utils.InstructorRe
 
 
 async def scenarioToJSON(scenario):
-    scenario.machine = await scenario.machine.get()
     return {
         'id': scenario.id,
         'name': scenario.name,
@@ -358,7 +376,7 @@ async def stepToJSON(step):
         'label': step.label,
         'name': step.name,
         'position': await positionToJSON(step.position),
-        'type': (await step.type.values('name'))[0]['name'],
+        'type': step.type.name,
         'choice': await choiceToJSON(step.choice),
         'targets': [await targetToJSON(target) for target in step.targets]
     }
