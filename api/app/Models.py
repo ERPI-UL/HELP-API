@@ -76,7 +76,6 @@ class StepText(Model):
     id = fields.IntField(pk=True)
     label = fields.TextField()
     description = fields.TextField()
-    description = fields.TextField()
     language = fields.ForeignKeyField(
         'models.Language', related_name='stepTexts')
     step = fields.ForeignKeyField(
