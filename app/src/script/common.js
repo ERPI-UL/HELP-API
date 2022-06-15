@@ -23,7 +23,7 @@ export function stringTime(time) {
     let minutes = "";
     if (nbMinutes > 0) {
         minutes = `${Math.round(nbMinutes)} ${nbMinutes >= 2 ? User.LANGUAGE.DATA.TIME.MINUTES : User.LANGUAGE.DATA.TIME.MINUTE}`;
-        minutes += ` ${User.LANGUAGE.DATA.COMMON.WORDS.AND} `;
+        minutes += ` ${User.LANGUAGE.DATA.COMMON.AND} `;
     }
     let seconds = `${Math.round(nbSeconds)} ${nbSeconds >= 2 ? User.LANGUAGE.DATA.TIME.SECONDS : User.LANGUAGE.DATA.TIME.SECOND}`;
     return (minutes + seconds).toLowerCase();

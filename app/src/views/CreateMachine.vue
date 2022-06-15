@@ -409,7 +409,7 @@ function saveMachine() {
             if (++additionCounter >= machineTargs.length) {
                 // send the machine model if specified
                 saveMachineModel(res.id).then(() => {
-                    logMessage(User.LANGUAGE.DATA.MACHINE.LOGS.CREATED);
+                    logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.CREATED);
                     redirectHome();
                 }).catch(err => {
                     logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);

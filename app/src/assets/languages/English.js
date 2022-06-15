@@ -10,7 +10,6 @@ const LANGUAGE = {
         SAVE: "save",
         CANCEL: "cancel",
         VALIDATE: "validate",
-        REMOVE: "remove",
         BACK: "back",
         LOADING: "loading",
         SEARCH: "search",
@@ -51,7 +50,7 @@ const LANGUAGE = {
     },
 
     ROLES: {
-        ADMIN: "admin",
+        ADMIN: "administrator",
         TEACHER: "teacher",
         LEARNER: "learner",
         VISITOR: "visitor"
@@ -69,6 +68,7 @@ const LANGUAGE = {
         MODE: "mode",
         OPTIONAL: "optional",
 
+        LANGUAGE: "language",
         FIRSTNAME: "firstname",
         LASTNAME: "lastname",
         USERNAME: "username",
@@ -154,6 +154,10 @@ const LANGUAGE = {
             }
         },
         ACTIONS: {
+            REMOVE: {
+                TITLE: "remove machine",
+                DESCRIPTION: "Do you want to remove this machine ?"
+            },
             NEW: "new machine",
         },
         MESSAGES: {
@@ -224,7 +228,7 @@ const LANGUAGE = {
             STEP_DESCRIPTION: "step description",
             STEP_TARGETS: "step targets",
             STEP_TYPE: "step type",
-            BUTTON_CONFIG: "button configuration",
+            BUTTON_CONFIG: "buttons configuration",
             LEFT_BTN_TEXT: "left button text",
             LEFT_BTN_TARGET: "left button target",
             RIGHT_BTN_TEXT: "right button text",

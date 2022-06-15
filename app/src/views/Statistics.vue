@@ -43,9 +43,9 @@
                     </div>
                     <!-- AR/VR selection -->
                     <div class="flex md:justify-left justify-between md:mr-6">
-                        <h2 class="m-1 p-1">{{ User.LANGUAGE.DATA.COMMON.WORDS.MODE }}: </h2>
+                        <h2 class="m-1 p-1">{{ User.LANGUAGE.DATA.COMMON.MODE }}: </h2>
                         <select id="scenario-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
-                            <option value="mode_all">{{ User.LANGUAGE.DATA.COMMON.WORDS.ALL }}</option>
+                            <option value="mode_all">{{ User.LANGUAGE.DATA.COMMON.ALL }}</option>
                             <option value="mode_ar">AR</option>
                             <option value="mode_vr">VR</option>
                         </select>
@@ -126,7 +126,7 @@ function updateUserSelect(selectValue) {
     const userSelect = document.getElementById("user-select");
     let val = userSelect.value;
     userSelect.innerHTML = "";
-    const userOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.WORDS.ALL}];
+    const userOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.ALL}];
     availableUsers.forEach(user => userOptions.push(user));
     userOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 
@@ -150,7 +150,7 @@ function updateScenarioSelect(selectValue) {
     const scenarioSelect = document.getElementById("scenario-select");
     let val = scenarioSelect.value;
     scenarioSelect.innerHTML = "";
-    const scenarioOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.WORDS.ALL}];
+    const scenarioOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.ALL}];
     availableScenarios.forEach(scenario => scenarioOptions.push(scenario));
     scenarioOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 

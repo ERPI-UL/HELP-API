@@ -44,7 +44,7 @@
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
                         <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.EDIT }}</RedirectButton></template>
-                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.REMOVE }}</DangerousButton></template>
+                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.DELETE }}</DangerousButton></template>
                     </MachineCard>
                     <!-- Delete popup called when the remove button is pressed on a machine card -->
                     <ValidatePopup ref="delete-popup"></ValidatePopup>
@@ -129,7 +129,7 @@ function attachListeners(it) {
  */
 function removeMachine(id, caller) {
     const el = this.$refs["delete-popup"];
-    el.show("Supprimer une machine", "Voulez-vous supprimer "+(obj.machines.all.find(el => el.id == id).title)+" ?", "Annuler", "Supprimer");
+    el.show(User.LANGUAGE.DATA.MACHINES.ACTIONS.REMOVE.TITLE, User.LANGUAGE.DATA.MACHINES.ACTIONS.REMOVE.DESCRIPTION, User.LANGUAGE.DATA.ACTIONS.CANCEL, User.LANGUAGE.DATA.ACTIONS.DELETE);
     el.setPosition(caller);
     el.setCallback(() => {
         API.execute_logged(API.ROUTE.MACHINES+id, API.METHOD_DELETE, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
