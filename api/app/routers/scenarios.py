@@ -91,12 +91,17 @@ async def getMachines(page: int = 1, per_page: int = 10):
         'data': parse_obj_as(list[Models.MachineOut], machines)
     }
 
-# TODO:TRANSLATE SUPPORT
 @router.get('/machines/{machine_id}',summary="Récupérer une machine")
-async def getMachine(machine_id: int):
+async def getMachine(machine_id: int,iso639:str|None=None):
     machine = await Models.Machine.get(id=machine_id).prefetch_related('targets')
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
+    if iso639 is None:
+        iso639 = "fr"
+    lan = await Models.Language.get(code=iso639)
+    text = await Models.MachineText.get(machine=machine, language=lan)
+    machine.name = text.name
+    machine.description = text.description
     return await machineWithTargetsToJSON(machine)
 
 
