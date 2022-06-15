@@ -249,21 +249,27 @@ async def createStep(idScenario: int, step: Models.StepPost,iso639:str|None=None
         await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': stepDB.id}
 
-# TODO:TRANSLATE SUPPORT
 @router.put('/steps/{idStep}',summary="Met à jour une étape du scénario")
 @transactions.atomic()
-async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depends(utils.getAdminLevel)):
+async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
     stepDB = await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice')
     if not stepDB:
         raise HTTPException(status_code=404, detail="Step introuvable")
+    if iso639 is None:
+        iso639 = "fr"
+    lang = await Models.Language.get(code=iso639)
     stepDB.label = step.label
     stepDB.name = step.name
     stepDB.description = step.description
     stepDB.ordernumber = step.ordernumber
     stepDB.type = await Models.Type.get(name=step.type.name).first()
+    stepTextDB = await Models.StepText.get(step_id=stepDB.id, language=lang)
+    stepTextDB.label = step.label
+    stepTextDB.description = step.description
+    await stepTextDB.save()
     if step.type.name == 'choice':
         if stepDB.choice:
             stepDB.choice.labelleft = step.choice.option_left.label
@@ -271,8 +277,15 @@ async def updateStep(idStep: int, step: Models.StepPost, adminLevel: int = Depen
             stepDB.choice.redirectleft = step.choice.option_left.redirect
             stepDB.choice.redirectright = step.choice.option_right.redirect
             await stepDB.choice.save()
+            choiceTextDB = await Models.ChoiceText.get(choice_id=stepDB.choice.id, language=lang)
+            choiceTextDB.labelleft = step.choice.option_left.label
+            choiceTextDB.labelright = step.choice.option_right.label
+            choiceTextDB.redirectleft = step.choice.option_left.redirect
+            choiceTextDB.redirectright = step.choice.option_right.redirect
+            await choiceTextDB.save()
         else:
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+            await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=lang, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         await stepDB.save()
     else:
         stepDB.choice = None
