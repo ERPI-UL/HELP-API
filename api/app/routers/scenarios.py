@@ -186,7 +186,6 @@ async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.Ins
     await scenario.delete()
     return {'ok': 'scenario et objets référencés supprimés'}
 
-# TODO:TRANSLATE SUPPORT
 @router.post("/machines",summary="Créer une machine")
 async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
@@ -199,13 +198,18 @@ async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int =
     await Models.MachineText.create(machine=machineDB, language=lang, name=machine.name, description=machine.description)
     return await Models.MachineOut.from_tortoise_orm(machineDB)
 
-# TODO:TRANSLATE SUPPORT
 @router.put('/machines/{idMachine}',summary="Mettre à jour une machine")
-async def update_machine(idMachine: int, machine: Models.Machinein, adminLevel: int = Depends(utils.getAdminLevel)):
+async def update_machine(idMachine: int, machine: Models.Machinein,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    await Models.Machine.filter(id=idMachine).update(name=machine.name, description=machine.description)
+    if iso639 is None:
+        iso639 = "fr"
+    machineDB = await Models.Machine.get(id=idMachine)
+    machineDB.name = machine.name
+    machineDB.description = machine.description
+    await machineDB.save()
+    await Models.MachineText.filter(machine_id=machineDB.id,language_code=iso639).update(name=machine.name, description=machine.description)
     return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=idMachine))
 
 
