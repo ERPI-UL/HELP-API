@@ -25,7 +25,7 @@
             <div class="bottom-2 w-full md:block hidden">
                 <div class="flex flex-col m-4 p-2 bg-white rounded-lg shadow-lg border border-gray-200 m-auto w-fit">
                     <img class="w-full mx-auto w-80" src="../assets/images/grand_est.png" alt="" />
-                    <p class="font-semibold text-gray-600 my-auto mt-2 text-center">{{ User.LANGUAGE.DATA.HOME.WITH_GRANDEST_SUPPORT }}</p>
+                    <p class="font-semibold text-gray-600 my-auto mt-2 text-center">{{ User.LANGUAGE.DATA.ABOUT.MESSAGES.WITH_GRANDEST_SUPPORT }}</p>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 <div class="flex grow"></div>
                 <div class="flex flex-col m-4 p-2 bg-white rounded-lg shadow-lg border border-gray-200 m-auto max-w-full">
                     <img class="w-full mx-auto" src="../assets/images/grand_est.png" alt="" />
-                    <p class="font-semibold text-gray-600 my-auto mt-2 text-center">{{ User.LANGUAGE.DATA.HOME.WITH_GRANDEST_SUPPORT }}</p>
+                    <p class="font-semibold text-gray-600 my-auto mt-2 text-center">{{ User.LANGUAGE.DATA.ABOUT.MESSAGES.WITH_GRANDEST_SUPPORT }}</p>
                 </div>
             </div>
             <div class="flex flex-col grow min-h-0 min-w-0">

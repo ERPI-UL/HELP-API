@@ -58,7 +58,6 @@ const LANGUAGE = {
         DESCRIPTION: "home page of the indico website",
         FREQUENTLY_USED: "frequently used",
         QUICK_ACCESS: "quick access",
-        WITH_GRANDEST_SUPPORT: "with Grand Est region financial support",
         LAST_SESSION: "last session",
         NO_LAST_SESSION_FOUND: "no last session found"
     },
@@ -177,7 +176,11 @@ const LANGUAGE = {
     ABOUT: {
         TITLE: "about page",
         REDIRECT: "go to about",
-        DESCRIPTION: "See all the informations about Indico"
+        DESCRIPTION: "See all the informations about Indico",
+        MESSAGES: {
+            WITH_GRANDEST_SUPPORT: "with Grand Est region financial support",
+            INDICO_VERSION: "Indico - version {version}"
+        }
     }
 }
 
