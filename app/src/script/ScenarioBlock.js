@@ -1,3 +1,5 @@
+import User from "../script/User";
+
 /**
  * Returns a new HTML scenario block based on the given informations
  * @param {number} id id of the scenario block
@@ -36,32 +38,32 @@
     </div>
     <div class="flex flex-col grow p-1 rounded w-fit min-w-0 min-h-0 max-w-full">
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Identifiant de l'étape : </p>
+            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_ID} : </p>
             <input type="text" id="input-stepid-${id}" name="scenario-name" value="${name??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Titre de l'étape : </p>
+            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TITLE} : </p>
             <input type="text" id="input-stepname-${id}" name="scenario-title" value="${title??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Description de l'étape : </p>
+            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_DESCRIPTION} : </p>
             <textarea id="input-stepdesc-${id}" name="scenario-desc" rows="2" cols="30" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 min-w-0 min-h-0">${desc??""}</textarea>
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Cibles de l'étape : </p>
+            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TARGETS} : </p>
             <div id="steptargets-${id}" class="md:size-to-parent flex grow min-w-0 min-h-0 px-2 py-2 space-x-2 border border-gray-200 rounded-md text-base font-medium text-black">
                 <div class="edit-zone flex flex-col justify-left space-y-1">
                     <button onclick="window.indico.addStepTarget(${id});" id="steptargetsadd-${id}" class="bg-indigo-600 p-1 h-fit flex justify-left shadow rounded">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
-                        <p class="whitespace-nowrap text-white m-auto">Ajouter</p>
+                        <p class="whitespace-nowrap text-white m-auto">${User.LANGUAGE.DATA.ACTIONS.ADD}</p>
                     </button>
                     <button onclick="window.indico.removeStepTarget(${id});" id="steptargetsrem-${id}" class="bg-red-600 p-1 h-fit flex justify-left shadow rounded">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
                         </svg>
-                        <p class="whitespace-nowrap text-white center m-auto">Supprimer</p>
+                        <p class="whitespace-nowrap text-white center m-auto">${User.LANGUAGE.DATA.ACTIONS.REMOVE}</p>
                     </button>
                 </div>
                 <div id="steptargetscontainer-${id}" class="flex space-x-2 h-fit m-auto overflow-y-hidden overflow-x-scroll min-w-0 min-h-0">
@@ -70,22 +72,22 @@
             </div>
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Type d'étape : </p>
+            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TYPE} : </p>
             <select name="step-mode" value="${mode??"action"}" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 pr-10 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
-                <option value="action">Action</option>
-                <option value="info">Information</option>
-                <option value="choice">Choix</option>
+                <option value="action">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.ACTION}</option>
+                <option value="info">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.INFORMATION}</option>
+                <option value="choice">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.CHOICE}</option>
             </select>
         </div>
         <div id="btn-config-zone" class="flex flex-col justify-between mb-1 ml-2 p-1 bg-gray-50 border border-gray-100 rounded-md min-w-0 min-h-0" style="display: none;">
-            <h2 id="stepname-${id}" class="text-sm m-1 text-gray-500 font-extrabold">Configuration des boutons</h2>
+            <h2 id="stepname-${id}" class="text-sm m-1 text-gray-500 font-extrabold">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.BUTTON_CONFIG}</h2>
             <div style="border-bottom: solid 2px #F3F4F6;">
                 <div class="flex justify-between mb-1 min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Texte du bouton gauche : </p>
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.LEFT_BTN_TEXT} : </p>
                     <input type="text" name="btn-left-label" value="${btnInfos?.option_left?.label??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
                 </div>
                 <div class="flex justify-between mb-1 min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Étape cible du bouton gauche : </p>
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.LEFT_BTN_TARGET} : </p>
                     <select name="btn-left-redirect" value="${btnInfos?.option_left?.redirect??""}" class="redirect-btn h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 pr-8 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
 
                     </select>
@@ -93,11 +95,11 @@
             </div>
             <div>
                 <div class="flex justify-between mt-1 mb-1 min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Texte du bouton droit : </p>
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RIGHT_BTN_TEXT} : </p>
                     <input type="text" name="btn-right-label" value="${btnInfos?.option_right?.label??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
                 </div>
                 <div class="flex justify-between min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Étape cible du bouton droit : </p>
+                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RIGHT_BTN_TARGET} : </p>
                     <select name="btn-right-redirect" value="${btnInfos?.option_right?.redirect??""}" class="redirect-btn h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 pr-8 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
 
                     </select>
@@ -105,7 +107,7 @@
             </div>
         </div>
         <div class="justify-between mb-1">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Position du texte : </p>
+            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.TEXT_POSITION} : </p>
             <div class="flex justify-between">
                 <div class="flex">
                     <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">X: </p>
@@ -120,7 +122,7 @@
                     <input type="number" name="pos-z" id="input-stepposz-${id}" value="${pos!=undefined?pos.z:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
                 <div class="edit-zone flex">
-                    <button id="edit-position" class="bg-indigo-600 p-4 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg">Editer</button>
+                    <button id="edit-position" class="bg-indigo-600 p-4 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg">${User.LANGUAGE.DATA.ACTIONS.EDIT}</button>
                 </div>                
             </div>
         </div>
@@ -142,7 +144,7 @@ function createStepLink(callback) {
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 my-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
-        <p class="ml-1 my-auto font-semibold mb-0.5 mr-1">Insérer une étape</p>
+        <p class="ml-1 my-auto font-semibold mb-0.5 mr-1">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.INSERT_NEW_STEP}</p>
     </div>
     `;
     setTimeout(() => {

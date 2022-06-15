@@ -202,6 +202,45 @@ const LANGUAGE = {
                 DESCRIPTION: "Do you want to remove this scenario ?"
             },
             NEW: "new scenario",
+        },
+        MESSAGES: {
+            MAIN_INFORMATIONS: "main informations",
+            SCENARIO_NAME: "scenario's name",
+            SCENARIO_DESCRIPTION: "scenario's description",
+            TARGET_MACHINE: "target machine",
+            STEPS: "steps",
+            MODEL: "model",
+            START: "start",
+            END: "end",
+            ACTION: "action",
+            INFORMATION: "information",
+            CHOICE: "choice",
+
+            STEP_ID: "step identifier",
+            STEP_TITLE: "step title",
+            STEP_DESCRIPTION: "step description",
+            STEP_TARGETS: "step targets",
+            STEP_TYPE: "step type",
+            BUTTON_CONFIG: "button configuration",
+            LEFT_BTN_TEXT: "left button text",
+            LEFT_BTN_TARGET: "left button target",
+            RIGHT_BTN_TEXT: "right button text",
+            RIGHT_BTN_TARGET: "right button target",
+            TEXT_POSITION: "text position",
+            INSERT_NEW_STEP: "insert a new step",
+
+            SHOW_HIDE_CONTROLS: "show/hide controls",
+            RESET_VIEW: "reset view"
+        },
+        LOGS: {
+            SPECIFY_NAME: "Please specify a scenario name",
+            SPECIFY_DESCRIPTION: "Please specify a scenario description",
+            SELECT_MACHINE: "Please select a machine",
+            AVOID_MACHINE_NAME: "Please avoid specifying the machine in the scenario name",
+            CREATED: "Scenario successfully created",
+            ERROR_CREATION: "Error while creating the scenario",
+            MODIFIED: "Scenario successfully modified",
+            ERROR_MODIFICATION: "Error while modifying the scenario",
         }
     },
 
