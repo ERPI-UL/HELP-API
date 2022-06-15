@@ -16,7 +16,15 @@ const LANGUAGE = {
         CONNECT: "connect",
         MORE: "more",
         SELECT: "select",
-        SEE: "see"
+        SEE: "see",
+        CHANGE: "change",
+        SEND: "send",
+        RESET: "reset",
+        CHANGE: "change",
+    },
+
+    EVENTS: {
+        CONNECTED_TO: "Connected to {value}"
     },
 
     PAGES: {
@@ -39,14 +47,27 @@ const LANGUAGE = {
         TIME: "time"
     },
 
+    ROLES: {
+        ADMIN: "admin",
+        TEACHER: "teacher",
+        LEARNER: "learner",
+        VISITOR: "visitor"
+    },
+
     COMMON: {
-        WORDS: {
-            AND: "and",
-            OR: "or",
-            ALL: "all",
-            NONE: "none",
-            MODE: "mode"
-        },
+        AND: "and",
+        OR: "or",
+        ALL: "all",
+        NONE: "none",
+        MODE: "mode",
+        OPTIONAL: "optional",
+
+        FIRSTNAME: "firstname",
+        LASTNAME: "lastname",
+        USERNAME: "username",
+        PASSWORD: "password",
+        EMAIL: "email",
+        ROLE: "role",
 
         SCENARIO: "scenario",
         MACHINE: "machine",
@@ -54,12 +75,26 @@ const LANGUAGE = {
         STATISTIC: "statistic"
     },
 
+    PAGINATION: {
+        USER_SELECTION: "user selection"
+    },
+
     HOME: {
         DESCRIPTION: "home page of the indico website",
-        FREQUENTLY_USED: "frequently used",
-        QUICK_ACCESS: "quick access",
-        LAST_SESSION: "last session",
-        NO_LAST_SESSION_FOUND: "no last session found"
+        MESSAGES: {
+            FREQUENTLY_USED: "frequently used",
+            QUICK_ACCESS: "quick access",
+            LAST_SESSION: "last session",
+            NO_LAST_SESSION_FOUND: "no last session found",
+            MODAL: {
+                TITLE: "Indico - Web Interface",
+                DESCRIPTION: "This is the web interface of the Indico project. It allows you to manage your scenarios, machines and users.",
+            }
+        }
+    },
+
+    LOGIN: {
+        
     },
 
     STATISTICS: {
@@ -152,13 +187,21 @@ const LANGUAGE = {
     EASYCONNECT: {
         TITLE: "Easy Connect",
         REDIRECT: "connect a device",
-        DESCRIPTION: "connect a device to your account"
+        DESCRIPTION: "connect a device to your account",
+        MESSAGES: {
+            CONNECT_DEVICE: "connect a device",
+            DEVICE_CODE: "device code"
+        }
     },
 
     INVITE: {
         TITLE: "Invite a user",
         REDIRECT: "Invite",
-        DESCRIPTION: "Send an invite link to a future user"
+        DESCRIPTION: "Send an invite link to a future user",
+        MESSAGES: {
+            GENERATE_INVITE: "Generate invite",
+            VALIDATION_DELAY: "This invitation will be valid for 14 days from its creation date"
+        }
     },
 
     PROFILE: {
@@ -170,7 +213,13 @@ const LANGUAGE = {
     ADMIN: {
         TITLE: "administation",
         REDIRECT: "see admin panel",
-        DESCRIPTION: "see and manage the application"
+        DESCRIPTION: "see and manage the application",
+        MESSAGES: {
+            SELECT_USER: "Select a user",
+            CHANGE_ROLE: "Change role",
+            REMOVE_USER: "Remove user",
+            USER_SESSIONS: "User sessions",
+        }
     },
 
     ABOUT: {
@@ -180,6 +229,25 @@ const LANGUAGE = {
         MESSAGES: {
             WITH_GRANDEST_SUPPORT: "with Grand Est region financial support",
             INDICO_VERSION: "Indico - version {version}"
+        }
+    },
+
+    FORGOTPASSWORD: {
+        MESSAGES: {
+            FORGOT_PASSWORD: "Forgot password",
+            DESCRIPTION: "After entering your username or email, you will receive instructions to reset your password in the mailbox associated with your account.",
+        }
+    },
+
+    REGISTER: {
+        MESSAGES: {
+            CONFIRM_PASSWORD: "Confirm password",
+        }
+    },
+
+    RESET: {
+        MESSAGES: {
+            TITLE: "{action} password"
         }
     }
 }
