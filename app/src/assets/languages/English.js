@@ -21,6 +21,7 @@ const LANGUAGE = {
         SEND: "send",
         RESET: "reset",
         CHANGE: "change",
+        UPDATE: "update"
     },
 
     EVENTS: {
@@ -93,10 +94,6 @@ const LANGUAGE = {
                 DESCRIPTION: "This is the web interface of the Indico project. It allows you to manage your scenarios, machines and users.",
             }
         }
-    },
-
-    LOGIN: {
-        
     },
 
     STATISTICS: {
@@ -209,7 +206,12 @@ const LANGUAGE = {
     PROFILE: {
         TITLE: "my profile",
         REDIRECT: "my profile",
-        DESCRIPTION: "See and modify your profile"
+        DESCRIPTION: "See and modify your profile",
+        MESSAGES: {
+            MODIFY_PASSWORD: "modify password",
+            OLD_PASSWORD: "old password",
+            NEW_PASSWORD: "new password",
+        }
     },
 
     ADMIN: {
