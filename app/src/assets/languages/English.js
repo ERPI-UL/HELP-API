@@ -313,6 +313,16 @@ const LANGUAGE = {
     REGISTER: {
         MESSAGES: {
             CONFIRM_PASSWORD: "Confirm password",
+        },
+        LOGS: {
+            SPECIFY_FIRSTNAME: "Please specify a firstname",
+            SPECIFY_LASTNAME: "Please specify a lastname",
+            SPECIFY_USERNAME: "Please specify a username",
+            SPECIFY_EMAIL: "Please specify a valid email",
+            SPECIFY_PASSWORD: "Please specify a password of at least 8 characters",
+            SPECIFY_CONFIRM_PASSWORD: "Both passwords must match",
+            CREATION_SUCCESS: "Account successfully created",
+            CREATION_ERROR: "Error while creating the account"
         }
     },
 
