@@ -55,7 +55,7 @@
             </div>
             <div class="flex grow-0 m-1 mt-2 justify-between"> <!-- BUTTONS -->
                 <!-- cancel button -->
-                <CancelButton v-on:click="this.hide();">Annuler</CancelButton>
+                <CancelButton v-on:click="this.hide();">{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</CancelButton>
                 <!-- refresh button (Mobile) -->
                 <span class="refresh-btn border border-2 rounded border-indigo-600 bg-indigo-600 m-auto md:hidden block shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -63,7 +63,7 @@
                     </svg>
                 </span>
                 <!-- validation button -->
-                <ValidateButton v-on:click="this.validate();">Valider</ValidateButton>
+                <ValidateButton v-on:click="this.validate();">{{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }}</ValidateButton>
             </div>
         </div>
     </div>
@@ -119,7 +119,7 @@ class PaginationController {
 export default {
     name: "PaginationChoice",
     props: ["displayAttribute", "identifier", "selectedValues", "callback", "route", "selectID", "title", "darkMode"],
-    data: () => {return {obj: new PaginationController()}},
+    data: () => {return {obj: new PaginationController(), User}},
     components: {
         CancelButton,
         ValidateButton
