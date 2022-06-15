@@ -84,19 +84,20 @@ function logMessage(msg) {
 function onValidate() {
     const input = document.getElementById("input-username-email");
     if (input.value.trim() == "") {
-        logMessage("Veuillez renseigner un nom d'utilisateur ou un email");
+        logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.SPECIFY_USERNAME_EMAIL);
         input.focus();
         return;
     }
     API.execute(API.ROUTE.RESET+input.value, API.METHOD_GET).then(res => {
         logMessage(res.message);
+        redirectHome();
     }).catch(err => {
         switch (err.status) {
             case 404:
-                logMessage("Nom d'utilisateur ou email inconnu.");
+                logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.INCORRECT_USERNAME_EMAIL);
                 break;
             default:
-                logMessage("Erreur lors de la communication au serveur.");
+                logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.SERVER_ERROR);
                 break;
         }
     });

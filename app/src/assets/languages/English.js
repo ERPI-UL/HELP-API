@@ -301,6 +301,11 @@ const LANGUAGE = {
         MESSAGES: {
             FORGOT_PASSWORD: "Forgot password",
             DESCRIPTION: "After entering your username or email, you will receive instructions to reset your password in the mailbox associated with your account.",
+        },
+        LOGS: {
+            SPECIFY_USERNAME_EMAIL: "Please specify a username or email",
+            INCORRECT_USERNAME_EMAIL: "Incorrect username or email",
+            SERVER_ERROR: "Error during server communication"
         }
     },
 
