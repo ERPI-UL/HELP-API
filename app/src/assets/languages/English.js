@@ -26,7 +26,8 @@ const LANGUAGE = {
         STATISTICS: "statistics",
         HOME: "home",
         PROFILE: "profile",
-        OTHER: "other"
+        OTHER: "other",
+        USERS: "users"
     },
 
     TIME: {
@@ -43,7 +44,8 @@ const LANGUAGE = {
             AND: "and",
             OR: "or",
             ALL: "all",
-            NONE: "none"
+            NONE: "none",
+            MODE: "mode"
         },
 
         SCENARIO: "scenario",
@@ -70,13 +72,27 @@ const LANGUAGE = {
 
             },
             TESTING: {
-                TITLE: "testing mode",
+                TITLE: "evaluation mode",
                 REDIRECT: "see my stats",
-                DESCRIPTION: "see my stats in testing mode",
+                DESCRIPTION: "see my stats in evaluation mode",
 
             },
         },
         ABS_TIME: "absolute time",
+        MESSAGES: {
+            LOADING_DATA: {
+                TITLE: "loading ...",
+                DESCRIPTION: "loading statistics",
+            },
+            NO_DATA: {
+                TITLE: "no data",
+                DESCRIPTION: "no data available for the selected filters",
+            },
+            PROBLEM_DATA: {
+                TITLE: "Houston, we have a problem",
+                DESCRIPTION: "Cannot retreive statistics from the server",
+            }
+        }
     },
 
     MACHINES: {
@@ -96,6 +112,9 @@ const LANGUAGE = {
                 REDIRECT: "create a machine",
                 DESCRIPTION: "create a new machine"
             }
+        },
+        ACTIONS: {
+            NEW: "new machine",
         }
     },
 
