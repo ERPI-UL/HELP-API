@@ -1,15 +1,40 @@
 import API from "./API";
 import English from "../assets/languages/English";
+import French from "../assets/languages/French";
 import { CapitalizeObject } from "../script/common";
 
 /**
  * User class, used to store user information.
  */
 class User {
-    static LANGUAGE = {CODE: "en", DATA: CapitalizeObject(English)};
+    static get AVAILABLE_LANGUAGES() { return [
+        {
+            NAME: "English",
+            CODE: "en",
+            FLAG: "🇬🇧",
+            DATA: CapitalizeObject(English)
+        },
+        {
+            NAME: "Français",
+            CODE: "fr",
+            FLAG: "🇫🇷",
+            DATA: CapitalizeObject(French)
+        }
+    ];};
+
+    static LANGUAGE = this.AVAILABLE_LANGUAGES[0];
 
     static LoadLanguage(language) {
-        User.LANGUAGE = CapitalizeObject(language);
+        if (!language) return; // no language set, no need to load anything
+
+        if (typeof(language) == "string") { // language code, get the language object from it
+            this.LoadLanguage(this.AVAILABLE_LANGUAGES.find(l => l.CODE === language) ?? this.AVAILABLE_LANGUAGES.find(l => l.NAME === language));
+            return;
+        }
+        if (language.CODE) { // language object, load it
+            localStorage.setItem("language", language.CODE);
+            User.LANGUAGE = language;
+        }
     }
 
     // User available permissions
@@ -191,6 +216,10 @@ class User {
     // is the user equal to another user (compares the tokens)
     equals(user) {return this.token.token == user.token.token;}
 }
+
+// LANGUAGE SETUP
+const language = localStorage.getItem("language");
+if (language) User.LoadLanguage(language);
 
 window.User = User; // for debug purposes
 export default User;

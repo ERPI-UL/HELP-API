@@ -18,6 +18,13 @@
                             <h2 class="text-indigo-600 font-bold text-2xl my-2 mx-8">{{User.currentUser.username}}</h2>
                         </div>
                     </div>
+                    <!-- Language input zone -->
+                    <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
+                        <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{User.LANGUAGE.DATA.COMMON.LANGUAGE}}: </p>
+                        <select name="language" id="input-language" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 pr-10">
+                            <option v-for="language in User.AVAILABLE_LANGUAGES" :value="language.CODE">{{language.NAME+" "+language.FLAG}}</option>
+                        </select>
+                    </div>
                     <!-- Username input zone -->
                     <div class="flex md:flex-row flex-col justify-between m-2 max-w-full">
                         <p class="text-gray-500 font-base md:text-lg text-md p-2 mr-8">{{User.LANGUAGE.DATA.COMMON.USERNAME}}: </p>
@@ -41,7 +48,7 @@
                 </div>
                 <!-- Basic informations buttons -->
                 <div class="flex justify-between h-fit pt-2 pb-4">
-                    <DangerousButton id="delete-btn" v-on:click="removeAccount">{{User.LANGUAGE.DATA.ACTIONS.REMOVE}}</DangerousButton> <!-- Remove user button -->
+                    <DangerousButton id="delete-btn" v-on:click="removeAccount">{{User.LANGUAGE.DATA.ACTIONS.DELETE}}</DangerousButton> <!-- Remove user button -->
                     <ValidateButton v-on:click="onAccountSave"> <!-- Update informations button -->
                         {{User.LANGUAGE.DATA.ACTIONS.UPDATE}}
                     </ValidateButton>
@@ -187,6 +194,14 @@ export default {
     setup() {
         if (!User.isConnected(User.currentUser)) {window.location.href = "/login";}
         return {icon: {user: UserIcon}, User};
+    },
+    mounted() {
+        const langInput = document.getElementById("input-language");
+        langInput.value = User.LANGUAGE.CODE;
+        langInput.addEventListener("change", ev => {
+            User.LoadLanguage(ev.target.value);
+            this.$forceUpdate();
+        });
     },
     methods: {onAccountSave, onMDPChange, removeAccount}
 };
