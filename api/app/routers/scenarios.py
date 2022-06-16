@@ -12,7 +12,7 @@ router = APIRouter()
 
 # TODO:TRANSLATE SUPPORT
 @router.get("/", response_model=Models.pagination,summary="Récupérer la liste des scénarios , avec de la pagination")
-async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10,iso639:str|None=None,):
+async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10,lang:str|None=None,):
     # check for zero per_page
     if per_page == 0:
         per_page = 1
@@ -32,16 +32,16 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
-    if iso639 is None:
-        iso639 = "fr"
-    language = await Models.Language.get(code=iso639)
+    if lang is None:
+        lang = "fr"
+    language = await Models.Language.get(code=lang)
     for scenario in scenarios:
         for text in scenario.texts:
-            if text.language.code == iso639:
+            if text.language.code == lang:
                 scenario.name = text.name
                 scenario.description = text.description
         for machineText in scenario.machine.texts:
-            if machineText.language.code == iso639:
+            if machineText.language.code == lang:
                 scenario.machine.name = machineText.name
                 scenario.machine.description = machineText.description
     return {
@@ -53,11 +53,11 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
     }
 
 @router.put("/{idScenario}",summary="Mettre a jour les informations d'un scenario")
-async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
+async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,lang:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     scenarioInDB = await Models.Scenario.get(id=idScenario)
-    if iso639 is None:
-        iso639 = "fr"
-    scenarioText = await Models.ScenarioText.get(scenario=scenarioInDB, language__code=iso639)
+    if lang is None:
+        lang = "fr"
+    scenarioText = await Models.ScenarioText.get(scenario=scenarioInDB, language__code=lang)
     if(scenario.name.strip() != ""):
         scenarioInDB.name = scenario.name
         scenarioText.name = scenario.name
@@ -72,20 +72,20 @@ async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,iso63
 
 
 @router.delete('/machines/{machine_id}',summary="Supprimer une machine")
-async def delete_machine(machine_id: int,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
+async def delete_machine(machine_id: int,lang:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
         raise HTTPException(status_code=404, detail="Machine introuvable")
-    if iso639 is None:
+    if lang is None:
         await machine.delete()
     else:
-        language = await Models.Language.get(code=iso639)
+        language = await Models.Language.get(code=lang)
         await Models.MachineText.filter(machine=machine, language=language).delete()
     await machine.delete()
     return {'ok': 'machine supprimée'}
 
 @router.get('/machines', response_model=Models.pagination,summary="Récupérer la liste des machines , avec de la pagination")
-async def getMachines(page: int = 1, per_page: int = 10,iso639:str|None=None):
+async def getMachines(page: int = 1, per_page: int = 10,lang:str|None=None):
     machine_count = await Models.Machine.all().count()
     if machine_count < per_page:
         per_page = machine_count
@@ -98,18 +98,18 @@ async def getMachines(page: int = 1, per_page: int = 10,iso639:str|None=None):
         lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page non trouvée")
-    if iso639 is None:
-        iso639 = "fr"
+    if lang is None:
+        lang = "fr"
     machines = await Models.Machine.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('texts','texts__language')
     for machine in machines:
-        # text = (x for x in machine.texts if machine.texts.language.code == iso639)
-        # text = next((x for x in machine.texts if machine.texts.language.code == iso639), None)
+        # text = (x for x in machine.texts if machine.texts.language.code == lang)
+        # text = next((x for x in machine.texts if machine.texts.language.code == lang), None)
         # print(text)
         # if text:
         #     machine.name = text.name
         #     machine.description = text.description
         for text in machine.texts:
-            if text.language.code == iso639:
+            if text.language.code == lang:
                 machine.name = text.name
                 machine.description = text.description
     return {
@@ -121,13 +121,13 @@ async def getMachines(page: int = 1, per_page: int = 10,iso639:str|None=None):
     }
 
 @router.get('/machines/{machine_id}',summary="Récupérer une machine")
-async def getMachine(machine_id: int,iso639:str|None=None):
+async def getMachine(machine_id: int,lang:str|None=None):
     machine = await Models.Machine.get(id=machine_id).prefetch_related('targets')
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
-    if iso639 is None:
-        iso639 = "fr"
-    language = await Models.Language.get(code=iso639)
+    if lang is None:
+        lang = "fr"
+    language = await Models.Language.get(code=lang)
     text = await Models.MachineText.get(machine=machine, language=language)
     machine.name = text.name
     machine.description = text.description
@@ -204,12 +204,12 @@ async def updateTarget(target_id: int, target: Models.TargetPost, user: Models.U
     return {'ok': 'Cible mise à jour'}
 
 @router.get('/{idScenario}',summary="Récupère un scénario sous forme de JSON")
-async def getScenario(idScenario: int,iso639:str|None=None):
+async def getScenario(idScenario: int,lang:str|None=None):
     scenario = await Models.Scenario.get(id=idScenario).prefetch_related('steps__targets', 'steps__position', 'steps__choice','steps__type','machine')
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
-    if iso639 is None:
-        iso639 = "fr"
-    language = await Models.Language.get(code=iso639)
+    if lang is None:
+        lang = "fr"
+    language = await Models.Language.get(code=lang)
     scenarioText = await Models.ScenarioText.get(scenario=scenario, language=language)
     scenario.name = scenarioText.name
     scenario.description = scenarioText.description
@@ -235,15 +235,15 @@ async def getScenarioLanguages(idScenario: int):
 
 @router.delete('/{idScenario}',summary="Supprimer un scénario")
 @transactions.atomic()
-async def delete_scenario(idScenario: int,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
+async def delete_scenario(idScenario: int,lang:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
     # on différentie la suppression du scénario d'une traduction du scenario
-    if iso639 is None:
+    if lang is None:
         await scenario.delete()
     else:
-        language = await Models.Language.get(code=iso639)
+        language = await Models.Language.get(code=lang)
         await Models.ScenarioText.filter(scenario_id=idScenario,language=language).delete()
         await Models.StepText.filter(step__scenario_id=idScenario,language=language).delete()
         await Models.ChoiceText.filter(choice__step__scenario_id=idScenario,language=language).delete()
@@ -251,41 +251,41 @@ async def delete_scenario(idScenario: int,iso639:str|None=None, user: Models.Use
 
 @router.post("/machines",summary="Créer une machine")
 @transactions.atomic()
-async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int = Depends(utils.getAdminLevel)):
+async def create_machine(machine: Models.Machinein,lang:str, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    if iso639 is None:
-        iso639 = "fr"
-    language = await Models.Language.get(code=iso639)
+    if lang is None:
+        lang = "fr"
+    language = await Models.Language.get(code=lang)
     machineDB = await Models.Machine.create(name=machine.name, description=machine.description)
     await Models.MachineText.create(machine=machineDB, language=language, name=machine.name, description=machine.description)
     return await Models.MachineOut.from_tortoise_orm(machineDB)
 
 @router.put('/machines/{idMachine}',summary="Mettre à jour une machine")
-async def update_machine(idMachine: int, machine: Models.Machinein,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
+async def update_machine(idMachine: int, machine: Models.Machinein,lang:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    if iso639 is None:
-        iso639 = "fr"
+    if lang is None:
+        lang = "fr"
     machineDB = await Models.Machine.get(id=idMachine)
     machineDB.name = machine.name
     machineDB.description = machine.description
     await machineDB.save()
-    await Models.MachineText.filter(machine_id=machineDB.id,language_code=iso639).update(name=machine.name, description=machine.description)
+    await Models.MachineText.filter(machine_id=machineDB.id,language_code=lang).update(name=machine.name, description=machine.description)
     return await Models.Machinein.from_tortoise_orm(await Models.Machine.get(id=idMachine))
 
 
 @router.post('/',summary="Créer un scénario dans la base de données depuis un JSON")
 @transactions.atomic()
-async def createScenario(scenario: Models.ScenarioPost,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
-    if iso639 is None:
-        iso639 = "fr"
+async def createScenario(scenario: Models.ScenarioPost,lang:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
+    if lang is None:
+        lang = "fr"
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    language = await Models.Language.get(code=iso639)
+    language = await Models.Language.get(code=lang)
     scenarioDB = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
     await Models.ScenarioText.create(scenario_id=scenarioDB.id, language=language, name=scenario.name, description=scenario.description)
     for step in scenario.steps:
@@ -304,13 +304,13 @@ async def createScenario(scenario: Models.ScenarioPost,iso639:str|None=None, adm
 
 @router.post('/{idScenario}/steps',summary="Ajoute une nouvelle étape au scénario")
 @transactions.atomic()
-async def createStep(idScenario: int, step: Models.StepPost,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
+async def createStep(idScenario: int, step: Models.StepPost,lang:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    if iso639 is None:
-        iso639 = "fr"
-    language = await Models.Language.get(code=iso639)
+    if lang is None:
+        lang = "fr"
+    language = await Models.Language.get(code=lang)
     scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
@@ -329,16 +329,16 @@ async def createStep(idScenario: int, step: Models.StepPost,iso639:str|None=None
 
 @router.put('/steps/{idStep}',summary="Met à jour une étape du scénario")
 @transactions.atomic()
-async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
+async def updateStep(idStep: int, step: Models.StepPost,lang:str|None=None, adminLevel: int = Depends(utils.getAdminLevel)):
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
     stepDB = await Models.Step.get(id=idStep).prefetch_related('targets', 'position', 'choice')
     if not stepDB:
         raise HTTPException(status_code=404, detail="Step introuvable")
-    if iso639 is None:
-        iso639 = "fr"
-    language = await Models.Language.get(code=iso639)
+    if lang is None:
+        lang = "fr"
+    language = await Models.Language.get(code=lang)
     stepDB.label = step.label
     stepDB.name = step.name
     stepDB.description = step.description
@@ -383,11 +383,11 @@ async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, ad
 
 
 @router.delete('/steps/{idStep}',summary="Supprime une étape du scénario")
-async def deleteStep(idStep: int,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
-    if iso639 is None:
+async def deleteStep(idStep: int,lang:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
+    if lang is None:
         await Models.Step.filter(id=idStep).delete()
     else:
-        language = await Models.Language.get(code=iso639)
+        language = await Models.Language.get(code=lang)
         await Models.StepText.filter(step_id=idStep, language=language).delete()
     return {'ok': 'étape supprimée'}
 
