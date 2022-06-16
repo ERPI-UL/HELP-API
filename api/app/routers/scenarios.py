@@ -34,6 +34,7 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         raise HTTPException(status_code=404, detail="Page not found")
     if iso639 is None:
         iso639 = "fr"
+    language = await Models.Language.get(code=iso639)
     for scenario in scenarios:
         for text in scenario.texts:
             if text.language.code == iso639:
@@ -48,7 +49,7 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         'per_page': per_page,
         'current_page': page,
         'last_page': lastPage,
-        'data': [await shortScenarioToJSON(scenario) for scenario in scenarios]
+        'data': [await shortScenarioToJSON(scenario,language) for scenario in scenarios]
     }
 
 @router.put("/{idScenario}",summary="Mettre a jour les informations d'un scenario")
@@ -126,11 +127,11 @@ async def getMachine(machine_id: int,iso639:str|None=None):
         raise HTTPException(status_code=404, detail="Machine not found")
     if iso639 is None:
         iso639 = "fr"
-    lan = await Models.Language.get(code=iso639)
-    text = await Models.MachineText.get(machine=machine, language=lan)
+    language = await Models.Language.get(code=iso639)
+    text = await Models.MachineText.get(machine=machine, language=language)
     machine.name = text.name
     machine.description = text.description
-    return await machineWithTargetsToJSON(machine)
+    return await machineWithTargetsToJSON(machine,language)
 
 
 @router.get('/machines/{machine_id}/model', response_class=FileResponse,summary="Récupérer le modèle 3D de la machine au format GLTF Binaire .glb")
@@ -208,24 +209,24 @@ async def getScenario(idScenario: int,iso639:str|None=None):
     # scenario2 = await Models.Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     if iso639 is None:
         iso639 = "fr"
-    lang = await Models.Language.get(code=iso639)
-    scenarioText = await Models.ScenarioText.get(scenario=scenario, language=lang)
+    language = await Models.Language.get(code=iso639)
+    scenarioText = await Models.ScenarioText.get(scenario=scenario, language=language)
     scenario.name = scenarioText.name
     scenario.description = scenarioText.description
     for step in scenario.steps:
-        stepText = await Models.StepText.get(step=step, language=lang)
+        stepText = await Models.StepText.get(step=step, language=language)
         step.label = stepText.label
         step.description = stepText.description
         if step.type.name == "choice":
-            choiceText = await Models.ChoiceText.get(choice=step.choice, language=lang)
+            choiceText = await Models.ChoiceText.get(choice=step.choice, language=language)
             step.choice.labelleft = choiceText.labelleft
             step.choice.labelright = choiceText.labelright
             step.choice.redirectleft = choiceText.redirectleft
             step.choice.redirectright = choiceText.redirectright
-    machineText = await Models.MachineText.get(machine=scenario.machine, language=lang)
+    machineText = await Models.MachineText.get(machine=scenario.machine, language=language)
     scenario.machine.name = machineText.name
     scenario.machine.description = machineText.description
-    return await scenarioToJSON(scenario)
+    return await scenarioToJSON(scenario,language)
 
 @router.get("/{idScenario}/languages", summary="Récupère les langues disponibles pour un scénario")
 async def getScenarioLanguages(idScenario: int):
@@ -256,9 +257,9 @@ async def create_machine(machine: Models.Machinein,iso639:str, adminLevel: int =
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     if iso639 is None:
         iso639 = "fr"
-    lang = await Models.Language.get(code=iso639)
+    language = await Models.Language.get(code=iso639)
     machineDB = await Models.Machine.create(name=machine.name, description=machine.description)
-    await Models.MachineText.create(machine=machineDB, language=lang, name=machine.name, description=machine.description)
+    await Models.MachineText.create(machine=machineDB, language=language, name=machine.name, description=machine.description)
     return await Models.MachineOut.from_tortoise_orm(machineDB)
 
 @router.put('/machines/{idMachine}',summary="Mettre à jour une machine")
@@ -284,9 +285,9 @@ async def createScenario(scenario: Models.ScenarioPost,iso639:str|None=None, adm
     if adminLevel < utils.Permission.INSTRUCTOR.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
-    lang = await Models.Language.get(code=iso639)
+    language = await Models.Language.get(code=iso639)
     scenarioDB = await Models.Scenario.create(name=scenario.name, description=scenario.description, machine=await Models.Machine.get(id=scenario.machine.id))
-    await Models.ScenarioText.create(scenario_id=scenarioDB.id, language=lang, name=scenario.name, description=scenario.description)
+    await Models.ScenarioText.create(scenario_id=scenarioDB.id, language=language, name=scenario.name, description=scenario.description)
     for step in scenario.steps:
         position = await Models.Position.create(x=step.position.x, y=step.position.y, z=step.position.z)
         type = await Models.Type.get(name=step.type.name).first()
@@ -294,9 +295,9 @@ async def createScenario(scenario: Models.ScenarioPost,iso639:str|None=None, adm
                              name=step.name, description=step.description, ordernumber=step.ordernumber)
         if step.type.name == 'choice':
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
-            await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=lang, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+            await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=language, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         await stepDB.save()
-        await Models.StepText.create(step_id=stepDB.id, language=lang, label=step.label, description=step.description)
+        await Models.StepText.create(step_id=stepDB.id, language=language, label=step.label, description=step.description)
         for target in step.targets:
             await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': scenarioDB.id}
@@ -309,7 +310,7 @@ async def createStep(idScenario: int, step: Models.StepPost,iso639:str|None=None
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough rights")
     if iso639 is None:
         iso639 = "fr"
-    lang = await Models.Language.get(code=iso639)
+    language = await Models.Language.get(code=iso639)
     scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
@@ -319,9 +320,9 @@ async def createStep(idScenario: int, step: Models.StepPost,iso639:str|None=None
                          name=step.name, description=step.description, ordernumber=step.ordernumber)
     if step.type.name == 'choice':
         stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
-        await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=lang, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+        await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=language, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
     await stepDB.save()
-    await Models.StepText.create(step_id=stepDB.id, language=lang, label=step.label, description=step.description)
+    await Models.StepText.create(step_id=stepDB.id, language=language, label=step.label, description=step.description)
     for target in step.targets:
         await stepDB.targets.add(await Models.Target.get(id=target))
     return {'id': stepDB.id}
@@ -337,13 +338,13 @@ async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, ad
         raise HTTPException(status_code=404, detail="Step introuvable")
     if iso639 is None:
         iso639 = "fr"
-    lang = await Models.Language.get(code=iso639)
+    language = await Models.Language.get(code=iso639)
     stepDB.label = step.label
     stepDB.name = step.name
     stepDB.description = step.description
     stepDB.ordernumber = step.ordernumber
     stepDB.type = await Models.Type.get(name=step.type.name).first()
-    stepTextDB = await Models.StepText.get(step_id=stepDB.id, language=lang)
+    stepTextDB = await Models.StepText.get(step_id=stepDB.id, language=language)
     stepTextDB.label = step.label
     stepTextDB.description = step.description
     await stepTextDB.save()
@@ -354,7 +355,7 @@ async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, ad
             stepDB.choice.redirectleft = step.choice.option_left.redirect
             stepDB.choice.redirectright = step.choice.option_right.redirect
             await stepDB.choice.save()
-            choiceTextDB = await Models.ChoiceText.get(choice_id=stepDB.choice.id, language=lang)
+            choiceTextDB = await Models.ChoiceText.get(choice_id=stepDB.choice.id, language=language)
             choiceTextDB.labelleft = step.choice.option_left.label
             choiceTextDB.labelright = step.choice.option_right.label
             choiceTextDB.redirectleft = step.choice.option_left.redirect
@@ -362,7 +363,7 @@ async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, ad
             await choiceTextDB.save()
         else:
             stepDB.choice = await Models.Choice.create(labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label, redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
-            await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=lang, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
+            await Models.ChoiceText.create(choice_id=stepDB.choice.id, language=language, labelleft=step.choice.option_left.label, labelright=step.choice.option_right.label,redirectleft=step.choice.option_left.redirect, redirectright=step.choice.option_right.redirect)
         await stepDB.save()
     else:
         stepDB.choice = None
@@ -391,22 +392,24 @@ async def deleteStep(idStep: int,iso639:str|None=None, user: Models.User = Depen
     return {'ok': 'étape supprimée'}
 
 
-async def scenarioToJSON(scenario):
+async def scenarioToJSON(scenario,language=None):
     return {
         'id': scenario.id,
         'name': scenario.name,
         'description': scenario.description,
-        'machine': await machineToJSON(scenario.machine),
+        'language': language.code if language else None,
+        'machine': await machineToJSON(scenario.machine,language),
         'steps': [await stepToJSON(step) for step in scenario.steps]
     }
 
 
-async def shortScenarioToJSON(scenario):
+async def shortScenarioToJSON(scenario,language=None):
     return {
         'id': scenario.id,
         'name': scenario.name,
         'description': scenario.description,
-        'machine': await machineToJSON(scenario.machine)
+        'language': language.code if language else None,
+        'machine': await machineToJSON(scenario.machine,language)
     }
 
 
@@ -446,11 +449,12 @@ async def choiceToJSON(choice: Models.Choice):
         }
 
 
-async def machineToJSON(machine):
+async def machineToJSON(machine,language=None):
     return {
         'id': machine.id,
         'name': machine.name,
-        'description': machine.description
+        'description': machine.description,
+        'language': language.code if language else None,
     }
 
 
@@ -460,7 +464,7 @@ async def positionToJSON(position: Models.Position):
     return {'x': position.x, 'y': position.y, 'z': position.z}
 
 
-async def machineWithTargetsToJSON(machine):
+async def machineWithTargetsToJSON(machine,language=None):
     targets = []
     for target in machine.targets:
         targets.append({'id': target.id, 'name': target.name})
@@ -468,5 +472,6 @@ async def machineWithTargetsToJSON(machine):
         'id': machine.id,
         'name': machine.name,
         'description': machine.description,
+        'language': language.code if language else None,
         'targets': targets
     }
