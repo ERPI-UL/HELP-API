@@ -123,14 +123,15 @@ function onValidate() {
         }
         else {
             let user = User.fromToken({token: data.access_token, type: data.token_type})
+            User.saveUser(user);
             user.fetchInformations(logMessage).then(user => {
                 logMessage(User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", user.username));
                 btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.VALIDATE;
-                User.saveUser(user);
                 redirectHome();
             }).catch(err => {
                 logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 console.error(err);
+                redirectHome();
             });
         }
     }).catch(err => {

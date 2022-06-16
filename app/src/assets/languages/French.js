@@ -68,7 +68,7 @@ const LANGUAGE = {
         MODE: "mode",
         OPTIONAL: "optionel",
 
-        LANGUAGE: "langage",
+        LANGUAGE: "langue",
         FIRSTNAME: "prénom",
         LASTNAME: "nom",
         USERNAME: "nom d'utilisateur",
