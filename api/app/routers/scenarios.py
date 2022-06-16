@@ -52,7 +52,6 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
     }
 
 @router.put("/{idScenario}",summary="Mettre a jour les informations d'un scenario")
-@transactions.atomic()
 async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     scenarioInDB = await Models.Scenario.get(id=idScenario)
     if iso639 is None:
@@ -72,10 +71,15 @@ async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,iso63
 
 
 @router.delete('/machines/{machine_id}',summary="Supprimer une machine")
-async def delete_machine(machine_id: int, user: Models.User = Depends(utils.InstructorRequired)):
+async def delete_machine(machine_id: int,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     machine = await Models.Machine.get(id=machine_id)
     if not machine:
         raise HTTPException(status_code=404, detail="Machine introuvable")
+    if iso639 is None:
+        await machine.delete()
+    else:
+        language = await Models.Language.get(code=iso639)
+        await Models.MachineText.filter(machine=machine, language=language).delete()
     await machine.delete()
     return {'ok': 'machine supprimée'}
 
@@ -175,7 +179,10 @@ async def createTarget(machine_id: int, name: str = Body(..., embed=True), user:
     target = Models.Target(name=name, machine=machine)
     await target.save()
     return parse_obj_as(Models.TargetOut, target)
-
+@router.get('/machines/{machine_id}/languages',response_model=list[Models.LanguageOut],summary="Récupérer les langues disponibles pour une machine")
+async def getMachineLanguages(machine_id: int):
+    texts = await Models.MachineText.filter(machine_id=machine_id).prefetch_related('language')
+    return [parse_obj_as(Models.LanguageOut, text.language) for text in texts]
 
 @router.delete('/machines/targets/{target_id}',summary="Supprimer une cible")
 async def deleteTarget(target_id: int, user: Models.User = Depends(utils.InstructorRequired)):
@@ -226,11 +233,19 @@ async def getScenarioLanguages(idScenario: int):
     return [parse_obj_as(Models.LanguageOut, text.language) for text in texts]
 
 @router.delete('/{idScenario}',summary="Supprimer un scénario")
-async def delete_scenario(idScenario: int, user: Models.User = Depends(utils.InstructorRequired)):
+@transactions.atomic()
+async def delete_scenario(idScenario: int,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     scenario = await Models.Scenario.get(id=idScenario)
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
-    await scenario.delete()
+    # on différentie la suppression du scénario d'une traduction du scenario
+    if iso639 is None:
+        await scenario.delete()
+    else:
+        language = await Models.Language.get(code=iso639)
+        await Models.ScenarioText.filter(scenario_id=idScenario,language=language).delete()
+        await Models.StepText.filter(step__scenario_id=idScenario,language=language).delete()
+        await Models.ChoiceText.filter(choice__step__scenario_id=idScenario,language=language).delete()
     return {'ok': 'scenario et objets référencés supprimés'}
 
 @router.post("/machines",summary="Créer une machine")
@@ -367,8 +382,12 @@ async def updateStep(idStep: int, step: Models.StepPost,iso639:str|None=None, ad
 
 
 @router.delete('/steps/{idStep}',summary="Supprime une étape du scénario")
-async def deleteStep(idStep: int, user: Models.User = Depends(utils.InstructorRequired)):
-    await Models.Step.filter(id=idStep).delete()
+async def deleteStep(idStep: int,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
+    if iso639 is None:
+        await Models.Step.filter(id=idStep).delete()
+    else:
+        language = await Models.Language.get(code=iso639)
+        await Models.StepText.filter(step_id=idStep, language=language).delete()
     return {'ok': 'étape supprimée'}
 
 
