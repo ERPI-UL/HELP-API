@@ -224,7 +224,7 @@ function fetchOwnScenarios(idMachine) {
  */
 function removeScenario(id, caller) {
     const el = this.$refs["delete-popup"];
-    el.show(User.LANGUAGE.DATA.SCENARIOS.ACTIONS.REMOVE.TITLE, User.LANGUAGE.DATA.SCENARIOS.ACTIONS.REMOVE.DESCRIPTION, User.LANGUAGE.DATA.ACTIONS.CANCEL, User.LANGUAGE.DATA.ACTIONS.REMOVE);
+    el.show(User.LANGUAGE.DATA.SCENARIOS.ACTIONS.REMOVE.TITLE, User.LANGUAGE.DATA.SCENARIOS.ACTIONS.REMOVE.DESCRIPTION, User.LANGUAGE.DATA.ACTIONS.CANCEL, User.LANGUAGE.DATA.ACTIONS.DELETE);
     el.setPosition(caller);
     el.setCallback(() => {
         API.execute_logged(API.ROUTE.SCENARIOS+id, API.METHOD_DELETE, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
