@@ -62,17 +62,14 @@ async def get_languages():
 @router.get('/me')
 async def get_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
     # user = await Models.UserinFront.from_tortoise_orm(Models.User.get(id=current_user.id))
-    user = await Models.User.get(id=current_user.id).prefetch_related('language')
+    user = await Models.User.get(id=current_user.id)
     return {
         'id': user.id,
         'username': user.username,
         'firstname': user.firstname,
         'lastname': user.lastname,
         'email': user.email,
-        'adminLevel': user.adminLevel,
-        'language': user.language.name,
-        'flag': user.language.unicode,
-        'language_code': user.language.code,
+        'adminLevel': user.adminLevel
     }
 
 
