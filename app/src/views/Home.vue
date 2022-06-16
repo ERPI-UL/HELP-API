@@ -48,7 +48,25 @@
                 <div id="overview" class="flex grow min-h-0 min-w-fit max-w-[full] w-[50%] m-auto">
                     <div class="flex grow flex-col bg-white rounded-lg border border-gray-200">
                         <div class="flex flex-col mx-4 my-2">
-                            <h2 class="md:text-2xl text-xl font-extrabold text-indigo-600">{{ User.LANGUAGE.DATA.HOME.MESSAGES.LAST_SESSION }}</h2>
+                            <div class="flex justify-between">
+                                <h2 class="md:text-2xl text-xl font-extrabold text-indigo-600">{{ User.LANGUAGE.DATA.HOME.MESSAGES.LAST_SESSION }}</h2>
+                                <div class="flex my-auto h-fit w-fit py-1 px-2 bg-indigo-600/[0.1] rounded-lg">
+                                    <div id="session-mode-ar" class="hidden flex space-x-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 m-auto text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                                        </svg>
+                                        <h2 class="text-xl font-bold text-indigo-600 my-auto pb-0.5">AR</h2>
+                                    </div>
+                                    <div id="session-mode-vr" class="hidden flex space-x-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 m-auto text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path style="stroke-width:1.5;stroke-linecap:round;" d="m 2.5073421,6.1455325 c 0.4873766,-0.3105358 18.2493199,-0.4596099 18.6205089,0 0.37119,0.4596099 0.379877,10.8981835 0.0329,11.2841635 -0.346978,0.38598 -6.058378,0.381594 -6.480989,0 -0.422612,-0.381595 -1.75887,-3.975154 -2.763468,-3.980711 -1.004599,-0.0056 -2.098533,3.654439 -2.5660784,3.980711 -0.467545,0.326271 -6.3530375,0.34583 -6.7770756,0 C 2.1491009,17.083866 2.0199655,6.4560683 2.5073421,6.1455325 Z"/>
+                                            <path style="stroke-width:1.5;stroke-linecap:round;" d="M 9.5244628,10.374794 A 2.1383975,2.2041943 0 0 1 8.4552361,13.28587 2.1383975,2.2041943 0 0 1 5.6279996,12.192107 2.1383975,2.2041943 0 0 1 6.6809899,9.2747502 2.1383975,2.2041943 0 0 1 9.5142735,10.351759 Z"/>
+                                            <path style="stroke-width:1.5;stroke-linecap:round;" d="m 18.07805,10.341861 a 2.1383975,2.2041943 0 0 1 -1.069227,2.911075 2.1383975,2.2041943 0 0 1 -2.827236,-1.093762 2.1383975,2.2041943 0 0 1 1.05299,-2.9173571 2.1383975,2.2041943 0 0 1 2.833284,1.0770081 z"/>
+                                        </svg>
+                                        <h2 class="text-xl font-bold text-indigo-600 my-auto pb-0.5">VR</h2>
+                                    </div>
+                                </div>
+                            </div>
                             <div id="stat-zone" class="flex flex-col space-y-2"></div>
                         </div>
                         <div class="md:flex hidden grow m-4 min-h-0 max-h-full max-w-full min-w-0">
@@ -113,10 +131,17 @@ function setup() {
                     document.getElementById("loading-zone").classList.add("hidden");
                     labels = scenario.steps.map(step => step.name);
                     data = scenario.steps.map(step => session.playedSteps.filter(playedSteps => playedSteps.step_id === step.id).map(playedStep => playedStep.time).reduce((a, b) => a+b, 0));
+                    // generate stats and display them
                     generateChart(data, labels);
                     addStat(`- ${User.LANGUAGE.DATA.COMMON.SCENARIO} :`, scenario.name);
                     addStat(`- ${User.LANGUAGE.DATA.TIME.DATE} :`, new Date(session.date).toLocaleString());
                     addStat(`- ${User.LANGUAGE.DATA.TIME.TIME} :`, stringTime(session.playedSteps.map(playedStep => playedStep.time).reduce((a, b) => a+b, 0)));
+
+                    // display the mode icon (AR or VR)
+                    const vrIcon = document.getElementById("session-mode-vr");
+                    const arIcon = document.getElementById("session-mode-ar");
+                    const iconToShow = session.vrmode ? vrIcon : arIcon;
+                    iconToShow.classList.remove("hidden");
                 }).catch(console.error);
             }).catch(console.error);
         else noLastSession();
