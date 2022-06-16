@@ -49,6 +49,7 @@ app = FastAPI(
         "name": "Lorraine Fab Living Lab",
         "url": "https://lf2l.fr"
     },
+    version="0.2.0",
     openapi_tags=tags_metadata
 )
 

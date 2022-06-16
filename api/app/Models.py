@@ -18,6 +18,7 @@ class User(Model):
     lastname = fields.TextField()
     email = fields.CharField(128, unique=True)
     adminLevel = fields.IntField(default=0)
+    language = fields.ForeignKeyField("models.Language",related_name="users",null=True)
 
     def verify_password(self, password):
         return bcrypt.verify(password, self.password_hash)
@@ -28,6 +29,37 @@ class User(Model):
     class Meta:
         table = "users"
 
+
+class ScenarioText(Model):
+    id = fields.IntField(pk=True)
+    name = fields.TextField()
+    description = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='scenarioTexts')
+    scenario = fields.ForeignKeyField(
+        'models.Scenario', related_name='texts',on_delete=fields.CASCADE)
+    class Meta:
+        table = "scenariotext"
+
+class Language(Model):
+    id = fields.IntField(pk=True)
+    unicode = fields.CharField(128)  # \uD83C\uDDEB\uD83C\uDDF7 -> 🇫🇷
+    name = fields.CharField(42)  # Français English Español
+    code = fields.CharField(2)  # ISO 639-1 en fr en de it etc..
+    class Meta:
+        table = "languages"
+
+
+class MachineText(Model):
+    id = fields.IntField(pk=True)
+    name = fields.TextField()
+    description = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='machineTexts')
+    machine = fields.ForeignKeyField(
+        'models.Machine', related_name='texts',on_delete=fields.CASCADE)
+    class Meta:
+        table = "machinetext"
 
 class Machine(Model):
     id = fields.IntField(pk=True)
@@ -51,12 +83,21 @@ class Scenario(Model):
         table = "scenarios"
         # unique_together = ('name', 'scenarios.machineName')
 
-
+class StepText(Model):
+    id = fields.IntField(pk=True)
+    label = fields.TextField()
+    description = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='stepTexts')
+    step = fields.ForeignKeyField(
+        'models.Step', related_name='texts', on_delete=fields.CASCADE)
+    class Meta:
+        table = "steptext"
 class Step(Model):
     id = fields.IntField(pk=True)
     label = fields.TextField()
     type = fields.ForeignKeyField('models.Type', related_name='steps')
-    name = fields.TextField()
+    name = fields.TextField()  # logical purpose , do not translate
     description = fields.TextField()
     scenario = fields.ForeignKeyField(
         'models.Scenario', related_name='steps', on_delete=fields.CASCADE)
@@ -65,7 +106,7 @@ class Step(Model):
     position = fields.ForeignKeyField(
         'models.Position', related_name='steps', null=True, on_delete=fields.CASCADE)
     choice = fields.ForeignKeyField(
-        'models.Choice', related_name='steps', null=True,on_delete=fields.RESTRICT)
+        'models.Choice', related_name='steps', null=True, on_delete=fields.RESTRICT)
     ordernumber = fields.IntField()
 
     class Meta:
@@ -92,7 +133,18 @@ class Type(Model):
     class Meta:
         table = "types"
 
-
+class ChoiceText(Model):
+    id = fields.IntField(pk=True)
+    labelleft = fields.TextField()
+    labelright = fields.TextField()
+    redirectleft = fields.TextField()
+    redirectright = fields.TextField()
+    language = fields.ForeignKeyField(
+        'models.Language', related_name='choiceTexts')
+    choice = fields.ForeignKeyField(
+        'models.Choice', related_name='texts', on_delete=fields.CASCADE)
+    class Meta:
+        table = "choicetext"
 class Choice(Model):
     id = fields.IntField(pk=True)
     labelleft = fields.TextField()
@@ -116,9 +168,10 @@ class Target(Model):
 
 class playedStep(Model):
     id = fields.IntField(pk=True)
-    step = fields.ForeignKeyField('models.Step', related_name='playedSteps',on_delete=fields.CASCADE)
+    step = fields.ForeignKeyField(
+        'models.Step', related_name='playedSteps', on_delete=fields.CASCADE)
     session = fields.ForeignKeyField(
-        'models.Session', related_name='playedSteps',on_delete=fields.CASCADE)
+        'models.Session', related_name='playedSteps', on_delete=fields.CASCADE)
     progressNumber = fields.IntField(default=0)  # garantie l'ordre des steps
     missed = fields.BooleanField(default=False)
     skipped = fields.BooleanField(default=False)
@@ -135,7 +188,7 @@ class Session(Model):
     user = fields.ForeignKeyField(
         'models.User', related_name='sessions')
     scenario = fields.ForeignKeyField(
-        'models.Scenario', related_name='sessions',on_delete=fields.CASCADE)
+        'models.Scenario', related_name='sessions', on_delete=fields.CASCADE)
     evaluation = fields.BooleanField()
     vrmode = fields.BooleanField(null=True)
     date = fields.DatetimeField(auto_now_add=True)
@@ -167,14 +220,17 @@ class IncidentLogs(Model):
     class Meta:
         table = "logs"
 
+
 class Reset(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField('models.User', related_name='reset')
     token = fields.CharField(128)
-    expiration = fields.DatetimeField(default=datetime.now() + timedelta(days=1))
+    expiration = fields.DatetimeField(
+        default=datetime.now() + timedelta(days=1))
 
     class Meta:
         table = "reset"
+
 
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(
@@ -197,7 +253,7 @@ ScenarioOut = pydantic_model_creator(
 TargetOut = pydantic_model_creator(
     Target, name='TargetOut', include=['id', 'name'])
 SessionOut = pydantic_model_creator(
-    Session, name='SessionOut', include=['id', 'date', 'evaluation', 'scenario_id','vrmode'])
+    Session, name='SessionOut', include=['id', 'date', 'evaluation', 'scenario_id', 'vrmode'])
 
 
 class pagination(BaseModel):
@@ -265,6 +321,7 @@ class StepPost(BaseModel):
             raise ValueError('ordernumber must be >= 0')
         return v
 
+
 class ScenarioPost(BaseModel):
     name: str
     description: str
@@ -293,31 +350,43 @@ class PasswordChange(BaseModel):
     old: str
     new: str
 
+
 class PasswordReset(BaseModel):
-    token:str
-    password:str
+    token: str
+    password: str
     # playedSteps:list[playedStepIn]
+
+
 class ScenarioUpdate(BaseModel):
     name: str
     description: str
     idMachine: int
+
+
 class Invite(BaseModel):
     email: str
     firstname: str
     lastname: str
     adminLevel: int = None
     username: str = None
+
     @validator('adminLevel')
     def adminlvl_validator(cls, v):
-        if v not in [1,2]:
+        if v not in [1, 2]:
             raise ValueError('adminLevel must be 1 or 2')
         return 1
+
     @validator('username')
     def username_validator(cls, v, values):
         if v is None or v == '':
-            v = values['firstname'] + '.' + values['lastname'] + str(randint(1, 1000))
+            v = values['firstname'] + '.' + \
+                values['lastname'] + str(randint(1, 1000))
         return v
+
+
 SessioninFront = pydantic_model_creator(
     Session, name='SessioninFront', exclude_readonly=True)
 playedStepIn = pydantic_model_creator(
     playedStep, name='playedStepIn')
+LanguageOut = pydantic_model_creator(
+    Language, name='LanguageFront', exclude_readonly=True)
