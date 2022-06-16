@@ -12,7 +12,7 @@ router = APIRouter()
 
 # TODO:TRANSLATE SUPPORT
 @router.get("/", response_model=Models.pagination,summary="Récupérer la liste des scénarios , avec de la pagination")
-async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10):
+async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 10,iso639:str|None=None,):
     # check for zero per_page
     if per_page == 0:
         per_page = 1
@@ -20,18 +20,29 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
         scenario_count = await Models.Scenario.filter(machine=idMachine).count()
         if scenario_count < per_page:
             per_page = scenario_count
-        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine').order_by('id')
+        scenarios = await Models.Scenario.filter(machine=idMachine).offset((page - 1) * per_page).limit(per_page).prefetch_related('machine__texts__language','texts','texts__language').order_by('id')
     else:
         scenario_count = await Models.Scenario.all().count()
         if scenario_count < per_page:
             per_page = scenario_count
-        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine').order_by('id')
+        scenarios = await Models.Scenario.all().offset((page - 1) * per_page).limit(per_page).prefetch_related('machine__texts__language','texts','texts__language').order_by('id')
     # calculate the number of pages
     lastPage = scenario_count // per_page
     if scenario_count % per_page != 0:
         lastPage += 1
     if(page > lastPage):
         raise HTTPException(status_code=404, detail="Page not found")
+    if iso639 is None:
+        iso639 = "fr"
+    for scenario in scenarios:
+        for text in scenario.texts:
+            if text.language.code == iso639:
+                scenario.name = text.name
+                scenario.description = text.description
+        for machineText in scenario.machine.texts:
+            if machineText.language.code == iso639:
+                scenario.machine.name = machineText.name
+                scenario.machine.description = machineText.description
     return {
         'total': scenario_count,
         'per_page': per_page,
@@ -41,6 +52,7 @@ async def read_scenarios(idMachine: int = None, page: int = 1, per_page: int = 1
     }
 
 @router.put("/{idScenario}",summary="Mettre a jour les informations d'un scenario")
+@transactions.atomic()
 async def update_scenario(idScenario: int, scenario: Models.ScenarioUpdate,iso639:str|None=None, user: Models.User = Depends(utils.InstructorRequired)):
     scenarioInDB = await Models.Scenario.get(id=idScenario)
     if iso639 is None:

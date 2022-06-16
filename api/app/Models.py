@@ -37,7 +37,7 @@ class ScenarioText(Model):
     language = fields.ForeignKeyField(
         'models.Language', related_name='scenarioTexts')
     scenario = fields.ForeignKeyField(
-        'models.Scenario', related_name='texts')
+        'models.Scenario', related_name='texts',on_delete=fields.CASCADE)
     class Meta:
         table = "scenariotext"
 
@@ -57,7 +57,7 @@ class MachineText(Model):
     language = fields.ForeignKeyField(
         'models.Language', related_name='machineTexts')
     machine = fields.ForeignKeyField(
-        'models.Machine', related_name='texts')
+        'models.Machine', related_name='texts',on_delete=fields.CASCADE)
     class Meta:
         table = "machinetext"
 

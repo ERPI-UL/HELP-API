@@ -55,7 +55,9 @@ async def get_users(page: int = 1, per_page: int = 10, res: any = Depends(utils.
         'last_page': lastPage,
         'data': front
     }
-
+@router.get('/languages', response_model=List[pydantic_model_creator(Models.Language)],summary="Retourne toutes les langues disponibles dans l'API")
+async def get_languages():
+    return await Models.Language.all()
 
 @router.get('/me')
 async def get_user(current_user: Models.User = Depends(utils.get_current_user_in_token)):
