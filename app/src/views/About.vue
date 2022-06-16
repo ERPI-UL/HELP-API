@@ -6,19 +6,19 @@
         </div>
         <div class="flex flex-wrap space-y-6 m-4">
             <div class="flex m-4 p-2 bg-white rounded-lg shadow-lg border border-gray-200 m-auto">
-                <img class="max-h-[20vw] md:max-h-[10vh] m-auto" src="../assets/images/icons/icon_full.png" alt="" />
-                <p class="text-xl font-semibold text-gray-600 my-auto mx-4">Indico - version 0.1.0</p>
+                <img class="max-h-[20vw] md:max-h-[10vh] m-auto" src="../assets/images/icon_full.png" alt="" />
+                <p class="text-xl font-semibold text-gray-600 my-auto mx-4">{{ User.LANGUAGE.DATA.ABOUT.MESSAGES.INDICO_VERSION.replace("{version}", "0.1.0") }}</p>
             </div>
             <div class="flex flex-col m-4 p-2 bg-white rounded-lg shadow-lg border border-gray-200 m-auto">
-                <img class="w-80 mx-auto" src="../assets/images/logos/grand_est.png" alt="" />
-                <p class="text-xl font-semibold text-gray-600 my-auto md:mx-4 mx-0 text-center">Avec le soutien fiancier de la Région Grand Est</p>
+                <img class="w-80 mx-auto" src="../assets/images/grand_est.png" alt="" />
+                <p class="text-xl font-semibold text-gray-600 my-auto md:mx-4 mx-0 text-center">{{ User.LANGUAGE.DATA.ABOUT.MESSAGES.WITH_GRANDEST_SUPPORT }}</p>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import API from "../script/API";
+import User from "../script/User";
 import Topbar from "../components/Topbar.vue";
 
 function setup() {
@@ -31,7 +31,7 @@ export default {
         Topbar
     },
     data() {
-        return {}
+        return {User}
     },
     mounted() {
         setup();

@@ -8,7 +8,7 @@
                 <!-- DESKTOP/MOBILE MENU VIEW -->
                 <div class="flex justify-start lg:w-0 lg:flex-1"> <!-- Home indico icon -->
                     <a href="/" class="expand-parent flex">
-                        <img class="h-8 w-auto sm:h-11 bg-indigo-600 border border-2 border-indigo-600 rounded-lg shadow-lg" src="../assets/images/icons/logo_white_indigo.png" alt="" />
+                        <img class="h-8 w-auto sm:h-11 bg-indigo-600 border border-2 border-indigo-600 rounded-lg shadow-lg" src="../assets/images/logo_white_indigo.png" alt="" />
                     </a>
                 </div>
 
@@ -65,8 +65,8 @@
                 <!-- DESKTOP MENU VIEW -->
                 <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
                     <div v-if="!User.isConnected(User.currentUser)"> <!-- If the user isn't connected, display login and register options -->
-                        <a href="/register" class="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900"> S'inscrire </a>
-                        <Redirectbutton href="/login" class="ml-3">Se connecter</Redirectbutton>
+                        <a href="/register" class="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</a>
+                        <Redirectbutton href="/login" class="ml-3">{{ User.LANGUAGE.DATA.ACTIONS.LOGIN }}</Redirectbutton>
                     </div>
                     <div v-if="User.isConnected(User.currentUser)"> <!-- If the user is connected, display a dropdown button with his name -->
                         <Dropdown>
@@ -75,13 +75,13 @@
                             </template>
                             <template v-slot:items> <!-- Items showed in the dropdown's list when the button is clicked -->
                                 <MenuItem v-slot="{ active }">
-                                    <a href="/profile" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">Mon profil</a>
+                                    <a href="/profile" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.PROFILE.TITLE }}</a>
                                 </MenuItem>
                                 <MenuItem v-slot="{ active }">
-                                    <a href="/easyconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">Connecter un appareil</a>
+                                    <a href="/easyconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.EASYCONNECT.TITLE }}</a>
                                 </MenuItem>
                                 <MenuItem v-slot="{ active }">
-                                <button v-on:click="disconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block w-full text-left px-4 py-2 text-sm']">Se déconnecter</button>
+                                <button v-on:click="disconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block w-full text-left px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.ACTIONS.LOGOUT }}</button>
                                 </MenuItem>
                             </template>
                         </Dropdown>
@@ -145,13 +145,13 @@
                     <!-- MOBILE BOTTOM MENU -->
                     <div class="py-6 px-5 space-y-6">
                         <div v-if="!User.isConnected(User.currentUser)"> <!-- If the user isn't connected, display login and register options -->
-                            <Redirectbutton href="/login" class="w-full">Se connecter</Redirectbutton>
+                            <Redirectbutton href="/login" class="w-full">{{ User.LANGUAGE.DATA.ACTIONS.LOGIN }}</Redirectbutton>
                             <p class="mt-6 text-center text-base font-medium text-gray-500">
-                                <a href="/register" class="text-indigo-600 hover:text-indigo-500">S'inscrire</a>
+                                <a href="/register" class="text-indigo-600 hover:text-indigo-500">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</a>
                             </p>
                         </div>
                         <div v-if="User.isConnected(User.currentUser)" class="text-center"> <!-- If the user is connected, display the log out button -->
-                            <button v-on:click="disconnect" class="text-indigo-600 hover:text-indigo-500">Se déconnecter</button>
+                            <button v-on:click="disconnect" class="text-indigo-600 hover:text-indigo-500">{{ User.LANGUAGE.DATA.ACTIONS.LOGOUT }}</button>
                         </div>
                     </div>
                 </div>
@@ -185,56 +185,56 @@
     /** Variable containing all the menu's options */
     let menu = [
         { // scenarios options (the other options are added later in the script depending on the user's role)
-            name: "Scénarios",
+            name: User.LANGUAGE.DATA.PAGES.SCENARIOS,
             elements: [
                 {
-                    name: 'Tous les scénarios',
-                    description: 'Voir les scénarios disponibles',
+                    name: User.LANGUAGE.DATA.SCENARIOS.PAGES.VIEW.TITLE,
+                    description: User.LANGUAGE.DATA.SCENARIOS.PAGES.VIEW.DESCRIPTION,
                     href: '/scenarios#all',
                     icon: EyeIcon
                 }
             ]
         },
         { // machine options (the other options are added later in the script depending on the user's role)
-            name: "Machines",
+            name: User.LANGUAGE.DATA.PAGES.MACHINES,
             elements: [
                 {
-                    name: 'Toutes les machines',
-                    description: 'Voir les machines disponibles',
+                    name: User.LANGUAGE.DATA.MACHINES.PAGES.VIEW.TITLE,
+                    description: User.LANGUAGE.DATA.MACHINES.PAGES.VIEW.DESCRIPTION,
                     href: '/machines#all',
                     icon: EyeIcon
                 }
             ]
         },
         { // statistics options
-            name: "Statistiques",
+            name: User.LANGUAGE.DATA.PAGES.STATISTICS,
             elements: [
                 {
-                    name: 'Apprentissage',
-                    description: 'Voir les statistiques dans le mode apprentissage',
+                    name: User.LANGUAGE.DATA.STATISTICS.PAGES.LEARNING.TITLE,
+                    description: User.LANGUAGE.DATA.STATISTICS.PAGES.LEARNING.DESCRIPTION,
                     href: '/statistics#learning',
                     icon: PuzzleIcon,
                 },
                 {
-                    name: 'Évalutation',
-                    description: 'Voir les statistiques dans le mode évaluation',
+                    name: User.LANGUAGE.DATA.STATISTICS.PAGES.TESTING.TITLE,
+                    description: User.LANGUAGE.DATA.STATISTICS.PAGES.TESTING.DESCRIPTION,
                     href: '/statistics#testing',
                     icon: AcademicCapIcon,
                 }
             ]
         },
         { // other options (the administrator option is added later if the user is an administrator)
-            name: "Autre",
+            name: User.LANGUAGE.DATA.PAGES.OTHER,
             elements: [
                 {
-                    name: 'Connecter un appareil',
-                    description: 'Connecter un appareil à votre compte',
+                    name: User.LANGUAGE.DATA.EASYCONNECT.TITLE,
+                    description: User.LANGUAGE.DATA.EASYCONNECT.DESCRIPTION,
                     href: '/easyconnect',
                     icon: LinkIcon
                 },
                 {
-                    name: 'A propos',
-                    description: 'Informations diverses sur Indico',
+                    name: User.LANGUAGE.DATA.ABOUT.TITLE,
+                    description: User.LANGUAGE.DATA.ABOUT.DESCRIPTION,
                     href: '/about',
                     icon: InformationCircleIcon
                 }
@@ -257,43 +257,43 @@
         },
         setup() {
             if (User.currentUser.canLearner()) { // if the user is a learner, a teacher or an administrator, add the "my scenarios" option to the menu
-                menu[menu.findIndex(el=>el.name=="Scénarios")].elements.push({
-                    name: 'En cours',
-                    description: 'Voir vos scénarios en cours',
+                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.SCENARIOS)]?.elements.push({
+                    name: User.LANGUAGE.DATA.SCENARIOS.PAGES.OWN.TITLE,
+                    description: User.LANGUAGE.DATA.SCENARIOS.PAGES.OWN.DESCRIPTION,
                     href: '/scenarios#pending',
                     icon: RefreshIcon
                 });
             }
             if (User.currentUser.canTeacher()) { // if the user is a teacher or an administrator, add the edit options to the menu
-                menu[menu.findIndex(el=>el.name=="Scénarios")].elements.push({
-                    name: 'Modifier',
-                    description: 'Créer ou modifier un scénario',
+                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.SCENARIOS)]?.elements.push({
+                    name: User.LANGUAGE.DATA.SCENARIOS.PAGES.EDIT.TITLE,
+                    description: User.LANGUAGE.DATA.SCENARIOS.PAGES.EDIT.DESCRIPTION,
                     href: '/scenarios#editing',
                     icon: PencilAltIcon
                 });
-                menu[menu.findIndex(el=>el.name=="Machines")].elements.push({
-                    name: 'Modifier',
-                    description: 'Créer ou modifier une machine',
+                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.MACHINES)]?.elements.push({
+                    name: User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.TITLE,
+                    description: User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.DESCRIPTION,
                     href: '/machines#editing',
                     icon: PencilAltIcon
                 });
-                menu[menu.findIndex(el => el.name == "Autre")].elements.push({
-                    name: 'Inviter un utilisateur',
-                    description: 'Générer un lien d\'invitation utilisateur',
+                menu[menu.findIndex(el => el.name == User.LANGUAGE.DATA.PAGES.OTHER)]?.elements.push({
+                    name: User.LANGUAGE.DATA.INVITE.TITLE,
+                    description: User.LANGUAGE.DATA.INVITE.DESCRIPTION,
                     href: '/generateInvite',
                     icon: MailOpenIcon
                 });
             }
             if (User.currentUser.canAdmin()) { // if the user is an administrator, add the administrator panel to the menu
-                menu[menu.findIndex(el=>el.name=="Autre")].elements.push({
-                    name: 'Panneau administrateur',
-                    description: 'Accéder au panneau d\'administration',
+                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.OTHER)]?.elements.push({
+                    name: User.LANGUAGE.DATA.ADMIN.TITLE,
+                    description: User.LANGUAGE.DATA.ADMIN.DESCRIPTION,
                     href: '/admin',
                     icon: TerminalIcon
                 });
             }
             if (User.currentUser.isVisitor()) { // if the user is a visitor, remove the statistics options from the menu
-                menu.splice(menu.findIndex(el=>el.name=="Statistiques"), 1);
+                menu.splice(menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.STATISTICS), 1);
             }
 
             return {menu, icon: {user: UserIcon}, User};

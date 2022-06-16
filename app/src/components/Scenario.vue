@@ -29,7 +29,7 @@ export default {
         
     },
     setup: () => {
-        return {user: JSON.parse(localStorage.getItem('user')??"{}")}
+        return {}
     }
 }
 </script>

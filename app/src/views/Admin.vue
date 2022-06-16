@@ -8,40 +8,40 @@
         <div class="flex bg-gray-800 m-4 shadow-lg rounded-lg p-2 grow min-h-0">
             <!-- Start user managemenet zone -->
             <div class="flex flex-col rounded-lg p-2 space-y-4 max-w-full border border-gray-600 min-h-0">
-                <p class="text-gray-300 text-lg">Utilisateurs</p>
+                <p class="text-gray-300 text-lg">{{ User.LANGUAGE.DATA.PAGES.USERS }}</p>
                 <!-- User deletion -->
                 <div class="flex md:flex-row flex-col md:space-y-0 md:space-x-2 space-y-1 w-full justify-between">
-                    <p class="text-gray-400 my-auto">Sélectionner un utilisateur :</p>
+                    <p class="text-gray-400 my-auto">{{ User.LANGUAGE.DATA.ADMIN.MESSAGES.SELECT_USER }} :</p>
                     <select id="user-select" class="min-w-0 border-none rounded bg-gray-700 text-white p-1 pr-8 my-auto">
-                        <option value="<loading>">Chargement ...</option>
+                        <option value="<loading>">{{ User.LANGUAGE.DATA.ACTIONS.LOADING }} ...</option>
                     </select>
                     <PaginationChoice :darkMode="true"
-                        ref="userPagination" :title="'Sélection utilisateurs'"
+                        ref="userPagination" :title="User.LANGUAGE.DATA.PAGINATION.USER_SELECTION"
                         :selectID="'#user-select'" :callback="addUserSelection" :route="API.ROUTE.USERS"
                         :displayAttribute="el => el.firstname+' '+el.lastname" :identifier="el => el.id" :selectedValues="availableUsers.map(el => el.id)">
                     </PaginationChoice>
                 </div>
                 <!-- User role modification -->
                 <div class="flex md:flex-row flex-col md:space-y-0 md:space-x-2 space-y-1 space-x-0 max-w-full justify-between space-x-4">
-                    <p class="text-gray-400 my-auto">Changer le rôle :</p>
+                    <p class="text-gray-400 my-auto">{{ User.LANGUAGE.DATA.ADMIN.MESSAGES.CHANGE_ROLE }} :</p>
                     <select id="role-select" class="min-w-0 border-none rounded bg-gray-700 text-white p-1 pr-8 my-auto">
-                        <option value="0">Visiteur</option>
-                        <option value="1">Apprenti</option>
-                        <option value="2">Enseignant</option>
-                        <option value="3">Administrateur</option>
+                        <option value="0">{{ User.LANGUAGE.DATA.ROLES.VISITOR }}</option>
+                        <option value="1">{{ User.LANGUAGE.DATA.ROLES.LEARNER }}</option>
+                        <option value="2">{{ User.LANGUAGE.DATA.ROLES.TEACHER }}</option>
+                        <option value="3">{{ User.LANGUAGE.DATA.ROLES.ADMIN }}</option>
                     </select>
-                    <ValidateButton v-on:click="updateUserRole();">Valider</ValidateButton>
+                    <ValidateButton v-on:click="updateUserRole();">{{ User.LANGUAGE.DATA.ACTIONS.CHANGE }}</ValidateButton>
                 </div>
                 <div class="flex flex-col grow justify-end min-h-0">
-                    <p class="text-gray-400">Sessions utilisateurs :</p>
+                    <p class="text-gray-400">{{ User.LANGUAGE.DATA.ADMIN.MESSAGES.USER_SESSIONS }} :</p>
                     <div id="user-sessions" class="border rounded-lg border-gray-600 w-full h-full overflow-y-auto overflow-x-hidden min-h-0 max-h-full">
                         
                     </div>
                 </div>
                 <div class="flex flex-col justify-end">
                     <div class="flex md:flex-row flex-col md:space-y-0 md:space-x-2 space-y-1 space-y-1 w-full h-fit justify-between">
-                        <p class="text-gray-400 my-auto mr-4">Supprimer l'utilisateur :</p>
-                        <DangerousButton id="delete-user-btn" class="my-auto" v-on:click="deleteUser();">Supprimer</DangerousButton>
+                        <p class="text-gray-400 my-auto mr-4">{{ User.LANGUAGE.DATA.ADMIN.MESSAGES.REMOVE_USER }} :</p>
+                        <DangerousButton id="delete-user-btn" class="my-auto" v-on:click="deleteUser();">{{ User.LANGUAGE.DATA.ACTIONS.REMOVE }}</DangerousButton>
                     </div>
                 </div>
             </div>
@@ -126,7 +126,7 @@ function updateUserSelect(selectValue) {
         userSelect.value = "";
     }
     availableUsers.forEach(user => userOptions.push(user));
-    userOptions.push({value: "<select>", text: "Selectionner ..."});
+    userOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 
     userOptions.forEach(option => {
         let optionElement = document.createElement("option");
@@ -171,7 +171,7 @@ function createUserSession(session) {
     container.classList.add("flex", "flex-col", "grow-0", "h-fit", "p-2", "m-2", "border", "border-gray-700");
     container.innerHTML = `
         <div class="flex grow-0 justify-between">
-            <p id="date" class="text-gray-200 text-semibold">${new Date(Date.parse(session.date)).toLocaleString()}</p>
+            <p id="date" class="text-gray-200 text-semibold">${new Date(session.date).toLocaleString()}</p>
             <p id="idSession" class="text-gray-100 text-bold">${session.id}</p>
         </div>
         <p id="scenario" class="text-gray-200 text-semibold">Scenario : ...</p>
@@ -192,7 +192,7 @@ function createUserSession(session) {
 
         container.querySelector("button").addEventListener("click", () => {
             API.execute_logged(API.ROUTE.STATS.SESSIONS+session.id, API.METHOD_DELETE, User.currentUser.getCredentials()).then(res => {
-                Logger.log("Session "+session.id+" supprimée");
+                Logger.log("Session "+session.id+" removed");
                 container.remove();
             }).catch(Logger.error);
         });

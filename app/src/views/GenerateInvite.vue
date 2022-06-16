@@ -5,9 +5,9 @@
             <div class="max-h-full">
                 <div class="flex center">
                     <!-- Modal Title -->
-                    <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
+                    <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl font-extrabold text-indigo-600 px-6">
-                        Générer une invitation
+                        {{ User.LANGUAGE.DATA.INVITE.MESSAGES.GENERATE_INVITE }}
                     </h2>
                 </div>
                 <div>
@@ -15,27 +15,27 @@
                     <div class="space-y-1 md:space-y-4 py-2 md:py-8 text-base text-gray-400 max-h-full">
                         <!-- Firstname input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Prénom: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.FIRSTNAME }}: </p>
                             <input type="text" id="given-name" name="given-name" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Lastname input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.LASTNAME }}: </p>
                             <input type="text" id="family-name" name="family-name" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Username input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur (optionel): </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.USERNAME }} ({{ User.LANGUAGE.DATA.COMMON.OPTIONAL }}): </p>
                             <input type="text" id="username" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Email input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Adresse mail: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.EMAIL }}: </p>
                             <input type="email" id="email" name="email" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Email input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Niveau de permissions:</p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.ROLE }}:</p>
                             <select id="role-select" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black pr-8 bg-gray-50 hover:bg-gray-100">
                             
                             </select>
@@ -45,11 +45,11 @@
                     <div id="log-zone" class="border-none overflow-y-hidden h-[0px]">
                         <p class="opacity-0 text-center text-indigo-600"></p>
                     </div>
-                    <p class="text-gray-400 pt-8">Cette invitation sera valide 14 jours à partir de sa date de création</p>
+                    <p class="text-gray-400 pt-8 text-center">{{ User.LANGUAGE.DATA.INVITE.MESSAGES.VALIDATION_DELAY }}</p>
                     <!-- Buttons -->
                     <div class="pt-2 flex justify-between">
-                        <Backbutton>Annuler</Backbutton> <!-- Cancel button -->
-                        <ValidateButton id="btn-validate" v-on:click="sendInvite">Envoyer l'invitation</ValidateButton> <!-- Validate button -->
+                        <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel button -->
+                        <ValidateButton id="btn-validate" v-on:click="sendInvite">{{ User.LANGUAGE.DATA.ACTIONS.SEND }}</ValidateButton> <!-- Validate button -->
                     </div>
                 </div>
             </div>
@@ -76,7 +76,12 @@ function setup() {
     });
 
     const roleSelect = document.getElementById("role-select");
-    const roles = ["Visiteur", "Apprenti", "Enseignant", "Administrateur"];
+    const roles = [
+        User.LANGUAGE.DATA.ROLES.VISITOR,
+        User.LANGUAGE.DATA.ROLES.LEARNER,
+        User.LANGUAGE.DATA.ROLES.TEACHER,
+        User.LANGUAGE.DATA.ROLES.ADMIN
+    ];
     for (let i = 1; i <= User.currentUser.permissions; i++) {
         const option = document.createElement("option");
         option.value = i;
@@ -125,18 +130,18 @@ function sendInvite() {
         role: document.getElementById("role-select")
     };
     if (credentials.givenName.value.trim() == "") {
-        logMessage("Veuillez renseigner un prénom.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_FIRSTNAME);
         credentials.givenName.focus();
         return;
     }
     if (credentials.familyName.value.trim() == "") {
-        logMessage("Veuillez renseigner un nom de famille.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_LASTNAME);
         credentials.familyName.focus();
         return;
     }
     const REGEX_EMAIL = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
     if (!credentials.email.value.trim().match(REGEX_EMAIL)) {
-        logMessage("Veuillez renseigner une adresse mail valide.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_EMAIL);
         credentials.email.focus();
         return;
     }
@@ -148,20 +153,20 @@ function sendInvite() {
         username: credentials.username.value.trim(),
         adminLevel: credentials.role.value
     }, API.TYPE_JSON).then(() => {
-        logMessage("Invitation envoyée avec succès.");
-        btn.innerHTML = "Envoyer l'invitation";
+        logMessage(User.LANGUAGE.DATA.INVITE.LOGS.INVITE_SENT);
+        btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.SEND;
         redirectHome();
     }).catch(err => {
         if (err.message.json) {
             err.message.json().then(e => {
-                logMessage("Erreur : "+e.detail);
+                logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+e.detail);
             });
         }
         else {
             console.error("Invite error: ", err);
-            logMessage("Erreur lors de l'envoie de l'invitation.");
+            logMessage(User.LANGUAGE.DATA.INVITE.LOGS.INVITE_ERROR);
         }
-        btn.innerHTML = "Envoyer l'invitation";
+        btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.SEND;
     });
 }
 
@@ -171,6 +176,7 @@ export default {
         Backbutton,
         ValidateButton
     },
+    data() { return {User}; },
     mounted() {
         setup();
     },

@@ -1,3 +1,5 @@
+import User from "./User";
+
 /**
  * Redirects the user back in history or on the home page
  * @param {boolean} wait Should the function wait 1s before redirecting
@@ -18,7 +20,13 @@ export function redirectHome(wait=true) {
 export function stringTime(time) {
     let nbMinutes = Math.floor(time / 60);
     let nbSeconds = time % 60;
-    return (nbMinutes > 0 ? `${Math.round(nbMinutes)} minute${nbMinutes >= 2 ? "s" : ""} et ` : ``) + `${Math.round(nbSeconds)} seconde${nbSeconds >= 2 ? "s" : ""}`
+    let minutes = "";
+    if (nbMinutes > 0) {
+        minutes = `${Math.round(nbMinutes)} ${nbMinutes >= 2 ? User.LANGUAGE.DATA.TIME.MINUTES : User.LANGUAGE.DATA.TIME.MINUTE}`;
+        minutes += ` ${User.LANGUAGE.DATA.COMMON.AND} `;
+    }
+    let seconds = `${Math.round(nbSeconds)} ${nbSeconds >= 2 ? User.LANGUAGE.DATA.TIME.SECONDS : User.LANGUAGE.DATA.TIME.SECOND}`;
+    return (minutes + seconds).toLowerCase();
 }
 
 
@@ -30,6 +38,23 @@ export function disableEl(el) {
     el.disabled = true;
     el.classList.remove("hover:bg-gray-100");
 };
+
+export function CapitalizeObject(obj) {
+    switch(typeof obj) {
+        case "string":
+            return obj.charAt(0).toUpperCase() + obj.slice(1);
+            
+        case "object":
+            for (let key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    obj[key] = CapitalizeObject(obj[key]);
+                }
+            }
+
+        default: break;
+    }
+    return obj;
+}
 
 /** FOR EXIT PREVENT POPUP **/
 // window.addEventListener("beforeunload", function (e) {

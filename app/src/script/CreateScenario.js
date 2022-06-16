@@ -125,7 +125,7 @@ function updateAvailableMachines(selectValue) {
     });
     let option2 = document.createElement("option");
     option2.value = "<select>";
-    option2.innerHTML = "Sélectionner ...";
+    option2.innerHTML = User.LANGUAGE.DATA.ACTIONS.SELECT+" ...";
     selectMachines.appendChild(option2);
 
     setTimeout(() => {
@@ -428,10 +428,10 @@ function blockInfoFromDom(dom) {
     };
 
     const checks = [
-        {msg: "Veuillez renseigner un nom", el: informations.name, cond: el => el.value.length > 0},
-        {msg: "Veuillez renseigner une description", el: informations.description, cond: el => el.value.length > 0},
-        {msg: "Veuillez sélectionner une machine", el: informations.machine, cond: el => el.value.length > 0},
-        {msg: "Évitez de préciser la machine dans le nom", el: informations.name, cond: el => !el.value.includes(availableMachines.find(m => m.id == informations.machine.value).name)},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.SPECIFY_NAME, el: informations.name, cond: el => el.value.length > 0},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.SPECIFY_DESCRIPTION, el: informations.description, cond: el => el.value.length > 0},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.SELECT_MACHINE, el: informations.machine, cond: el => el.value.length > 0},
+        {msg: User.LANGUAGE.DATA.SCENARIOS.LOGS.AVOID_MACHINE_NAME, el: informations.name, cond: el => !el.value.includes(availableMachines.find(m => m.id == informations.machine.value).name)},
     ];
     
     for (let i = 0; i < checks.length; i++) {
@@ -466,15 +466,15 @@ function blockInfoFromDom(dom) {
 
     button.innerHTML = "...";
     API.execute_logged(API.ROUTE.SCENARIOS, API.METHOD_POST, User.currentUser.getCredentials(), scenario, API.TYPE_JSON).then(res => {
-        logMessage("Scénario créé avec succès");
-        button.innerHTML = "Enregistrer";
+        logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.CREATED);
+        button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
         redirectHome();
     }).catch(err => {
         if (err.json)
             err.json().then(console.error)
         else console.error(err);
-        logMessage("Erreur lors de la création du scénario");
-        button.innerHTML = "Enregistrer";
+        logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.ERROR_CREATION);
+        button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
     });
 }
 
@@ -589,9 +589,9 @@ function blockInfoFromDom(dom) {
     }
     const checkForAddition = () => {
         if (addCounter++ >= addedSteps.length) {
-            logMessage("Modifications sauvegardés.");
+            logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.MODIFIED);
             const button = document.getElementById("save-btn");
-            button.innerHTML = "Enregistrer";
+            button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
             // redirectHome();
         }
     }

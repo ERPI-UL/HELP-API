@@ -8,17 +8,17 @@
             <div class="m-2 grow-0">
                 <div class="bg-white rounded min-w-[12vw] divide-y grow">
                     <!-- Left panel with different pages (all and edit mode) -->
-                    <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">Machines</h2>
+                    <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">{{ User.LANGUAGE.DATA.PAGES.MACHINES }}</h2>
                     <div class="md:pt-8 flex md:flex-col md:overflow-x-visible overflow-x-scroll justify-between">
                         <a class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
                             :class="(window.location.href.split('#')[1] == 'all')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#all">
-                            Toutes les machines
+                            {{ User.LANGUAGE.DATA.MACHINES.PAGES.VIEW.TITLE }}
                         </a>
                         <a v-if="User.currentUser.canTeacher()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
                             :class="(window.location.href.split('#')[1] == 'editing')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#editing">
-                            Créer / Modifier
+                            {{ User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.TITLE }}
                         </a>
                     </div>
                 </div>
@@ -29,7 +29,7 @@
                     <!-- Create new machine button, only visible in edit mode -->
                     <RedirectButton href="/machines/create">
                         <component :is="icon.plus" class="flex-shrink-0 h-5 text-white mr-2" aria-hidden="true" />
-                        Nouvelle machine
+                        {{ User.LANGUAGE.DATA.MACHINES.ACTIONS.NEW }}
                     </RedirectButton>
                 </div>
                 <div class="m-2 ml-4 flex grow flex-wrap justify-evenly"> <!-- Scenario list -->
@@ -37,21 +37,21 @@
                     <MachineCard v-if="window.location.href.split('#')[1] == 'all'" v-for="item in obj.machines.all">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
-                        <template v-slot:href><RedirectButton :href="item.view">Voir</RedirectButton></template>
+                        <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.VIEW }}</RedirectButton></template>
                     </MachineCard>
                     <!-- Edit machines list (showed when in #edit mode) -->
                     <MachineCard v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in obj.machines.editing" id="machine-container">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
-                        <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 1">Editer</RedirectButton></template>
-                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">Supprimer</DangerousButton></template>
+                        <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.EDIT }}</RedirectButton></template>
+                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.DELETE }}</DangerousButton></template>
                     </MachineCard>
                     <!-- Delete popup called when the remove button is pressed on a machine card -->
                     <ValidatePopup ref="delete-popup"></ValidatePopup>
                 </div>
                 <!-- Mode button to display mode machines -->
                 <div class="flex grow-0 m-2 p-2 justify-center w-full">
-                    <OutlineButton v-if="obj.displayMoreBtn" v-on:click="loadNextMachines();">Voir plus</OutlineButton>
+                    <OutlineButton v-if="obj.displayMoreBtn" v-on:click="loadNextMachines();">{{ User.LANGUAGE.DATA.ACTIONS.MORE }}</OutlineButton>
                 </div>
             </div>
         </div>
@@ -129,7 +129,7 @@ function attachListeners(it) {
  */
 function removeMachine(id, caller) {
     const el = this.$refs["delete-popup"];
-    el.show("Supprimer une machine", "Voulez-vous supprimer "+(obj.machines.all.find(el => el.id == id).title)+" ?", "Annuler", "Supprimer");
+    el.show(User.LANGUAGE.DATA.MACHINES.ACTIONS.REMOVE.TITLE, User.LANGUAGE.DATA.MACHINES.ACTIONS.REMOVE.DESCRIPTION, User.LANGUAGE.DATA.ACTIONS.CANCEL, User.LANGUAGE.DATA.ACTIONS.DELETE);
     el.setPosition(caller);
     el.setCallback(() => {
         API.execute_logged(API.ROUTE.MACHINES+id, API.METHOD_DELETE, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {

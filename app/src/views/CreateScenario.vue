@@ -7,25 +7,25 @@
             <div class="flex flex-col grow-0 w-fit m-2">
                 <div class="flex grow flex-col"> <!-- left panel (basic informations) -->
                     <div id="scenario-header" class="flex flex-col grow">
-                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">Informations principales</h2>
+                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MAIN_INFORMATIONS }}</h2>
                         <div class="flex flex-col m-2 h-fit bg-white rounded-lg p-2">
                             <div class="flex justify-between"> <!-- Scenario name input (input label and input zone) -->
-                                <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">Nom du scénario : </p>
+                                <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SCENARIO_NAME }} : </p>
                                 <input type="text" id="input-scenarioname" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                             </div>
                             <div class="flex flex-col grow-0"> <!-- Scenario description input (input label and input zone) -->
-                                <p class="text-gray-500 font-base text-lg p-2 mr-4">Description du scénario : </p>
+                                <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SCENARIO_DESCRIPTION }} : </p>
                                 <textarea id="input-scenariodesc" name="scenario-desc" rows="10" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                             </div>
                             <div class="flex justify-between mt-2 h-fit bg-white rounded-lg"> <!-- Machine selection zone -->
-                                <p class="text-gray-500 font-base text-lg p-2 mr-4">Machine cible : </p>
+                                <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.TARGET_MACHINE }} : </p>
                                 <select name="machines" id="select-machines" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 pr-10 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     <!-- available machines goes here, plus the <select> option -->
-                                    <option value="<select>">Sélectionner ...</option>
+                                    <option value="<select>">{{ User.LANGUAGE.DATA.ACTIONS.SELECT }} ...</option>
                                 </select>
                                 <!-- Machine pagination popup -->
                                 <PaginationChoice 
-                                    ref="machinePagination" :title="'Sélection machines'"
+                                    ref="machinePagination" :title="User.LANGUAGE.DATA.PAGINATION.MACHINE_SELECTION"
                                     :selectID="'#select-machines'" :callback="addMachineSelection" :route="API.ROUTE.MACHINES"
                                     :displayAttribute="el => el.name" :identifier="el => el.id" :selectedValues="availableMachines.map(el => el.id)">
                                 </PaginationChoice>
@@ -38,8 +38,8 @@
                             </div>
                             <!-- BUTTONS -->
                             <div class="flex grow-0 justify-between">
-                                <BackButton>{{pageMode==MODE_VIEW? "Retour" : "Annuler"}}</BackButton> <!-- Cancel button -->
-                                <ValidateButton id="save-btn" v-if="pageMode != MODE_VIEW" v-on:click="saveScenario">Enregistrer</ValidateButton> <!-- Save button -->
+                                <BackButton>{{pageMode==MODE_VIEW? User.LANGUAGE.DATA.ACTIONS.BACK : User.LANGUAGE.DATA.ACTIONS.CANCEL}}</BackButton> <!-- Cancel button -->
+                                <ValidateButton id="save-btn" v-if="pageMode != MODE_VIEW" v-on:click="saveScenario">{{ User.LANGUAGE.DATA.ACTIONS.SAVE }}</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>
@@ -47,15 +47,15 @@
             </div>
             <div class="flex flex-col grow w-fit m-2 min-w-0"> <!-- right panel (steps customization) -->
                 <div id="tabs" class="flex grow-0 justify-between">
-                    <h2 id="MODE_STEP_h2" v-on:click="updateMode(MODE_STEPS);" class="flex grow justify-start text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">Étapes</h2>
-                    <h2 id="MODE_MODEL_h2" v-on:click="updateMode(MODE_MODEL);" class="flex grow justify-end text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">Modèle</h2>
+                    <h2 id="MODE_STEP_h2" v-on:click="updateMode(MODE_STEPS);" class="flex grow justify-start text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEPS }}</h2>
+                    <h2 id="MODE_MODEL_h2" v-on:click="updateMode(MODE_MODEL);" class="flex grow justify-end text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MODEL }}</h2>
                 </div>
                 <!-- steps zone -->
                 <div id="MODE_STEP_div" :class="obj.mode==MODE_STEPS? '': 'hidden'" class="flex flex-col m-2 grow overflow-auto border border-2 border-white rounded-lg p-4">
                     <!-- START FLAG ELEMENT -->
                     <div class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white w-fit">
                         <component :is="icon.flag" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
-                        <p>Début</p>
+                        <p>{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.START }}</p>
                     </div>
                     <div id="steps-zone">
                         <!-- step blocks goes here -->
@@ -63,7 +63,7 @@
                     <!-- END FLAG ELEMENT -->
                     <div class="h-fit whitespace-nowrap inline-flex items-center justify-center px-4 py-2 w-fit rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white">
                         <component :is="icon.stop" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
-                        <p>Fin</p>
+                        <p>{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.END }}</p>
                     </div>
                 </div>
                 <!-- model 3D view zone -->
@@ -74,14 +74,14 @@
                                 <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
                                 <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
                             </svg>
-                            <tooltip class="absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">Montrer/Cacher les contrôles</tooltip>
+                            <tooltip class="absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SHOW_HIDE_CONTROLS }}</tooltip>
                         </div>
                         <div v-on:click="resetControls($event.target)" class="control-btn flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <tooltip class="absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">Réinitialiser la vue</tooltip>
+                            <tooltip class="absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RESET_VIEW }}</tooltip>
                         </div>
                     </div>
                     <canvas id="3D-view" class="flex grow"></canvas>
@@ -252,7 +252,7 @@ export default {
         ValidateButton,
         PaginationChoice
     },
-    data() {return {icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, obj, MODE_STEPS, MODE_MODEL, pageMode, MODE_VIEW};},
+    data() {return {User, icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, obj, MODE_STEPS, MODE_MODEL, pageMode, MODE_VIEW};},
     mounted() {
         setup();
         // set the callback to show the machine pagination window

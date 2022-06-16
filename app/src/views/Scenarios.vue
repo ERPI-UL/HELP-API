@@ -8,25 +8,25 @@
             <div class="m-2 grow-0">
                 <!-- Left panel containing the different scenario view modes -->
                 <div class="bg-white rounded min-w-[12vw] divide-y grow">
-                    <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">Scénarios</h2>
+                    <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">{{ User.LANGUAGE.DATA.PAGES.SCENARIOS }}</h2>
                     <div class="md:pt-8 flex md:flex-col md:overflow-x-visible overflow-x-scroll justify-between">
                         <!-- All scenarios -->
                         <a class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
                             :class="(window.location.href.split('#')[1] == 'all')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#all">
-                            Tous les scénarios
+                            {{ User.LANGUAGE.DATA.SCENARIOS.PAGES.VIEW.TITLE }}
                         </a>
                         <!-- Pending scenarios (only if connected) -->
-                        <a v-if="user.canLearner()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
+                        <a v-if="User.currentUser.canLearner()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
                             :class="(window.location.href.split('#')[1] == 'pending')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#pending">
-                            Scénarios en cours
+                            {{ User.LANGUAGE.DATA.SCENARIOS.PAGES.OWN.TITLE }}
                         </a>
                         <!-- Edit scenario (only if teacher or admin) -->
-                        <a v-if="user.canTeacher()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
+                        <a v-if="User.currentUser.canTeacher()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
                             :class="(window.location.href.split('#')[1] == 'editing')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
                             href="#editing">
-                            Créer / Modifier
+                            {{ User.LANGUAGE.DATA.SCENARIOS.PAGES.EDIT.TITLE }}
                         </a>
                     </div>
                 </div>
@@ -36,13 +36,13 @@
                 <!-- Top bar with filters for the scenarios (for example the machine used for the scenario) -->
                 <div class="bg-white shadow-lg p-2 rounded-lg w-full h-fit flex md:flex-row flex-col grow-0">
                     <div class="flex md:justify-left justify-between">
-                        <h2 class="m-1 p-1">Machines: </h2>
+                        <h2 class="m-1 p-1">{{ User.LANGUAGE.DATA.PAGES.MACHINES }}: </h2>
                         <select id="machines-select" class="min-w-0 border-none rounded bg-indigo-50 p-1 m-1 pr-8">
-                            <option value="<loading>">Chargement ...</option>
+                            <option value="<loading>">{{ User.LANGUAGE.DATA.ACTIONS.LOADING }} ...</option>
                         </select>
                         <!-- Paginatioon modal for the machines -->
                         <PaginationChoice 
-                            ref="machinePagination" :title="'Sélection machines'"
+                            ref="machinePagination" :title="User.LANGUAGE.DATA.PAGINATION.MACHINE_SELECTION"
                             :selectID="'#machines-select'" :callback="addMachineSelection" :route="API.ROUTE.MACHINES"
                             :displayAttribute="el => el.name" :identifier="el => el.id" :selectedValues="availableMachines.map(el => el.id)">
                         </PaginationChoice>
@@ -50,7 +50,7 @@
                     <!-- Search button -->
                     <div class="flex grow justify-between">
                         <span></span>
-                        <ValidateButton v-on:click="search">Chercher</ValidateButton>
+                        <ValidateButton v-on:click="search">{{ User.LANGUAGE.DATA.ACTIONS.SEARCH }}</ValidateButton>
                     </div>
                 </div>
                 <!-- SCenarios list content -->
@@ -59,7 +59,7 @@
                     <div v-if="window.location.href.split('#')[1] == 'editing'" class="m-4 w-fit h-fit">
                         <RedirectButton href="/scenarios/create">
                             <component :is="icon.plus" class="flex-shrink-0 h-5 text-white mr-2" aria-hidden="true" />
-                            Nouveau scénario
+                            {{ User.LANGUAGE.DATA.SCENARIOS.ACTIONS.NEW }}
                         </RedirectButton>
                     </div>
                     <!-- Scenarios list -->
@@ -69,15 +69,15 @@
                             <template v-slot:title>{{item.title}}</template>
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
-                            <template v-slot:href><RedirectButton :href="item.view">Voir</RedirectButton></template>
+                            <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.VIEW }}</RedirectButton></template>
                         </Scenario>
                         <!-- Scenarios in #edit mode -->
                         <Scenario v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in scenarios.editing">
                             <template v-slot:title>{{item.title}}</template>
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
-                            <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 6">Editer</RedirectButton></template>
-                            <template v-slot:remove><DangerousButton v-on:click="removeScenario(item.id, $event.target)" v-if="item.id != 6">Supprimer</DangerousButton></template>
+                            <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 6">{{ User.LANGUAGE.DATA.ACTIONS.EDIT }}</RedirectButton></template>
+                            <template v-slot:remove><DangerousButton v-on:click="removeScenario(item.id, $event.target)" v-if="item.id != 6">{{ User.LANGUAGE.DATA.ACTIONS.DELETE }}</DangerousButton></template>
                         </Scenario>
                         <!-- Scenarios in #pending mode -->
                         <Scenario v-if="window.location.href.split('#')[1] == 'pending'" v-for="item in scenarios.pending">
@@ -94,13 +94,13 @@
                         <OutlineButton
                             v-if="(window.location.href.split('#')[1] == 'all' || window.location.href.split('#')[1] == 'editing') && obj.displayMoreAllButton"
                             v-on:click="loadNextAllScenarios();">
-                            Voir plus
+                            {{ User.LANGUAGE.DATA.ACTIONS.MORE }}
                         </OutlineButton>
                         <!-- More button for own scenarios (pending) -->
                         <OutlineButton
                             v-if="window.location.href.split('#')[1] == 'pending' && obj.displayMoreAllButton"
                             v-on:click="loadNextOwnScenarios();">
-                            Voir plus
+                            {{ User.LANGUAGE.DATA.ACTIONS.MORE }}
                         </OutlineButton>
                     </div>
                 </div>
@@ -144,10 +144,10 @@ let loadNextOwnScenarios = () => {return Owniterator != null && Owniterator.isNe
 function attachAllListeners(it) {
     it.promise.then(res => {
         const data = res.data.map(el => {return {
-            id: el.id??"ID inconnu",
-            title: el.name??"Titre inconnu",
-            description: el.description??"Description inconnue",
-            machine: el.machine.name??"Machine inconnue",
+            id: el.id,
+            title: el.name,
+            description: el.description,
+            machine: el.machine.name,
             edit: "/scenarios/edit?idScenario="+el.id,
             view: "/scenarios/view?idScenario="+el.id
         }});
@@ -177,9 +177,9 @@ function attachOwnListeners(it) {
     it.promise.then(res => {
         scenarios.pending.concat(res.map(el => {
             return {
-                title: el.name??"Titre inconnu",
-                description: el.description??"Description inconnue",
-                machine: el.machine != null? el.machine.name: "Machine inconnue"
+                title: el.name,
+                description: el.description,
+                machine: el.machine?.name
             }
         }));
         obj.displayMoreOwnButton = Owniterator.isNext();
@@ -224,7 +224,7 @@ function fetchOwnScenarios(idMachine) {
  */
 function removeScenario(id, caller) {
     const el = this.$refs["delete-popup"];
-    el.show("Supprimer un scénario", "Voulez-vous supprimer "+(scenarios.editing.find(el => el.id == id).title)+" ?", "Annuler", "Supprimer");
+    el.show(User.LANGUAGE.DATA.SCENARIOS.ACTIONS.REMOVE.TITLE, User.LANGUAGE.DATA.SCENARIOS.ACTIONS.REMOVE.DESCRIPTION, User.LANGUAGE.DATA.ACTIONS.CANCEL, User.LANGUAGE.DATA.ACTIONS.REMOVE);
     el.setPosition(caller);
     el.setCallback(() => {
         API.execute_logged(API.ROUTE.SCENARIOS+id, API.METHOD_DELETE, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
@@ -257,9 +257,9 @@ function updateMachinesSelect(selectValue) {
     const userSelect = document.getElementById("machines-select");
     let val = userSelect.value;
     userSelect.innerHTML = "";
-    const userOptions = [{value: "<all>", text: "Toutes"}];
+    const userOptions = [{value: "<all>", text: User.LANGUAGE.DATA.COMMON.ALL}];
     availableMachines.forEach(machine => userOptions.push(machine));
-    userOptions.push({value: "<select>", text: "Selectionner ..."});
+    userOptions.push({value: "<select>", text: User.LANGUAGE.DATA.ACTIONS.SELECT+" ..."});
 
     userOptions.forEach(option => {
         let optionElement = document.createElement("option");
@@ -313,7 +313,7 @@ export default {
     },
     setup() {
         if (window.location.href.split("#").length < 2) window.location.href += "#all";
-        return {window, scenarios, user: User.currentUser, icon: {plus: PlusIcon}, obj, API, availableMachines}
+        return {window, scenarios, User, icon: {plus: PlusIcon}, obj, API, availableMachines}
     },
     mounted() {
         dom = this;

@@ -7,32 +7,39 @@
             <div class="flex m-auto grow-0 w-fit m-2 mx-auto max-w-full">
                 <div class="flex grow flex-col my-auto min-h-0 max-h-inherit md:max-h-full">
                     <div id="scenario-header" class="flex flex-col grow max-h-full min-h-0">
-                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ pageMode == MODE_VIEW ? "Voir" : pageMode == MODE_EDIT ? "Modifier" : "Créer" }} une machine</h2>
+                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">
+                            {{ 
+                                User.LANGUAGE.DATA.MACHINES.MESSAGES.TITLE.replace("{action}",
+                                (pageMode == MODE_VIEW ? User.LANGUAGE.DATA.ACTIONS.VIEW : pageMode == MODE_EDIT ? User.LANGUAGE.DATA.ACTIONS.EDIT : User.LANGUAGE.DATA.ACTIONS.CREATE))
+                            }}
+                        </h2>
                         <div class="flex md:flex-row flex-col p-2 min-h-0">
                             <!-- Machien's basic informations -->
                             <div class="flex flex-col h-full bg-white rounded-lg p-2 max-w-full space-y-2">
                                 <div class="flex md:flex-row flex-col justify-between"> <!-- Machine name input (input label and input zone) -->
-                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Nom de la machine : </p>
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.MACHINES.MESSAGES.MACHINE_NAME }} : </p>
                                     <input type="text" id="input-machinename" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                 </div>
                                 <div class="flex flex-col grow-0"> <!-- Machine description input (input label and input zone) -->
-                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Description de la machine : </p>
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.MACHINES.MESSAGES.MACHINE_DESCRIPTION }} : </p>
                                     <textarea id="input-machinedesc" rows="5" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                                 </div>
                                 <div class="edit-zone flex justify-between grow-0"> <!-- Machine description input (input label and input zone) -->
-                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Modèle 3D : </p>
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.MACHINES.MESSAGES.MACHINE_MODEL }} : </p>
                                     <input type="file" name="" id="model-input" accept=".glb,.gltf">
                                     <label for="model-input">
-                                        <p class="md:size-to-parent border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 cursor-pointer">Ajouter un modèle 3D</p>
+                                        <p class="md:size-to-parent border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 cursor-pointer">
+                                            {{ User.LANGUAGE.DATA.MACHINES.MESSAGES.ADD_MODEL }}
+                                        </p>
                                     </label>
                                 </div>
                             </div>
                             <!-- Machine's targets -->
                             <div class="flex grow flex-col md:mt-0 mt-2 md:ml-2 ml-0 bg-white rounded-lg p-2 min-h-0 max-h-screen space-y-2">
                                 <div class="flex flex-row">
-                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">Cibles de la machine : </p>
+                                    <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.MACHINES.MESSAGES.MACHINE_TARGETS }} : </p>
                                     <p id="generate-btn" class="edit-zone border whitespace-nowrap inline-flex px-4 py-2 border-gray-100 rounded-md text-base font-medium text-gray-500 bg-gray-50 cursor-default">
-                                        Générer
+                                        {{ User.LANGUAGE.DATA.ACTIONS.GENERATE }}
                                     </p>
                                 </div>
                                 <div class="flex grow flex-col min-h-0">
@@ -51,13 +58,13 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /> <!-- Remove button icon -->
                                             </svg>
-                                            <p class="whitespace-nowrap text-white m-auto mx-1">Supprimer</p> <!-- Remove button label -->
+                                            <p class="whitespace-nowrap text-white m-auto mx-1">{{ User.LANGUAGE.DATA.ACTIONS.REMOVE }}</p> <!-- Remove button label -->
                                         </button>
                                         <button v-on:click="addMachineTarget();" class="bg-indigo-600 p-1 h-fit w-fit flex flex-row shadow rounded">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /> <!-- Add button icon -->
                                             </svg>
-                                            <p class="whitespace-nowrap text-white m-auto mx-1">Ajouter</p> <!-- Add button label -->
+                                            <p class="whitespace-nowrap text-white m-auto mx-1">{{ User.LANGUAGE.DATA.ACTIONS.ADD }}</p> <!-- Add button label -->
                                         </button>
                                     </div>
                                 </div>
@@ -69,8 +76,8 @@
                                 <p class="opacity-0 text-center text-indigo-600"></p>
                             </div>
                             <div class="flex grow justify-between"> <!-- Buttons -->
-                                <BackButton>{{ pageMode == MODE_VIEW ? "Retour" : "Annuler" }}</BackButton> <!-- Cancel button -->
-                                <ValidateButton id="validate-button" v-on:click="saveMachine" v-if="pageMode != MODE_VIEW">{{ pageMode == MODE_EDIT ? "Modifier" : "Créer" }}</ValidateButton> <!-- Save button -->
+                                <BackButton>{{ pageMode == MODE_VIEW ? User.LANGUAGE.DATA.ACTIONS.BACK : User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel button -->
+                                <ValidateButton id="validate-button" v-on:click="saveMachine" v-if="pageMode != MODE_VIEW">{{ pageMode == MODE_EDIT ? User.LANGUAGE.DATA.ACTIONS.EDIT : User.LANGUAGE.DATA.ACTIONS.CREATE }}</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>
@@ -96,7 +103,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
  */
 function logMessage(msg) {
     const btn = document.getElementById("validate-button");
-    btn.innerHTML = action;
+    btn.innerHTML = pageMode;
     const div = document.getElementById("log-zone");
     const txt = div.firstElementChild;
     if (txt.innerHTML.length < 1)
@@ -267,7 +274,7 @@ function saveModifications(name, description, targets) {
     saveMachineModel(originalMachine.id).then(() => {
         // model uploaded
     }).catch(err => {
-        logMessage("Erreur lors de la sauvegarde du modèle 3D");
+        logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.ERROR_MODEL_SAVING);
         console.error(err);
     });
 
@@ -289,7 +296,7 @@ function saveModifications(name, description, targets) {
     });
 
     const setTaskDone = () => {
-        logMessage("Modifications sauvegardées");
+        logMessage(User.LANGUAGE.DATA.LOGS.MODIFICATIONS_SAVED);
         // redirectHome();
         // retreiveMachineInfos();
     };
@@ -352,13 +359,13 @@ function saveMachine() {
     // if no name has been provided, notify the user and return
     if (machineName.value.length < 1) {
         machineName.focus();
-        logMessage("Veuillez préciser un nom de machine.")
+        logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.SPECIFY_MACHINE_NAME);
         return;
     }
     // if no description has been provided, notify the user and return
     if (machineDesc.value.length < 1) {
         machineDesc.focus();
-        logMessage("Veuillez préciser une description de machine.")
+        logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.SPECIFY_MACHINE_DESCRIPTION);
         return;
     }
 
@@ -366,13 +373,13 @@ function saveMachine() {
     for (let i = 0; i < machineTargs.length; i++) {
         const target = machineTargs[i];
         if (target.name < 1) {
-            logMessage("Veuillez préciser un nom de cible.")
+            logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.SPECIFY_TARGET_NAME)
             return;
         }
         for (let j = i+1; j < machineTargs.length; j++) {
             const target2 = machineTargs[j];
             if (target2.name == target.name) {
-                logMessage("Veuillez ne pas préciser deux fois la même cible.")
+                logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.DUPLICATE_TARGET_NAME);
                 return;
             }
         }
@@ -382,7 +389,7 @@ function saveMachine() {
     const button = document.getElementById("validate-button");
     button.innerHTML = "...";
 
-    if (action == "Modifier") { // modification mode, should execute saveModifications instead of this function
+    if (pageMode == MODE_EDIT) { // modification mode, should execute saveModifications instead of this function
         saveModifications(machineName.value, machineDesc.value, machineTargs);
         return;
     }
@@ -402,10 +409,10 @@ function saveMachine() {
             if (++additionCounter >= machineTargs.length) {
                 // send the machine model if specified
                 saveMachineModel(res.id).then(() => {
-                    logMessage("Machine créée");
+                    logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.CREATED);
                     redirectHome();
                 }).catch(err => {
-                    logMessage("Erreur : "+err.message);
+                    logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 })
             }
         }
@@ -421,14 +428,14 @@ function saveMachine() {
         } else checkForAddition();
 
     }).catch(err => { // error, notify the user
-        logMessage("Erreur lors de la création de la machine.");
-        if (!err.json) console.error(err);
-        else err.json().then(json => {
+        logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.ERROR_CREATION);
+        if (!err.message.json) console.error(err);
+        else err.message.json().then(json => {
             console.error(json)
             switch (json.detail[0].type) {
                 case "IntegrityError":
                     machineName.focus();
-                    logMessage("Le nom ["+document.getElementById('input-machinename').value+"] existe déjà.");
+                    logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.ALREADY_EXISTS);
                     break;
                 default: break;
             }
@@ -529,7 +536,7 @@ export default {
         BackButton,
         ValidateButton
     },
-    data() {return {machineTargets, pageMode, MODE_VIEW, MODE_CREATE, MODE_EDIT};},
+    data() {return {User, machineTargets, pageMode, MODE_VIEW, MODE_CREATE, MODE_EDIT};},
     setup() {
         
     },

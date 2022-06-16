@@ -4,9 +4,9 @@
         <div class="bg-white p-4 md:p-8 shadow-xl mx-auto rounded-lg">
             <div class="mx-auto max-w-md">
                 <div class="flex center"> <!-- Modal title -->
-                    <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
+                    <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 whitespace-wrap md:whitespace-nowrap">
-                        Connecter un appareil
+                        {{ User.LANGUAGE.DATA.EASYCONNECT.MESSAGES.CONNECT_DEVICE }}
                     </h2>
                 </div>
                 <div>
@@ -16,24 +16,24 @@
                             <div id="login-credentials" v-show="!User.isConnected(User.currentUser)" >
                                 <div class="md:space-y-6 md:py-8 text-base leading-7 text-gray-400">
                                     <div class="md:flex block justify-between">
-                                        <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
+                                        <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.USERNAME }}: </p>
                                         <input type="text" name="username" class="md:w-fit w-full box-border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     </div>
                                     <div class="md:flex block justify-between">
-                                        <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
+                                        <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.PASSWORD }}: </p>
                                         <input type="password" name="password" class="md:w-fit w-full box-border whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     </div>
                                 </div>
                                 <!-- If we want to use custom credentials but the user is connected, display a button to switch to automatic credentials -->
                                 <div v-show="User.isConnected(User.currentUser)" class="flex justify-left">
-                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">Connecté à {{ User.currentUser.username }} : </p>
+                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">{{ User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", User.currentUser.username) }} :</p>
                                     <a v-on:click="useUserinfos" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Utiliser</a>
                                 </div>
                             </div>
                             <!-- Button to switch to custom credentials -->
                             <div id="login-userinfos" v-show="User.isConnected(User.currentUser)">
                                 <div class="flex justify-left">
-                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">Connecté à {{ User.currentUser.username }} : </p>
+                                    <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">{{ User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", User.currentUser.username) }} :</p>
                                     <a v-on:click="useCredentials" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Changer</a>
                                 </div>
                             </div>
@@ -41,7 +41,7 @@
                         <!-- EasyConnect code input -->
                         <div class="md:space-y-6 md:py-8 py-4 text-base md:leading-7 text-gray-400">
                             <div class="md:flex block justify-between">
-                                <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2 text-center">Code appareil: </p>
+                                <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2 text-center">{{ User.LANGUAGE.DATA.EASYCONNECT.MESSAGES.DEVICE_CODE }}: </p>
                                 <div class="flex justify-center">
                                     <input type="number" pattern="[0-9]*" name="number1" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                                     <input type="number" pattern="[0-9]*" name="number2" class="input-numbers whitespace-nowrap inline-flex max-w-[32px] text-center p-1 mx-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
@@ -57,8 +57,8 @@
                         </div>
                         <!-- Buttons -->
                         <div class="pt-8 flex justify-between">
-                            <Backbutton>Annuler</Backbutton> <!-- Cancel -->
-                            <ValidateButton id="btn-validate" v-on:click="onValidate">Valider</ValidateButton> <!-- Validate -->
+                            <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel -->
+                            <ValidateButton id="btn-validate" v-on:click="onValidate">{{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }}</ValidateButton> <!-- Validate -->
                         </div>
                     </div>
                 </div>
@@ -168,19 +168,19 @@ function onValidate() {
 
     if (usingCredentials) { // check for user credentials
         if (credentials.username.value.trim() == "") {
-            logMessage("Veuillez renseigner un nom d'utilisateur.");
+            logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_USERNAME);
             credentials.username.focus();
             return;
         }
         if (credentials.password.value.trim() == "") {
-            logMessage("Veuillez renseigner un mot de passe.");
+            logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_PASSWORD);
             credentials.password.focus();
             return;
         }
     }
 
     if (credentials.number.value.trim().length < 5) {
-        logMessage("Veuillez renseigner un code appareil valide.");
+        logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.SPECIFY_CODE);
         credentials.number.focus();
         return;
     }
@@ -193,7 +193,7 @@ function onValidate() {
             });
         }).catch(err => {
             console.error(err);
-            logMessage("Nom d'utilisateur ou mot de passe incorrect.");
+            logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.INVALID_CREDENTIALS);
         });
     } else {
         sendEasyConnectRequest({
@@ -209,19 +209,19 @@ function onValidate() {
  */
 function sendEasyConnectRequest(data) {
     API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, {type: data.token.split(" ")[0], token: data.token.split(" ")[1]}, data, API.TYPE_JSON).then(res => {
-        logMessage("Appareil connecté au compte.");
+        logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.CONNECTED);
         redirectHome();
     }).catch(err => {
         switch (err.message.status) {
             case 404:
-                logMessage("Erreur: Appareil inconnu.");
+                logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.UNKNOWN_DEVICE);
                 break;
             default:
                 if (err.message.json) {
-                    err.message.json().then(e => logMessage("Erreur : "+e.detail));
+                    err.message.json().then(e => logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+e.detail));
                     console.error(e);
                 }
-                else logMessage("Erreur lors de la connexion.");
+                else logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SERVER_ERROR);
                 break;
         }
     });

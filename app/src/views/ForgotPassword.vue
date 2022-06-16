@@ -5,18 +5,18 @@
             <div class="mx-auto max-w-md">
                 <!-- Modal title -->
                 <div class="flex center">
-                    <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
+                    <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 whitespace-nowrap">
-                        Mot de passe oublié
+                        {{ User.LANGUAGE.DATA.FORGOTPASSWORD.MESSAGES.FORGOT_PASSWORD }}
                     </h2>
                 </div>
                 <!-- Modal information text -->
-                <p class="text-gray-600">Après avoir renseigné votre nom d'utilisateur ou votre Email, vous recevrez les instructions pour réinitialiser votre mot de passe dans la boîte mail associée à votre compte.</p>
+                <p class="text-gray-600">{{ User.LANGUAGE.DATA.FORGOTPASSWORD.MESSAGES.DESCRIPTION }}</p>
                 <div class="divide-y divide-gray-300/50">
                     <div class="space-y-6 py-8 text-base leading-7 text-gray-400">
                         <!-- Username or email input zone -->
                         <div class="block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur ou email: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.USERNAME + " " + User.LANGUAGE.DATA.COMMON.OR.toLowerCase() + " " + User.LANGUAGE.DATA.COMMON.EMAIL }}: </p>
                             <input type="email" id="input-username-email" name="email" class="size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                     </div>
@@ -26,9 +26,9 @@
                     </div>
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
-                        <BackButton>Annuler</BackButton> <!-- Cancel button -->
+                        <BackButton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel button -->
                         <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                            Valider <!-- Validate button -->
+                            {{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }} <!-- Validate button -->
                         </button>
                     </div>
                 </div>
@@ -84,19 +84,20 @@ function logMessage(msg) {
 function onValidate() {
     const input = document.getElementById("input-username-email");
     if (input.value.trim() == "") {
-        logMessage("Veuillez renseigner un nom d'utilisateur ou un email");
+        logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.SPECIFY_USERNAME_EMAIL);
         input.focus();
         return;
     }
     API.execute(API.ROUTE.RESET+input.value, API.METHOD_GET).then(res => {
         logMessage(res.message);
+        redirectHome();
     }).catch(err => {
         switch (err.status) {
             case 404:
-                logMessage("Nom d'utilisateur ou email inconnu.");
+                logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.INCORRECT_USERNAME_EMAIL);
                 break;
             default:
-                logMessage("Erreur lors de la communication au serveur.");
+                logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SERVER_ERROR);
                 break;
         }
     });
@@ -107,6 +108,7 @@ export default {
     components: {
         BackButton
     },
+    data() { return {User}; },
     mounted() {
         setup();
     },

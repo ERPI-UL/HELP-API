@@ -5,26 +5,26 @@
             <div class="mx-auto max-w-md">
                 <!-- Modal title -->
                 <div class="flex center">
-                    <img src="../assets/images/icons/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
+                    <img src="../assets/images/logo_indigo.png" class="hidden md:block h-10" alt="Tailwind Play" />
                     <h2 class="text-2xl font-extrabold text-indigo-600 px-6 whitespace-nowrap">
-                        Se connecter
+                        {{ User.LANGUAGE.DATA.ACTIONS.LOGIN }}
                     </h2>
                 </div>
                 <div class="divide-y divide-gray-300/50">
                     <div class="space-y-6 py-2 md:py-8 text-base text-gray-400">
                         <!-- Username input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Nom d'utilisateur: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.USERNAME }}: </p>
                             <input type="text" id="input-username" name="username" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Password input -->
                         <div class="md:flex block justify-between">
-                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">Mot de passe: </p>
+                            <p class="whitespace-nowrap center font-medium text-gray-500 p-2 mr-2">{{ User.LANGUAGE.DATA.COMMON.PASSWORD }}: </p>
                             <input type="password" id="input-password" name="password" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                         </div>
                         <!-- Forgot password button (to redirect to ForgotPassword.vue file) -->
                         <div class="md:flex block" v-on:click="forgotPassword();">
-                            <p class="text-indigo-600 hover:underline cursor-pointer">Mot de passe oublié</p>
+                            <p class="text-indigo-600 hover:underline cursor-pointer">{{ User.LANGUAGE.DATA.FORGOTPASSWORD.MESSAGES.FORGOT_PASSWORD }}</p>
                         </div>
                     </div>
                     <!-- Message log zone -->
@@ -33,9 +33,9 @@
                     </div>
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
-                        <BackButton>Annuler</BackButton> <!-- Cancel -->
+                        <BackButton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel -->
                         <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                            Valider <!-- Validate -->
+                            {{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }} <!-- Validate -->
                         </button>
                     </div>
                 </div>
@@ -107,46 +107,45 @@ function onValidate() {
     };
 
     if (credentials.username.value.trim() == "") {
-        logMessage("Veuillez renseigner un nom d'utilisateur.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_USERNAME);
         credentials.username.focus();
         return;
     }
     if (credentials.password.value.trim() == "") {
-        logMessage("Veuillez renseigner un mot de passe.");
+        logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SPECIFY_PASSWORD);
         credentials.password.focus();
         return;
     }
 
     API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {grant_type: "password", username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(data => {
         if (data.error) {
-            logMessage("Une erreur s'est produite: "+data.error);
+            logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+data.error);
         }
         else {
             let user = User.fromToken({token: data.access_token, type: data.token_type})
-            logMessage("Récuperation des informations ...");
             user.fetchInformations(logMessage).then(user => {
-                logMessage("Connecté !");
-                btn.innerHTML = "Valider";
+                logMessage(User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", user.username));
+                btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.VALIDATE;
                 User.saveUser(user);
                 redirectHome();
             }).catch(err => {
-                logMessage("Une erreur s'est produite: "+err.message);
+                logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 console.error(err);
             });
         }
     }).catch(err => {
         console.error("Token request error: ", err);
-        btn.innerHTML = "Valider";
+        btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.VALIDATE;
         switch (err.status) {
             case 401:
-                logMessage("Mot de passe invalide.");
+                logMessage(User.LANGUAGE.DATA.LOGIN.LOGS.INVALID_PASSWORD);
                 break;
             case 404:
-                logMessage("Nom d'utilisateur invalide.");
+                logMessage(User.LANGUAGE.DATA.LOGIN.LOGS.INVALID_USERNAME);
                 break;
         
             default:
-                logMessage("Erreur lors de la connexion au serveur");
+                logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.SERVER_ERROR);
                 break;
         }
     });
@@ -158,6 +157,7 @@ export default {
     components: {
         BackButton
     },
+    data() { return {User}; },
     mounted() {
         setup();
     },
