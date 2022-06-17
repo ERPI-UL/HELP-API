@@ -19,13 +19,17 @@ import User from "../script/User";
     `<div class="flex justify-between m-1">
         <h2 id="stepname-${id}" class="text-sm m-1 text-indigo-600 font-extrabold">Étape ${ordernumber}</h2>
         <div class="edit-zone flex space-x-4">
-            <button onclick="window.indico.moveUp(${id});" id="steprem-${id}" class="bg-gray-600/[0.1] h-fit w-fit flex flex-row shadow rounded">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <!-- The onclick="window.indico.moveUp(${id});" event has been removed from this button because of glitches in the moveUp() function : TODO FIXIT -->
+            <!-- Old button style was [class="bg-gray-600/[0.1] h-fit w-fit flex flex-row shadow rounded"] with svg style was [class="h-6 w-6 m-auto text-gray-600"] -->
+            <!-- But it has been changed to make the buttons look like disabled -->
+            <button disabled="disabled" id="steprem-${id}" class="bg-gray-400/[0.1] h-fit w-fit flex flex-row rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                 </svg>
             </button>
-            <button onclick="window.indico.moveDown(${id});" id="steprem-${id}" class="bg-gray-600/[0.1] h-fit w-fit flex flex-row shadow rounded">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <!-- The onclick="window.indico.moveDown(${id});" event has been removed from this button because of glitches in the moveDown() function : TODO FIXIT -->
+            <button disabled="disabled" id="steprem-${id}" class="bg-gray-400/[0.1] h-fit w-fit flex flex-row rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
