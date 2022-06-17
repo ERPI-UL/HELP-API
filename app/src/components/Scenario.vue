@@ -15,7 +15,7 @@
             </p>
         </div>
         <div class="pt-8 flex justify-between"> <!-- Scenario edit buttons (for edit mode) -->
-            <div class="pr-10"><slot name="remove"></slot></div> <!-- Scenario remove button -->
+            <div class="pr-10 flex"><slot name="remove"></slot></div> <!-- Scenario remove button -->
             <slot name="href"></slot> <!-- Scenario edit/view redirect button -->
         </div>
     </div>

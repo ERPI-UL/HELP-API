@@ -17,6 +17,7 @@ class API {
         LOGIN: "/auth/token/",
         RESET: "/auth/reset/",
         PASSWORD: "/auth/password/",
+        LANGUAGES: "/users/languages/",
         USER: "/users/me/",
         USERS: "/users/",
         INVITE: "/users/invite/",
@@ -31,6 +32,7 @@ class API {
         __SCENARIOS: "/scenarios/",
         __STEPS: "/steps/",
         __MODEL: "/model/",
+        __LANGUAGES: "/languages/",
         STEPS: "/scenarios/steps/",
         STATS: {
             SCENARIOS: {

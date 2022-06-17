@@ -69,6 +69,12 @@
                             <template v-slot:title>{{item.title}}</template>
                             <template v-slot:machine>{{item.machine}}</template>
                             <template v-slot:description>{{item.description}}</template>
+                            <template v-slot:remove>
+                                <div class="flex space-x-2">
+                                    <div class="border border-indigo-600/[0.4] bg-indigo-600/[0.2] shadow-lg rounded-md px-2 my-auto h-fit"
+                                       v-for="lang in item.languages">{{lang.unicode}}</div>
+                                </div>
+                            </template>
                             <template v-slot:href><RedirectButton :href="item.view">{{ User.LANGUAGE.DATA.ACTIONS.VIEW }}</RedirectButton></template>
                         </Scenario>
                         <!-- Scenarios in #edit mode -->
@@ -143,14 +149,23 @@ let loadNextOwnScenarios = () => {return Owniterator != null && Owniterator.isNe
  */
 function attachAllListeners(it) {
     it.promise.then(res => {
-        const data = res.data.map(el => {return {
-            id: el.id,
-            title: el.name,
-            description: el.description,
-            machine: el.machine.name,
-            edit: "/scenarios/edit?idScenario="+el.id,
-            view: "/scenarios/view?idScenario="+el.id
-        }});
+        const data = res.data.map(el => {
+            return {
+                id: el.id,
+                title: el.name,
+                description: el.description,
+                machine: el.machine.name,
+                languages: [],
+                edit: "/scenarios/edit?idScenario="+el.id,
+                view: "/scenarios/view?idScenario="+el.id
+            }
+        });
+        data.forEach(el => {
+            API.execute(API.ROUTE.SCENARIOS+el.id+API.ROUTE.__LANGUAGES).then(res => {
+                el.languages = res;
+                if (dom != null) dom.$forceUpdate();
+            });
+        })
         scenarios.all = scenarios.all.concat(data);
         scenarios.editing = scenarios.editing.concat(data);
         obj.displayMoreAllButton = Alliterator.isNext();
