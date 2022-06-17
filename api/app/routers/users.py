@@ -70,9 +70,9 @@ async def get_user(current_user: Models.User = Depends(utils.get_current_user_in
         'lastname': user.lastname,
         'email': user.email,
         'adminLevel': user.adminLevel,
-        'language': user.language.name,
-        'flag': user.language.unicode,
-        'language_code': user.language.code,
+        'language':user.language.name if user.language is not None else None,
+        'flag': user.language.unicode if user.language is not None else None,
+        'language_code': user.language.code if user.language is not None else None,
     }
 
 
