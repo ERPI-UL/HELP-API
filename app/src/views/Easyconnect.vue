@@ -27,14 +27,14 @@
                                 <!-- If we want to use custom credentials but the user is connected, display a button to switch to automatic credentials -->
                                 <div v-show="User.isConnected(User.currentUser)" class="flex justify-left">
                                     <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">{{ User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", User.currentUser.username) }} :</p>
-                                    <a v-on:click="useUserinfos" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Utiliser</a>
+                                    <button v-on:click="useUserinfos" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Utiliser</button>
                                 </div>
                             </div>
                             <!-- Button to switch to custom credentials -->
                             <div id="login-userinfos" v-show="User.isConnected(User.currentUser)">
                                 <div class="flex justify-left">
                                     <p class="whitespace-nowrap center font-medium text-sm text-gray-500 p-1 w-fit">{{ User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", User.currentUser.username) }} :</p>
-                                    <a v-on:click="useCredentials" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Changer</a>
+                                    <button v-on:click="useCredentials" class="whitespace-nowrap center font-medium text-sm text-indigo-600 p-1 cursor-pointer hover:underline">Changer</button>
                                 </div>
                             </div>
                         </div>
@@ -58,7 +58,7 @@
                         <!-- Buttons -->
                         <div class="pt-8 flex justify-between">
                             <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel -->
-                            <ValidateButton id="btn-validate" v-on:click="onValidate">{{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }}</ValidateButton> <!-- Validate -->
+                            <ValidateButton id="btn-validate" v-on:click="() => onValidate(this)">{{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }}</ValidateButton> <!-- Validate -->
                         </div>
                     </div>
                 </div>
@@ -72,7 +72,6 @@ import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
 import User from "../script/User";
-import { redirectHome } from "../script/common";
 
 /**
  * Setup all number input listeners
@@ -150,7 +149,7 @@ function logMessage(msg) {
  * and if the easyconnect code is correctly entered, if so make an API call
  * to try to connect the device to this account.
  */
-function onValidate() {
+function onValidate(obj) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "...";
     const credentials = {
@@ -187,7 +186,7 @@ function onValidate() {
 
     if (usingCredentials) {
         API.execute(API.ROUTE.LOGIN, API.METHOD_POST, {username: credentials.username.value, password: credentials.password.value}, API.TYPE_FORM).then(res => {
-            sendEasyConnectRequest({
+            sendEasyConnectRequest(obj, {
                 token: res.token_type + " " + res.access_token,
                 code: credentials.number.value
             });
@@ -196,7 +195,7 @@ function onValidate() {
             logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.INVALID_CREDENTIALS);
         });
     } else {
-        sendEasyConnectRequest({
+        sendEasyConnectRequest(obj, {
             token: User.currentUser.token.type + " " + User.currentUser.token.token,
             code: credentials.number.value
         });
@@ -207,10 +206,10 @@ function onValidate() {
  * Send an API call to connect a device to this account
  * @param {{token:string,code:number}} data data to use in the call (user token and easyconnect code)
  */
-function sendEasyConnectRequest(data) {
+function sendEasyConnectRequest(obj, data) {
     API.execute_logged(API.ROUTE.EASY_CONNECT, API.METHOD_POST, {type: data.token.split(" ")[0], token: data.token.split(" ")[1]}, data, API.TYPE_JSON).then(res => {
         logMessage(User.LANGUAGE.DATA.EASYCONNECT.LOGS.CONNECTED);
-        redirectHome();
+        obj.$router.go(-1)
     }).catch(err => {
         switch (err.message.status) {
             case 404:

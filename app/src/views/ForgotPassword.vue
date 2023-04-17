@@ -27,7 +27,7 @@
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
                         <BackButton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel button -->
-                        <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        <button id="btn-validate" v-on:click="() => onValidate(this)" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                             {{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }} <!-- Validate button -->
                         </button>
                     </div>
@@ -40,7 +40,6 @@
 <script>
 import BackButton from "../components/BackButton.vue";
 import API from "../script/API";
-import { redirectHome } from "../script/common";
 
 /**
  * Creates a keydown event listener for enter press (if so emulated a validate button click)
@@ -81,7 +80,7 @@ function logMessage(msg) {
  * checks if the user entered an email or a username
  * and if so makes an API call to send an email to the user
  */
-function onValidate() {
+function onValidate(obj) {
     const input = document.getElementById("input-username-email");
     if (input.value.trim() == "") {
         logMessage(User.LANGUAGE.DATA.FORGOTPASSWORD.LOGS.SPECIFY_USERNAME_EMAIL);
@@ -90,7 +89,7 @@ function onValidate() {
     }
     API.execute(API.ROUTE.RESET+input.value, API.METHOD_GET).then(res => {
         logMessage(res.message);
-        redirectHome();
+        obj.$router.go(-1)();
     }).catch(err => {
         switch (err.status) {
             case 404:

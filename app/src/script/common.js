@@ -1,18 +1,6 @@
 import User from "./User";
 
 /**
- * Redirects the user back in history or on the home page
- * @param {boolean} wait Should the function wait 1s before redirecting
- */
-export function redirectHome(wait=true) {
-    setTimeout(() => {
-        if (document.referrer.startsWith(window.location.origin))
-            window.location.href = document.referrer;
-        else window.location.href = window.location.origin;
-    }, wait?1000:0);
-}
-
-/**
  * Converts a number of seconds to a stringified time
  * @param {number} time time in seconds to convert to a string
  * @returns stringified time (minutes+seconds)

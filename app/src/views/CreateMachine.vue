@@ -77,7 +77,7 @@
                             </div>
                             <div class="flex grow justify-between"> <!-- Buttons -->
                                 <BackButton>{{ pageMode == MODE_VIEW ? User.LANGUAGE.DATA.ACTIONS.BACK : User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel button -->
-                                <ValidateButton id="validate-button" v-on:click="saveMachine" v-if="pageMode != MODE_VIEW">{{ pageMode == MODE_EDIT ? User.LANGUAGE.DATA.ACTIONS.EDIT : User.LANGUAGE.DATA.ACTIONS.CREATE }}</ValidateButton> <!-- Save button -->
+                                <ValidateButton id="validate-button" v-on:click="() => saveMachine(this)" v-if="pageMode != MODE_VIEW">{{ pageMode == MODE_EDIT ? User.LANGUAGE.DATA.ACTIONS.EDIT : User.LANGUAGE.DATA.ACTIONS.CREATE }}</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@ import BackButton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from '../script/API';
 import User from '../script/User';
-import { disableEl, redirectHome } from '../script/common';
+import { disableEl } from '../script/common';
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
@@ -237,7 +237,7 @@ let originalMachine = null;
 /**
  * Retreives the current edited machine's informations with an API call, and store it in the originalMachine variable 
  */
-function retreiveMachineInfos() {
+function retreiveMachineInfos(obj) {
     return new Promise((resolve, reject) => {
         if (pageMode == MODE_VIEW || pageMode == MODE_EDIT)
             API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
@@ -248,7 +248,7 @@ function retreiveMachineInfos() {
                 originalMachine = new Machine(res.id, res.name, res.description, res.targets);
                 resolve();
             }).catch(err => {
-                redirectHome();
+                obj.$router.go(-1);
                 console.error(err);
                 reject(err);
             });
@@ -297,7 +297,7 @@ function saveModifications(name, description, targets) {
 
     const setTaskDone = () => {
         logMessage(User.LANGUAGE.DATA.LOGS.MODIFICATIONS_SAVED);
-        // redirectHome();
+        // obj.$router.go(-1);
         // retreiveMachineInfos();
     };
 
@@ -351,7 +351,7 @@ function saveModifications(name, description, targets) {
  * Save new created the machine (for create mode)
  * Retreives the informations from the dom elements and send them to the API
  */
-function saveMachine() {
+function saveMachine(obj) {
     const machineName = document.getElementById('input-machinename');
     const machineDesc = document.getElementById('input-machinedesc');
     const machineTargs = Array.from(machineTargets);
@@ -410,7 +410,7 @@ function saveMachine() {
                 // send the machine model if specified
                 saveMachineModel(res.id).then(() => {
                     logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.CREATED);
-                    redirectHome();
+                    $router.go(-1)();
                 }).catch(err => {
                     logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 })
@@ -543,7 +543,7 @@ export default {
     mounted() {
         setup();
         dom = this;
-        retreiveMachineInfos().then(() => {
+        retreiveMachineInfos(this).then(() => {
             // if the page is in view mode, disable all the inputs, textareas, etc...
             if (pageMode == MODE_VIEW) {
                 document.querySelectorAll("input").forEach(el => disableEl(el));

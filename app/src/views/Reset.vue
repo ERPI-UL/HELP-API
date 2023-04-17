@@ -31,7 +31,7 @@
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
                         <BackButton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel button -->
-                        <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        <button id="btn-validate" v-on:click="() => onValidate(this)" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                             {{ action }} <!-- Validate button -->
                         </button>
                     </div>
@@ -44,7 +44,6 @@
 <script>
 import BackButton from "../components/BackButton.vue";
 import API from "../script/API";
-import { redirectHome } from "../script/common";
 
 /**
  * Returns a URL parameter value corresponding to the given name.
@@ -68,10 +67,10 @@ let token = null;
  * Retreives the token in the URL and creates the keydown listener for the enter key,
  * to emulate a validate button click
  */
-function setup() {
+function setup(obj) {
     token = getURLParameter("token");
     if (token == null) {
-        redirectHome();
+        obj.$router.go(-1);
         return;
     }
 
@@ -111,7 +110,7 @@ function logMessage(msg) {
  * and makes an API call to reset the password.
  * if successful, redirects to the home page.
  */
-function onValidate() {
+function onValidate(obj) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "...";
 
@@ -136,7 +135,7 @@ function onValidate() {
         if (data.error) logMessage(data.error);
         else {
             logMessage(User.LANGUAGE.DATA.RESET.LOGS.PASSWORD_RESET);
-            redirectHome();
+            obj.$router.go(-1);
         }
     }).catch(err => {
         btn.innerHTML = "Valider";
@@ -164,7 +163,7 @@ export default {
     },
     data() { return {action, User} },
     mounted() {
-        setup();
+        setup(this);
     },
     methods: {onValidate}
 };

@@ -1,6 +1,6 @@
 class API {
     // API constants
-    static API_URL = window.location.protocol + '//indico-api.lf2l.fr';z
+    static API_URL = 'https://indico-api.lf2l.fr';z
     static get METHOD_GET() { return "GET"; }
     static get METHOD_PUT() { return "PUT"; }
     static get METHOD_POST() { return "POST"; }
@@ -59,8 +59,8 @@ class API {
     static execute(path, method = this.METHOD_GET, body = null, type = this.TYPE_NONE, headers = null) {
         return new Promise((resolve, reject) => {
             // update the API protocol if needed
-            if (window.location.protocol !== this.API_URL.split(":")[0]+":")
-                this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
+            // if (window.location.protocol !== this.API_URL.split(":")[0]+":")
+            //     this.API_URL = window.location.protocol + '//indico-api.lf2l.fr';
 
             path = path.replace("/?", "?").replaceAll("//", "/");
             let urlparts = path.split("?");

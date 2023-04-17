@@ -49,7 +49,7 @@
                 <!-- Basic informations buttons -->
                 <div class="flex justify-between h-fit pt-2 pb-4">
                     <DangerousButton id="delete-btn" v-on:click="removeAccount">{{User.LANGUAGE.DATA.ACTIONS.DELETE}}</DangerousButton> <!-- Remove user button -->
-                    <ValidateButton v-on:click="onAccountSave"> <!-- Update informations button -->
+                    <ValidateButton v-on:click="() => onAccountSave(this)"> <!-- Update informations button -->
                         {{User.LANGUAGE.DATA.ACTIONS.UPDATE}}
                     </ValidateButton>
                 </div>
@@ -78,7 +78,7 @@
                 <!-- Password buttons -->
                 <div class="flex grow justify-between h-fit pt-2 pb-4">
                     <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel button (go back in history) -->
-                    <ValidateButton v-on:click="onMDPChange"> <!-- Update user password (disconnects the user) -->
+                    <ValidateButton v-on:click="() => onMDPChange(this)"> <!-- Update user password (disconnects the user) -->
                         {{ User.LANGUAGE.DATA.ACTIONS.UPDATE }}
                     </ValidateButton>
                 </div>
@@ -96,7 +96,6 @@ import ValidateButton from "../components/ValidateButton.vue";
 import DangerousButton from "../components/DangerousButton.vue";
 import ValidatePopup from "../components/ValidatePopup.vue";
 import API from '../script/API';
-import { redirectHome } from '../script/common';
 
 /**
  * Removes the user's account from the database with an API call (also removes all his informations)
@@ -141,7 +140,7 @@ function onAccountSave(ev) {
         User.currentUser.email = data.email;
         updateBtn.innerHTML = "Mettre à jour";
         User.saveUser();
-        redirectHome();
+        obj.$router.go(-1);
     }).catch(err => {
         console.log(err);
         updateBtn.innerHTML = "Mettre à jour";
@@ -156,7 +155,7 @@ function onAccountSave(ev) {
  * Event listener when the user save password button is pressed
  * Makes en API call to update the user's password and disconnects the user + goes back home
  */
-function onMDPChange(ev) {
+function onMDPChange(obj, ev) {
     const updateBtn = ev.target;
     updateBtn.innerHTML = "...";
     const infos = {
@@ -176,7 +175,7 @@ function onMDPChange(ev) {
     }, API.TYPE_JSON).then(data => {
         updateBtn.innerHTML = "Mettre à jour";
         User.forgetUser();
-        redirectHome();
+        obj.$router.go(-1);
     }).catch(err => {
         console.log(err);
     });

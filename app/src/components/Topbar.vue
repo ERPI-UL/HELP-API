@@ -7,9 +7,9 @@
 
                 <!-- DESKTOP/MOBILE MENU VIEW -->
                 <div class="flex justify-start lg:w-0 lg:flex-1"> <!-- Home indico icon -->
-                    <a href="/" class="expand-parent flex">
+                    <router-link to="/" class="expand-parent flex">
                         <img class="h-8 w-auto sm:h-11 bg-indigo-600 border border-2 border-indigo-600 rounded-lg shadow-lg" src="../assets/images/logo_white_indigo.png" alt="" />
-                    </a>
+                    </router-link>
                 </div>
 
                 <!-- MOBILE MENU VIEW -->
@@ -26,7 +26,7 @@
                     <div v-for="opts in menu"> <!-- For each menu's elements, add a clickable label -->
                         
                         <div v-if="opts.href" class="text-gray-500 hover:text-gray-900"> <!-- if the element does not contains submenus, make a redirection label -->
-                            <a :href="opts.href"> {{ opts.name }} </a>
+                            <router-link :to="opts.href"> {{ opts.name }} </router-link>
                         </div>
 
                         <div v-if="opts.elements"> <!-- If the element contains submenus, add a popover containing the submenus -->
@@ -46,13 +46,13 @@
                                         <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
                                             <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
                                                 <!-- For each elemen's submenu, add a redirection zone with the name,  description, and icon of the submenu -->
-                                                <a v-for="item in opts.elements" :key="item.name" :href="item.href" class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50">
+                                                <router-link v-for="item in opts.elements" :key="item.name" :to="item.href" class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50">
                                                     <component :is="item.icon" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                                     <div class="ml-4">
                                                         <p class="text-base font-medium text-gray-900">{{ item.name }}</p>
                                                         <p class="mt-1 text-sm text-gray-500">{{ item.description }}</p>
                                                     </div>
-                                                </a>
+                                                </router-link>
                                             </div>
                                         </div>
                                     </PopoverPanel>
@@ -65,7 +65,7 @@
                 <!-- DESKTOP MENU VIEW -->
                 <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
                     <div v-if="!User.isConnected(User.currentUser)"> <!-- If the user isn't connected, display login and register options -->
-                        <a href="/register" class="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</a>
+                        <router-link to="/register" class="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</router-link>
                         <Redirectbutton href="/login" class="ml-3">{{ User.LANGUAGE.DATA.ACTIONS.LOGIN }}</Redirectbutton>
                     </div>
                     <div v-if="User.isConnected(User.currentUser)"> <!-- If the user is connected, display a dropdown button with his name -->
@@ -75,13 +75,13 @@
                             </template>
                             <template v-slot:items> <!-- Items showed in the dropdown's list when the button is clicked -->
                                 <MenuItem v-slot="{ active }">
-                                    <a href="/profile" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.PROFILE.TITLE }}</a>
+                                    <router-link to="/profile" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.PROFILE.TITLE }}</router-link>
                                 </MenuItem>
                                 <MenuItem v-slot="{ active }">
-                                    <a href="/easyconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.EASYCONNECT.TITLE }}</a>
+                                    <router-link to="/easyconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.EASYCONNECT.TITLE }}</router-link>
                                 </MenuItem>
                                 <MenuItem v-slot="{ active }">
-                                <button v-on:click="disconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block w-full text-left px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.ACTIONS.LOGOUT }}</button>
+                                    <button v-on:click="disconnect" :class="[active ? 'bg-indigo-100 text-gray-900' : 'text-gray-700', 'block w-full text-left px-4 py-2 text-sm']">{{ User.LANGUAGE.DATA.ACTIONS.LOGOUT }}</button>
                                 </MenuItem>
                             </template>
                         </Dropdown>
@@ -106,10 +106,10 @@
                             </div>
                             <!-- If the user is connected, display it's username (shorter than firsname + lastname) and make the button redirect to it's profile -->
                             <div v-if="User.isConnected(User.currentUser)" class="mt-1 ml-2 p-1 rounded shadow-lg bg-indigo-50 cursor-pointer border border-2 border-indigo-600">
-                                <a href="/profile" class="flex">
+                                <router-link to="/profile" class="flex">
                                     <component :is="icon.user" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                     <h3 class="text-indigo-600 mx-1">{{User.currentUser.username}}</h3>
-                                </a>
+                                </router-link>
                             </div>
                             <!-- X button to close the menu -->
                             <div class="-mr-2">
@@ -125,18 +125,18 @@
                             <nav class="grid gap-y-6">
                                 <div v-for="item in menu"> <!-- For each element in the meun -->
                                     <div class="px-2" v-if="item.href"> <!-- If the element does not have submenus, display a redirection label -->
-                                        <a :key="item.name" :href="item.href" class="-m-3 pt-3 flex items-center rounded-md hover:bg-gray-50">
+                                        <router-link :key="item.name" :to="item.href" class="-m-3 pt-3 flex items-center rounded-md hover:bg-gray-50">
                                             <component :is="item.icon" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                             <span class="ml-3 text-base font-medium text-indigo-600">{{ item.name }}</span>
-                                        </a>
+                                        </router-link>
                                     </div>
                                     <div class="px-2" v-if="item.elements"> <!-- If the element has submenus, display the label and all the submenus under it (shifted to the right) -->
                                         <p class="py-2">{{ item.name }}</p> <!-- Menu's label -->
                                         <!-- Element's submenus -->
-                                        <a v-for="opts in item.elements" :key="opts.name" :href="opts.href" class="-m-3 p-2 flex items-center rounded-md hover:bg-gray-50">
+                                        <router-link v-for="opts in item.elements" :key="opts.name" :to="opts.href" class="-m-3 p-2 flex items-center rounded-md hover:bg-gray-50">
                                             <component :is="item.icon" class="flex-shrink-0 h-6 w-6 text-indigo-600" aria-hidden="true" />
                                             <span class="ml-3 text-base font-medium text-indigo-600">{{ opts.name }}</span>
-                                        </a>
+                                        </router-link>
                                     </div>
                                 </div>
                             </nav>
@@ -147,7 +147,7 @@
                         <div v-if="!User.isConnected(User.currentUser)"> <!-- If the user isn't connected, display login and register options -->
                             <Redirectbutton href="/login" class="w-full">{{ User.LANGUAGE.DATA.ACTIONS.LOGIN }}</Redirectbutton>
                             <p class="mt-6 text-center text-base font-medium text-gray-500">
-                                <a href="/register" class="text-indigo-600 hover:text-indigo-500">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</a>
+                                <router-link to="/register" class="text-indigo-600 hover:text-indigo-500">{{ User.LANGUAGE.DATA.ACTIONS.REGISTER }}</router-link>
                             </p>
                         </div>
                         <div v-if="User.isConnected(User.currentUser)" class="text-center"> <!-- If the user is connected, display the log out button -->
@@ -256,8 +256,16 @@
             Redirectbutton
         },
         setup() {
+            const upsetElement = (listName, element) => {
+                const list = menu[menu.findIndex(el=>el.name == listName)];
+                if (!list) return;
+                if (!list.elements) list.elements = [];
+                if (list.elements.findIndex(el => el.name === element.name) == -1)
+                    list.elements.push(element);
+            };
+
             if (User.currentUser.canLearner()) { // if the user is a learner, a teacher or an administrator, add the "my scenarios" option to the menu
-                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.SCENARIOS)]?.elements.push({
+                upsetElement(User.LANGUAGE.DATA.PAGES.SCENARIOS, {
                     name: User.LANGUAGE.DATA.SCENARIOS.PAGES.OWN.TITLE,
                     description: User.LANGUAGE.DATA.SCENARIOS.PAGES.OWN.DESCRIPTION,
                     href: '/scenarios#pending',
@@ -265,19 +273,19 @@
                 });
             }
             if (User.currentUser.canTeacher()) { // if the user is a teacher or an administrator, add the edit options to the menu
-                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.SCENARIOS)]?.elements.push({
+                upsetElement(User.LANGUAGE.DATA.PAGES.SCENARIOS, {
                     name: User.LANGUAGE.DATA.SCENARIOS.PAGES.EDIT.TITLE,
                     description: User.LANGUAGE.DATA.SCENARIOS.PAGES.EDIT.DESCRIPTION,
                     href: '/scenarios#editing',
                     icon: PencilAltIcon
                 });
-                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.MACHINES)]?.elements.push({
+                upsetElement(User.LANGUAGE.DATA.PAGES.MACHINES, {
                     name: User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.TITLE,
                     description: User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.DESCRIPTION,
                     href: '/machines#editing',
                     icon: PencilAltIcon
                 });
-                menu[menu.findIndex(el => el.name == User.LANGUAGE.DATA.PAGES.OTHER)]?.elements.push({
+                upsetElement(User.LANGUAGE.DATA.PAGES.OTHER, {
                     name: User.LANGUAGE.DATA.INVITE.TITLE,
                     description: User.LANGUAGE.DATA.INVITE.DESCRIPTION,
                     href: '/generateInvite',
@@ -285,7 +293,7 @@
                 });
             }
             if (User.currentUser.canAdmin()) { // if the user is an administrator, add the administrator panel to the menu
-                menu[menu.findIndex(el=>el.name == User.LANGUAGE.DATA.PAGES.OTHER)]?.elements.push({
+                upsetElement(User.LANGUAGE.DATA.PAGES.OTHER, {
                     name: User.LANGUAGE.DATA.ADMIN.TITLE,
                     description: User.LANGUAGE.DATA.ADMIN.DESCRIPTION,
                     href: '/admin',

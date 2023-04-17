@@ -49,7 +49,7 @@
                     <!-- Buttons -->
                     <div class="pt-2 flex justify-between">
                         <Backbutton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</Backbutton> <!-- Cancel button -->
-                        <ValidateButton id="btn-validate" v-on:click="sendInvite">{{ User.LANGUAGE.DATA.ACTIONS.SEND }}</ValidateButton> <!-- Validate button -->
+                        <ValidateButton id="btn-validate" v-on:click="() => sendInvite(this)">{{ User.LANGUAGE.DATA.ACTIONS.SEND }}</ValidateButton> <!-- Validate button -->
                     </div>
                 </div>
             </div>
@@ -62,7 +62,6 @@ import Backbutton from "../components/BackButton.vue";
 import ValidateButton from "../components/ValidateButton.vue";
 import API from "../script/API";
 import User from "../script/User";
-import { redirectHome } from "../script/common";
 
 /**
  * Registers the event listener for the enter key
@@ -118,7 +117,7 @@ function logMessage(msg) {
  * Checks if all the fields are correctly filled and makes an API call
  * to try to register the User. If so, redirects to the home page
  */
-function sendInvite() {
+function sendInvite(obj) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "...";
 
@@ -155,7 +154,7 @@ function sendInvite() {
     }, API.TYPE_JSON).then(() => {
         logMessage(User.LANGUAGE.DATA.INVITE.LOGS.INVITE_SENT);
         btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.SEND;
-        redirectHome();
+        obj.$router.go(-1);
     }).catch(err => {
         if (err.message.json) {
             err.message.json().then(e => {

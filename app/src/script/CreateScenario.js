@@ -1,6 +1,6 @@
 import { getBlockDiv, createStepLink } from "./ScenarioBlock";
 import User from '../script/User';
-import { redirectHome, disableEl } from '../script/common';
+import { disableEl } from '../script/common';
 
 /**
  * BlockInfo class, represents a visual scenario step
@@ -460,7 +460,7 @@ function blockInfoFromDom(dom) {
  * Saves the scenario to the server with an API call,
  * only executed when the page is in creation mode, not edit mode
  */
- function saveCreations() {
+ function saveCreations(obj) {
     const button = document.getElementById("save-btn");
     const scenario = compileScenario();
 
@@ -468,7 +468,7 @@ function blockInfoFromDom(dom) {
     API.execute_logged(API.ROUTE.SCENARIOS, API.METHOD_POST, User.currentUser.getCredentials(), scenario, API.TYPE_JSON).then(res => {
         logMessage(User.LANGUAGE.DATA.SCENARIOS.LOGS.CREATED);
         button.innerHTML = User.LANGUAGE.DATA.ACTIONS.SAVE;
-        redirectHome();
+        obj.$router.go(-1)
     }).catch(err => {
         if (err.json)
             err.json().then(console.error)
@@ -608,11 +608,11 @@ function blockInfoFromDom(dom) {
 /**
  * Saves the scenario to the server (chooses between saveCreations and saveModifications depending on the page's mode)
  */
-function saveScenario() {
+function saveScenario(obj) {
     const url = window.location.pathname.split("/");
     if (url[url.length-1] == "edit")
         saveModifications();
-    else saveCreations();
+    else saveCreations(obj);
 }
 
 function updateStepIndexes() {

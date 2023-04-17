@@ -34,7 +34,7 @@
                     <!-- Buttons -->
                     <div class="pt-8 flex justify-between">
                         <BackButton>{{ User.LANGUAGE.DATA.ACTIONS.CANCEL }}</BackButton> <!-- Cancel -->
-                        <button id="btn-validate" v-on:click="onValidate" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        <button id="btn-validate" v-on:click="() => onValidate(this)" class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                             {{ User.LANGUAGE.DATA.ACTIONS.VALIDATE }} <!-- Validate -->
                         </button>
                     </div>
@@ -48,7 +48,6 @@
 import BackButton from "../components/BackButton.vue";
 import User from "../script/User";
 import API from "../script/API";
-import { redirectHome } from "../script/common";
 
 /**
  * When the forgot password button is clicked, redirect the user to the ForgotPassword page
@@ -97,7 +96,7 @@ function logMessage(msg) {
  * makes an API call to get the user's token / informations
  * and then redirects the user to the home page
  */
-function onValidate() {
+function onValidate(obj) {
     const btn = document.getElementById("btn-validate");
     btn.innerHTML = "...";
 
@@ -127,11 +126,11 @@ function onValidate() {
             user.fetchInformations(logMessage).then(user => {
                 logMessage(User.LANGUAGE.DATA.EVENTS.CONNECTED_TO.replace("{value}", user.username));
                 btn.innerHTML = User.LANGUAGE.DATA.ACTIONS.VALIDATE;
-                redirectHome();
+                obj.$router.go(-1);
             }).catch(err => {
                 logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 console.error(err);
-                redirectHome();
+                obj.$router.go(-1);
             });
         }
     }).catch(err => {

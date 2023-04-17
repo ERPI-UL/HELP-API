@@ -360,6 +360,7 @@ export default {
     },
     setup() {
         let recent = shortcuts.find(sc => sc.name == "recent");
+        recent.data.splice(0, recent.data.length);
         recent.data.push(shortcuts.find(sc => sc.name == "account").data.find(el => el.redirect.href == "/easyconnect"));
 
         // if desktop version (landscape mode), display all frequently used shortcut

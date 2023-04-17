@@ -39,7 +39,7 @@
                             <!-- BUTTONS -->
                             <div class="flex grow-0 justify-between">
                                 <BackButton>{{pageMode==MODE_VIEW? User.LANGUAGE.DATA.ACTIONS.BACK : User.LANGUAGE.DATA.ACTIONS.CANCEL}}</BackButton> <!-- Cancel button -->
-                                <ValidateButton id="save-btn" v-if="pageMode != MODE_VIEW" v-on:click="saveScenario">{{ User.LANGUAGE.DATA.ACTIONS.SAVE }}</ValidateButton> <!-- Save button -->
+                                <ValidateButton id="save-btn" v-if="pageMode != MODE_VIEW" v-on:click="() => saveScenario(this)">{{ User.LANGUAGE.DATA.ACTIONS.SAVE }}</ValidateButton> <!-- Save button -->
                             </div>
                         </div>
                     </div>

@@ -10,16 +10,16 @@
                     <!-- Left panel with different pages (all and edit mode) -->
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">{{ User.LANGUAGE.DATA.PAGES.MACHINES }}</h2>
                     <div class="md:pt-8 flex md:flex-col md:overflow-x-visible overflow-x-scroll justify-between">
-                        <a class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
+                        <router-link class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
                             :class="(window.location.href.split('#')[1] == 'all')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
-                            href="#all">
+                            to="#all">
                             {{ User.LANGUAGE.DATA.MACHINES.PAGES.VIEW.TITLE }}
-                        </a>
-                        <a v-if="User.currentUser.canTeacher()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
+                        </router-link>
+                        <router-link v-if="User.currentUser.canTeacher()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
                             :class="(window.location.href.split('#')[1] == 'editing')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
-                            href="#editing">
+                            to="#editing">
                             {{ User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.TITLE }}
-                        </a>
+                        </router-link>
                     </div>
                 </div>
             </div>
