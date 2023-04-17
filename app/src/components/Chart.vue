@@ -32,14 +32,12 @@ function setChart(el, div, infos) {
  */
 function toogleFullscreen(el) {
     if (el.attrs.length == 0) {
-        console.log("cas 1")
         el.$refs["child"].querySelector("div#quit-btn").classList.remove("hidden");
         el.$refs["parent"].classList.forEach(attr => el.attrs.push(attr));
         el.attrs.forEach(attr => el.$refs["parent"].classList.remove(attr));
         el.$refs["parent"].classList.add("fullscreen-parent");
         el.$refs["child"].classList.add("fullscreen-child");
     } else {
-        console.log("cas 2")
         el.$refs["child"].querySelector("div#quit-btn").classList.add("hidden");
         el.$refs["parent"].classList.remove("fullscreen-parent");
         el.$refs["child"].classList.remove("fullscreen-child");

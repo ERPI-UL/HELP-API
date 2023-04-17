@@ -74,14 +74,14 @@
                                 <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
                                 <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
                             </svg>
-                            <tooltip class="absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SHOW_HIDE_CONTROLS }}</tooltip>
+                            <div class="tooltip absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SHOW_HIDE_CONTROLS }}</div>
                         </div>
                         <div v-on:click="resetControls($event.target)" class="control-btn flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <tooltip class="absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RESET_VIEW }}</tooltip>
+                            <div class="tooltip absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RESET_VIEW }}</div>
                         </div>
                     </div>
                     <canvas id="3D-view" class="flex grow"></canvas>
@@ -209,31 +209,28 @@ setEditPositionCallback(block => {
 
 function setIcon(el, state) {
     if (state) {
-        el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                               <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-                               <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                           </svg>`;
-    } else el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                        </svg>`;
+        el.innerHTML = `<path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                       `;
+    } else el.innerHTML = `<path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                           <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                       `;
+}
+
+function getCTRLBtn(el, counter) {
+    if (counter > 4) return null;
+    if (el.classList.contains("control-btn"))
+        return el;
+    else if (el.parentElement)
+        return getCTRLBtn(el.parentElement);
+    else return null;
 }
 
 /**@param {HTMLElement} el */
 function toogleControls(el) {
     const state = toogleTransformEnabled();
-    console.log(el.tagName.toUpperCase());
-    switch (el.tagName.toUpperCase()) {
-        case "DIV":
-            setIcon(el, state);
-            break;
-        case "SVG":
-            setIcon(el.parentElement, state);
-            break;
-        case "PATH":
-            setIcon(el.parentElement.parentElement, state);
-            break;
-    }
+    const btn = getCTRLBtn(el);
+    if (btn) setIcon(btn.querySelector("svg"), !state);
 }
 
 /**@param {HTMLElement} el */

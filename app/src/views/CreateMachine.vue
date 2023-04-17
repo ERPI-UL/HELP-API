@@ -204,7 +204,6 @@ function updateDom() {
     // if a new target is added, select it (it has no name so we use that to detect it)
     let elements = dom.$el.querySelectorAll("machine-target");
     if (elements) elements.forEach(el => {
-        console.log("el: "+el.value);
         if (el.value == "") el.focus();
     });
 }

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { TTFLoader } from "three/examples/jsm/loaders/TTFLoader";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -24,6 +25,7 @@ let transformControls = null;
 let isSetup = false;
 let isRendering = false;
 const loaderGLTF = new GLTFLoader();
+const loaderTTF = new TTFLoader();
 const loaderFont = new FontLoader();
 
 
@@ -35,10 +37,11 @@ let __font = null;
 function getFont() {
     return new Promise((resolve, reject) => {
         if (__font != null) resolve(__font);
-        const FONT_URL = "https://raw.githubusercontent.com/FurWaz/furwaz.github.io/main/resources/fonts/Roboto_Regular.json";
-        loaderFont.load(FONT_URL, f => {
-            __font = f;
-            resolve(__font);
+        const FONT_URL = window.location.origin + "/fonts/Roboto-Regular.ttf";
+        loaderTTF.load(FONT_URL, f => {
+            const font = loaderFont.parse(f);
+            __font = font;
+            resolve(font)
         });
     });
 }
