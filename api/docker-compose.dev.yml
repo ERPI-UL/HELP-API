@@ -1,0 +1,20 @@
+# docker compose avec les bases de données mais pas l'api à n'utiliser que pour le développement !
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: motdepasse
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080

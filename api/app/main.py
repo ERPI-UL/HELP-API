@@ -1,16 +1,11 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from tortoise.contrib.fastapi import register_tortoise
-from fastapi.middleware.cors import CORSMiddleware
-from mail import simple_send,testJinja
-from routers import admin, users
-from routers import scenarios
-from routers import stats
-from routers import auth
-from routers import easy
-from routers import tts
 
-import utils
+import app.utils as utils
+from app.mail import test_jinja
+from app.routers import admin, auth, easy, scenarios, stats, tts, users
 
 tags_metadata = [
     {
@@ -69,28 +64,37 @@ app.include_router(easy.router, prefix="/easy", tags=["easy"])
 app.include_router(tts.router, prefix="/tts", tags=["tts"])
 
 # redirect root to docs
+
+
 @app.get("/")
 async def root():
+    """ Root of the API, redirect to docs"""
     response = RedirectResponse(url='/docs')
     return response
 
 
 @app.get('/ping')
 async def ping():
+    """Ping the server to check if it's alive"""
     return {'ping': 'pong'}
 
+
 @app.get('/test')
-async def test(request:Request):
-    return await testJinja(request=request)
+async def test(request: Request):
+    """Test the jinja template"""
+    return await test_jinja(request=request)
+
 
 @app.get('/init')
 async def init():
-    await utils.initAdmin()
+    """Init some data for the API"""
+    await utils.init_admin()
     return {'init': 'ok'}
+
 register_tortoise(
     app,
     db_url=utils.DB_URL,
-    modules={'models': ['Models']},
+    modules={'models': ['app.models']},
     generate_schemas=True,
     add_exception_handlers=True
 )

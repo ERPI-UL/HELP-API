@@ -8,17 +8,14 @@ ENV IN_DOCKER=1 \
 
 RUN apt-get update && apt-get install -y netcat
 
-#COPY app/pyproject.toml app/poetry.lock /opt/app/
-
-#RUN curl -sSL https://install.python-poetry.org | python3 -
-#ENV PATH="${PATH}:/root/.local/bin"
-#RUN poetry config virtualenvs.create false
 COPY app /opt/app/
-WORKDIR /opt/app
-#RUN poetry install $([ "$ENV" = "production" ] && echo "--no-dev") --no-interaction
+COPY requirements.txt /opt/
+COPY docker-entrypoint.sh /opt/
+WORKDIR /opt/
+
 RUN pip install -r requirements.txt
 
 EXPOSE 5000
-RUN ["chmod", "+x", "/opt/app/docker-entrypoint.sh"]
+RUN ["chmod", "+x", "/opt/docker-entrypoint.sh"]
 
-ENTRYPOINT ["sh", "/opt/app/docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "/opt/docker-entrypoint.sh"]
