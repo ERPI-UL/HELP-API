@@ -1,0 +1,7 @@
+[MASTER]
+disable=
+    C0114
+extension-pkg-whitelist=pydantic
+load-plugins=tortoise.contrib.pylint
+[FORMAT]
+max-line-length=150
