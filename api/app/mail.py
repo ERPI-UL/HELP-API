@@ -2,7 +2,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 
-templates = Jinja2Templates(directory="static/templates")
+templates = Jinja2Templates(directory="app/static/templates")
 
 conf = ConnectionConfig(
     MAIL_USERNAME="",
