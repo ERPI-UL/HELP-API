@@ -1,6 +1,8 @@
+import config from '../config';
+
 class API {
     // API constants
-    static API_URL = 'https://indico-api.lf2l.fr';z
+    static API_URL = config.API_HOST;
     static get METHOD_GET() { return "GET"; }
     static get METHOD_PUT() { return "PUT"; }
     static get METHOD_POST() { return "POST"; }

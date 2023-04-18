@@ -3,19 +3,124 @@
         <div class="p-2"> <!-- Header -->
             <Topbar></Topbar>
         </div>
-        <div id="content" class="flex flex-row grow min-h-0">
-            <div class="flex flex-col grow-0 w-fit m-2">
-                <div class="flex grow flex-col"> <!-- left panel (basic informations) -->
+        <div id="content" class="flex flex-row justify-between grow min-h-0">
+            <div
+                id="left-side"
+                class="flex flex-col min-w-0 transition-none"
+                style="width: 70%;"
+            > <!-- steps customization -->
+                <h2 class="flex justify-start text-2xl text-indigo-600 font-extrabold mx-2 mr-1 my-1 bg-white py-2 px-4 rounded-lg select-none">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEPS }}</h2>
+                <!-- steps zone -->
+                <div id="steps-container" class="flex grow relative flex-col m-2 mr-1 overflow-auto border border-2 border-white rounded-lg p-2">
+                    <div class="absolute flex w-2 h-2 right-0 bottom-0"> <!-- BOTTOM BUTTONS -->
+                        <div class="fixed flex translate-x-[-100%] translate-y-[-100%] space-x-4">
+                            <div class="flex space-x-2">
+                                <button
+                                    id="run-scenario"
+                                    v-show="!scenario_running"
+                                    class="bg-indigo-600 px-2 py-2 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg"
+                                    @click="runScenario"
+                                >
+                                    <component :is="PlayIcon" class="w-6 h-6" />
+                                    <p class="px-1"> {{ User.LANGUAGE.DATA.ACTIONS.RUN_SCENARIO }} </p>
+                                </button>
+                                
+                                <button
+                                    id="prev-run-step"
+                                    v-show="scenario_running"
+                                    class="bg-indigo-600 px-2 py-2 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg"
+                                    @click="previousStep"
+                                >
+                                    <component :is="ChevronLeftIcon" class="w-6 h-6" />
+                                </button>
+                                
+                                <button
+                                    id="pause-scenario"
+                                    v-show="scenario_running"
+                                    class="bg-indigo-600 px-2 py-2 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg"
+                                    @click="runScenario"
+                                >
+                                    <component :is="StopIcon" class="w-6 h-6" />
+                                </button>
+                                
+                                <button
+                                    id="next-run-step"
+                                    v-show="scenario_running"
+                                    class="bg-indigo-600 px-2 py-2 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg"
+                                    @click="nextStep"
+                                >
+                                    <component :is="ChevronRightIcon" class="w-6 h-6" />
+                                </button>
+                            </div>
+                            <button
+                                id="edit-position"
+                                v-show="pageMode == MODE_VIEW"
+                                class="bg-indigo-600 px-2 py-2 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg"
+                                @click="editScenario"
+                            >
+                                <component :is="PencilIcon" class="w-6 h-6" />
+                                <p class="px-1">{{ User.LANGUAGE.DATA.ACTIONS.EDIT }}</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- START FLAG ELEMENT -->
+                    <div class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white w-fit">
+                        <component :is="icon.flag" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
+                        <p>{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.START }}</p>
+                    </div>
+                    <div id="steps-zone" @click="deselectStep">
+                        <!-- step blocks goes here -->
+                    </div>
+                    <!-- END FLAG ELEMENT -->
+                    <div class="h-fit whitespace-nowrap inline-flex items-center justify-center px-4 py-2 w-fit rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white">
+                        <component :is="icon.stop" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
+                        <p>{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.END }}</p>
+                    </div>
+                </div>
+            </div>
+            <div id="steps-resize" class="resize-slider flex my-2 px-1 cursor-col-resize select-none"> <!-- separator with resize slider -->
+                <span class="flex w-1 grow rounded-lg bg-slate-300">
+                    
+                </span>
+            </div>
+            <div
+                id="right-side"
+                class="flex flex-col grow-0 transition-none"
+                style="width: 30%;"
+            >
+                <!-- model 3D view zone -->
+                <h2 class="flex justify-start text-2xl text-indigo-600 font-extrabold mx-2 ml-1 my-1 bg-white py-2 px-4 h-fit rounded-lg select-none">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MODEL }}</h2>
+                <div class="flex flex-col grow m-2 ml-1 border-2 border-white border rounded-lg overflow-hidden">
+                    <div class="fixed"> <!-- CONTROL ICONS -->
+                        <div v-show="pageMode !== MODE_VIEW" v-on:click="toogleControls($event.target)" class="control-btn flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                                <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                            </svg>
+                            <div class="tooltip absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SHOW_HIDE_CONTROLS }}</div>
+                        </div>
+                        <div v-on:click="resetControls($event.target)" class="control-btn flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div class="tooltip absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RESET_VIEW }}</div>
+                        </div>
+                    </div>
+                    <canvas id="3D-view" class="flex grow"></canvas>
+                </div>
+                <div class="flex mb-2 flex-col"> <!-- basic informations -->
                     <div id="scenario-header" class="flex flex-col grow">
-                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MAIN_INFORMATIONS }}</h2>
-                        <div class="flex flex-col m-2 h-fit bg-white rounded-lg p-2">
+                        <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 ml-1 my-1 bg-white p-2 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MAIN_INFORMATIONS }}</h2>
+                        <div class="flex flex-col m-2 ml-1 h-fit bg-white rounded-lg p-2">
                             <div class="flex justify-between"> <!-- Scenario name input (input label and input zone) -->
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SCENARIO_NAME }} : </p>
-                                <input type="text" id="input-scenarioname" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                                <input type="text" id="input-scenarioname" name="scenario-name" value="" class="md:size-to-parent whitespace-nowrap inline-flex min-w-0 max-w-full px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                             </div>
                             <div class="flex flex-col grow-0"> <!-- Scenario description input (input label and input zone) -->
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SCENARIO_DESCRIPTION }} : </p>
-                                <textarea id="input-scenariodesc" name="scenario-desc" rows="10" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
+                                <textarea id="input-scenariodesc" name="scenario-desc" rows="4" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100"></textarea>
                             </div>
                             <div class="flex justify-between mt-2 h-fit bg-white rounded-lg"> <!-- Machine selection zone -->
                                 <p class="text-gray-500 font-base text-lg p-2 mr-4">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.TARGET_MACHINE }} : </p>
@@ -45,48 +150,6 @@
                     </div>
                 </div>
             </div>
-            <div class="flex flex-col grow w-fit m-2 min-w-0"> <!-- right panel (steps customization) -->
-                <div id="tabs" class="flex grow-0 justify-between">
-                    <h2 id="MODE_STEP_h2" v-on:click="updateMode(MODE_STEPS);" class="flex grow justify-start text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEPS }}</h2>
-                    <h2 id="MODE_MODEL_h2" v-on:click="updateMode(MODE_MODEL);" class="flex grow justify-end text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white py-2 px-4 rounded-lg cursor-pointer select-none">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.MODEL }}</h2>
-                </div>
-                <!-- steps zone -->
-                <div id="MODE_STEP_div" :class="obj.mode==MODE_STEPS? '': 'hidden'" class="flex flex-col m-2 grow overflow-auto border border-2 border-white rounded-lg p-4">
-                    <!-- START FLAG ELEMENT -->
-                    <div class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white w-fit">
-                        <component :is="icon.flag" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
-                        <p>{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.START }}</p>
-                    </div>
-                    <div id="steps-zone">
-                        <!-- step blocks goes here -->
-                    </div>
-                    <!-- END FLAG ELEMENT -->
-                    <div class="h-fit whitespace-nowrap inline-flex items-center justify-center px-4 py-2 w-fit rounded-md shadow-sm text-base border border-gray-200 font-medium text-gray-600 bg-white">
-                        <component :is="icon.stop" class="flex-shrink-0 h-5 text-gray-600 mr-2" aria-hidden="true" />
-                        <p>{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.END }}</p>
-                    </div>
-                </div>
-                <!-- model 3D view zone -->
-                <div id="MODE_MODEL_div" :class="obj.mode==MODE_MODEL? '': 'hidden'" class="flex flex-col grow m-2 border-2 border-white border rounded-lg overflow-hidden">
-                    <div class="fixed"> <!-- CONTROL ICONS -->
-                        <div v-on:click="toogleControls($event.target)" class="control-btn flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-                                <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                            </svg>
-                            <div class="tooltip absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.SHOW_HIDE_CONTROLS }}</div>
-                        </div>
-                        <div v-on:click="resetControls($event.target)" class="control-btn flex rounded-lg shadow border border-gray-200 bg-gray-100 m-2 w-8 h-8 cursor-pointer hover:shadow-lg hover:bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 m-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <div class="tooltip absolute translate-x-9 py-[0.2rem] px-2 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg">{{ User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RESET_VIEW }}</div>
-                        </div>
-                    </div>
-                    <canvas id="3D-view" class="flex grow"></canvas>
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -100,7 +163,11 @@ import API from '../script/API';
 import {
     FlagIcon,
     StopIcon,
-    PlusCircleIcon
+    PlusCircleIcon,
+    PlayIcon,
+    PencilIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon
 } from "@heroicons/vue/solid";
 
 import {
@@ -113,7 +180,9 @@ import {
     updateAvailableTargets,
     onMachineChanged,
     setDisplayMachinesCallback,
-    setEditPositionCallback
+    setEditPositionCallback,
+    editPositionCallback,
+    blockInfoFromDom
 } from "../script/CreateScenario";
 
 import  {
@@ -133,13 +202,32 @@ import { disableEl } from '../script/common';
  * Fetches the original scenario if in edit mode, updates all the available machines, targets, etc.
  * and attaches all the required event listeners
  */
-function setup() {
+function setup(obj) {
     // if view mode, disable all the inputs, textarea, selects
-    if (pageMode == MODE_VIEW) {
+    if (obj.pageMode == MODE_VIEW) {
         disableEl(document.getElementById("input-scenarioname"));
         disableEl(document.getElementById("input-scenariodesc"));
         disableEl(document.getElementById("select-machines"));
     }
+
+    const resizeBar = document.getElementById("steps-resize");
+    const content = document.getElementById("content");
+    const leftSide = document.getElementById("left-side");
+    const rightSide = document.getElementById("right-side");
+    resizeBar.addEventListener("mousedown", ev => {
+        const rect = content.getBoundingClientRect();
+        const moveEvent = ev => {
+            let percent = (ev.clientX - rect.left) / rect.width;
+            percent = Math.max(0.2, Math.min(0.8, percent));
+            leftSide.style.width = `${percent * 100}%`;
+            rightSide.style.width = `${(1 - percent) * 100}%`;
+            window.onresize();
+        };
+        window.addEventListener("mousemove", moveEvent);
+        window.addEventListener("mouseup", ev => {
+            window.removeEventListener("mousemove", moveEvent);
+        });
+    });
 
     fetchScenario().then(res => {
         updateAvailableMachines();
@@ -153,58 +241,63 @@ function setup() {
             if (isNaN(id)) return;
             set3DMachineModel(id);
         });
-        updateMode(MODE_STEPS);
     }).catch(console.error);
+
+    setTimeout(() => {
+        checkForCanvasSetup();
+        startRendering();
+    }, 10);
 }
 
-const MODE_STEPS = "steps";
-const MODE_MODEL = "model";
-let obj = {mode: ""};
-
-let editedBlock = null;
-
-function updateMode(newMode) {
-    return new Promise((resolve, reject) => {
-        if (newMode == MODE_MODEL) {
-            setTimeout(() => {
-                checkForCanvasSetup();
-                startRendering();
-                resolve();
-            }, 10);
-        } else {
-            if (editedBlock != null) {    
-                const dom = document.getElementById("stepcontainer-"+editedBlock.id);
-                dom.querySelector("input[name='pos-x']").value = editedBlock.position.x;
-                dom.querySelector("input[name='pos-y']").value = editedBlock.position.y;
-                dom.querySelector("input[name='pos-z']").value = editedBlock.position.z;
-                editedBlock = null;
-                clearLabels();
-            }
-            stopRendering();
-            resolve();
-        }
-
-        if (obj.mode != newMode) {
-            const stepH2 = document.getElementById("MODE_STEP_h2");
-            const modelH2 = document.getElementById("MODE_MODEL_h2");
-            const stepDIV = document.getElementById("MODE_STEP_div");
-            const modelDIV = document.getElementById("MODE_MODEL_div");
-            stepH2.classList[newMode == MODE_STEPS? "remove": "add"]("bg-indigo-50", "text-indigo-300");
-            stepH2.classList[newMode == MODE_STEPS? "add": "remove"]("shadow-lg");
-            modelH2.classList[newMode == MODE_MODEL? "remove": "add"]("bg-indigo-50", "text-indigo-300");
-            modelH2.classList[newMode == MODE_MODEL? "add": "remove"]("shadow-lg");
-            stepDIV.classList[newMode == MODE_MODEL? "add": "remove"]("hidden");
-            modelDIV.classList[newMode == MODE_MODEL? "remove": "add"]("hidden");
-            obj.mode = newMode;
-        }
-    })
-}
-
+let selectedBlock = null;
+let setposinterval = -1;
 setEditPositionCallback(block => {
-    updateMode(MODE_MODEL).then(() => {
-        setLabel(block.label, block.position);
-        editedBlock = block;
-    });
+    const dom = document.getElementById("stepcontainer-"+block?.id);
+
+    if (block !== selectedBlock) {
+        clearLabels();
+        const classes = ["border-indigo-600", "shadow-indigo-600"];
+        const oldDom = document.getElementById("stepcontainer-"+selectedBlock?.id);
+        classes.forEach(c => {
+            oldDom?.classList.remove(c);
+            dom?.classList.add(c);
+        });
+        selectedBlock = block;
+    }
+    
+    if (block == null) return;
+    setLabel(block);
+
+    if (dom.pageMode == MODE_VIEW) return;
+    if (setposinterval !== -1) {
+        clearInterval(setposinterval);
+        setposinterval = -1;
+    }
+    const xInput = dom.querySelector("input[name='pos-x']");
+    let xValue = xInput.value;
+    const yInput = dom.querySelector("input[name='pos-y']");
+    let yValue = yInput.value;
+    const zInput = dom.querySelector("input[name='pos-z']");
+    let zValue = zInput.value;
+    setposinterval = setInterval(() => {
+        if (selectedBlock === null) {
+            clearInterval(setposinterval);
+            setposinterval = -1;
+            return;
+        }
+        if (xValue != selectedBlock.position.x) {
+            xValue = selectedBlock.position.x;
+            xInput.value = xValue;
+        }
+        if (yValue != selectedBlock.position.y) {
+            yValue = selectedBlock.position.y;
+            yInput.value = yValue;
+        }
+        if (zValue != selectedBlock.position.z) {
+            zValue = selectedBlock.position.z;
+            zInput.value = zValue;
+        }
+    }, 100);
 });
 
 function setIcon(el, state) {
@@ -238,8 +331,74 @@ function resetControls(el) {
     const state = resetCameraTransform();
 }
 
-const pageMode = window.location.pathname.split("/").pop();
 const MODE_VIEW = "view";
+
+function deselectStep(ev) {
+    const isInStep = (el, counter=0) => {
+        if (counter > 10) return false;
+        if (el.id.startsWith('stepcontainer')) return true;
+        else if (el.parentElement) return isInStep(el.parentElement, counter+1);
+        else return false;
+    }
+    
+    if (!isInStep(ev.target)) {
+        editPositionCallback(null);
+    }
+}
+
+let dom = null;
+function runScenario(ev) {
+    if (dom.scenario_running) {
+        dom.scenario_run_step = null;
+        dom.scenario_running = false;
+    } else {
+        dom.scenario_run_step = 0;
+        dom.scenario_running = true;
+    }
+    updateSelectedStep();
+}
+
+function updateSelectedStep() {
+    const steps = dom.$el.querySelectorAll(".step-part-container");
+    if (dom.scenario_run_step === null) dom.scenario_run_step = -1;
+    else dom.scenario_run_step = Math.max(0, Math.min(dom.scenario_run_step, steps.length-1));
+    steps.forEach((s, i) => {
+        if (i == dom.scenario_run_step) {
+            s.classList.add("border-indigo-600", "shadow-indigo-600");
+        } else {
+            s.classList.remove("border-indigo-600", "shadow-indigo-600");
+        }
+    });
+    const container = dom.$el.querySelector("#steps-container");
+    clearLabels();
+    if (dom.scenario_run_step == -1) {
+        container.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+        return;
+    } else {
+        container.scrollTo({
+            top: steps[dom.scenario_run_step].offsetTop - 8,
+            behavior: "smooth"
+        });
+        setLabel(blockInfoFromDom(steps[dom.scenario_run_step]));
+    }
+}
+
+function nextStep() {
+    dom.scenario_run_step++;
+    updateSelectedStep();
+}
+
+function previousStep() {
+    dom.scenario_run_step--;
+    updateSelectedStep();
+}
+
+function editScenario(ev) {
+    window.location.href = "/scenarios/edit?idScenario="+dom.$route.query.idScenario;
+}
 
 export default {
     name: "CreateScenario",
@@ -247,17 +406,34 @@ export default {
         Topbar,
         BackButton,
         ValidateButton,
-        PaginationChoice
+        PaginationChoice,
     },
-    data() {return {User, icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon}, API, availableMachines, obj, MODE_STEPS, MODE_MODEL, pageMode, MODE_VIEW};},
+    data() {
+        return {
+            User,
+            icon: {flag: FlagIcon, stop: StopIcon, plus: PlusCircleIcon},
+            API,
+            availableMachines,
+            pageMode: window.location.pathname.split("/").pop(),
+            MODE_VIEW,
+            scenario_running: false,
+            scenario_run_step: 0,
+            PlayIcon,
+            StopIcon,
+            PencilIcon,
+            ChevronLeftIcon,
+            ChevronRightIcon,
+        };
+    },
     mounted() {
-        setup();
+        dom = this;
+        setup(this);
         // set the callback to show the machine pagination window
         setDisplayMachinesCallback(() => {
             this.$refs["machinePagination"].show();
         });
     },
-    methods: {saveScenario, addStep, addMachineSelection, updateMode, toogleControls, resetControls}
+    methods: {saveScenario, addStep, addMachineSelection, toogleControls, resetControls, deselectStep, runScenario, editScenario, nextStep, previousStep}
 };
 </script>
 
@@ -289,8 +465,6 @@ export default {
     width: 10em;
     height: 5em;
     border-radius: 0.5em;
-    background-color: white;
-    box-shadow: 0px 4px 8px #0001;
     animation: spawn-in 200ms ease;
 }
 .insert-btn {
@@ -311,5 +485,9 @@ export default {
     color: #4B556300;
 } .insert-btn:hover > p {
     color: inherit;
+}
+
+.resize-slider:hover :nth-child(1) {
+    @apply bg-indigo-600
 }
 </style>

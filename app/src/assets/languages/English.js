@@ -22,7 +22,9 @@ const LANGUAGE = {
         RESET: "reset",
         CHANGE: "change",
         UPDATE: "update",
-        GENERATE: "generate"
+        GENERATE: "generate",
+        RUN_SCENARIO: "run scenario",
+        STOP_SCENARIO: "stop scenario",
     },
 
     EVENTS: {

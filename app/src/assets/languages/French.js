@@ -22,7 +22,9 @@ const LANGUAGE = {
         RESET: "réinitialiser",
         CHANGE: "changer",
         UPDATE: "mettre à jour",
-        GENERATE: "générer"
+        GENERATE: "générer",
+        RUN_SCENARIO: "lancer le scénario",
+        STOP_SCENARIO: "arrêter le scenario",
     },
 
     EVENTS: {
@@ -166,7 +168,7 @@ const LANGUAGE = {
             MACHINE_DESCRIPTION: "Description de la machine",
             MACHINE_MODEL: "Modèle 3D",
             MACHINE_TARGETS: "Cibles de la machine",
-            ADD_MODEL: "Ajouter une modèle",
+            ADD_MODEL: "Ajouter un modèle",
         },
         LOGS: {
             ERROR_MODEL_SAVING: "Erreur lors de la sauvegarde du modèle 3D",

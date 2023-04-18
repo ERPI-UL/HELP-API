@@ -83,8 +83,8 @@
                     </div>
                 </div>
                 <div id="shortcuts" class="flex flex-wrap justify-center min-h-fit max-h-full">
-                    <MenuDiv v-for="categ in shortcuts" :title="categ.title" v-show="menu.selectedOption == categ.name">
-                        <MenuCard v-for="el in categ.data">
+                    <MenuDiv v-for="categ in shortcuts" :key="categ" :title="categ.title" v-show="menu.selectedOption == categ.name">
+                        <MenuCard v-for="el in categ.data" :key="el">
                             <CardTitle :icon="el.icon">
                                 <template v-slot:title>{{ el.title }}</template>
                             </CardTitle>
@@ -133,6 +133,8 @@ function setup() {
                     data = scenario.steps.map(step => session.playedSteps.filter(playedSteps => playedSteps.step_id === step.id).map(playedStep => playedStep.time).reduce((a, b) => a+b, 0));
                     // generate stats and display them
                     generateChart(data, labels);
+                    const container = document.getElementById("stat-zone");
+                    if (container !== null) container.innerHTML = "";
                     addStat(`- ${User.LANGUAGE.DATA.COMMON.SCENARIO} :`, scenario.name);
                     addStat(`- ${User.LANGUAGE.DATA.TIME.DATE} :`, new Date(session.date).toLocaleString());
                     addStat(`- ${User.LANGUAGE.DATA.TIME.TIME} :`, stringTime(session.playedSteps.map(playedStep => playedStep.time).reduce((a, b) => a+b, 0)));

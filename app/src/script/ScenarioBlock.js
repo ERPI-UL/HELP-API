@@ -13,10 +13,10 @@ import User from "../script/User";
  */
  function getBlockDiv(id, name, title, desc, ordernumber, pos, mode="action", btnInfos={option_left: {label: "Bouton gauche", redirect: ""}, option_right: {label: "Bouton droit", redirect: ""}}) {
     const container = document.createElement("div");
-    container.classList.add("step-part-container", "flex", "flex-col", "h-fit", "w-fit", "max-w-[80%]");
+    container.classList.add("step-part-container", "flex", "flex-col", "h-fit", "min-w-fit", "max-w-[80%]", "border-2", "shadow-md", "bg-white");
     container.id = "stepcontainer-" + id;
     container.innerHTML = 
-    `<div class="flex justify-between m-1">
+    `<div class="flex justify-between m-1 min-w-fit">
         <h2 id="stepname-${id}" class="text-sm m-1 text-indigo-600 font-extrabold">Étape ${ordernumber}</h2>
         <div class="edit-zone flex space-x-4">
             <!-- The onclick="window.indico.moveUp(${id});" event has been removed from this button because of glitches in the moveUp() function : TODO FIXIT -->
@@ -40,21 +40,21 @@ import User from "../script/User";
             </button>
         </div>
     </div>
-    <div class="flex flex-col grow p-1 rounded w-fit min-w-0 min-h-0 max-w-full">
+    <div class="flex flex-col p-2 grow rounded w-fit min-w-fit min-h-0 max-w-full">
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_ID} : </p>
+            <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_ID} : </p>
             <input type="text" id="input-stepid-${id}" name="scenario-name" value="${name??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TITLE} : </p>
+            <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TITLE} : </p>
             <input type="text" id="input-stepname-${id}" name="scenario-title" value="${title??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_DESCRIPTION} : </p>
+            <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_DESCRIPTION} : </p>
             <textarea id="input-stepdesc-${id}" name="scenario-desc" rows="2" cols="30" style="resize: both;" class="md:size-to-parent px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100 min-w-0 min-h-0">${desc??""}</textarea>
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TARGETS} : </p>
+            <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TARGETS} : </p>
             <div id="steptargets-${id}" class="md:size-to-parent flex grow min-w-0 min-h-0 px-2 py-2 space-x-2 border border-gray-200 rounded-md text-base font-medium text-black">
                 <div class="edit-zone flex flex-col justify-left space-y-1">
                     <button onclick="window.indico.addStepTarget(${id});" id="steptargetsadd-${id}" class="bg-indigo-600 p-1 h-fit flex justify-left shadow rounded">
@@ -67,16 +67,16 @@ import User from "../script/User";
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
                         </svg>
-                        <p class="whitespace-nowrap text-white center m-auto">${User.LANGUAGE.DATA.ACTIONS.REMOVE}</p>
+                        <p class="whitespace-nowrap text-white center m-auto">${User.LANGUAGE.DATA.ACTIONS.DELETE}</p>
                     </button>
                 </div>
-                <div id="steptargetscontainer-${id}" class="flex space-x-2 h-fit m-auto overflow-y-hidden overflow-x-scroll min-w-0 min-h-0">
+                <div id="steptargetscontainer-${id}" class="flex flex-col space-y-2 max-h-[10em] h-fit m-auto overflow-auto min-w-0 min-h-0">
                     
                 </div>
             </div>
         </div>
         <div class="flex justify-between mb-1 min-w-0 min-h-0">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TYPE} : </p>
+            <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.STEP_TYPE} : </p>
             <select name="step-mode" value="${mode??"action"}" class="md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 pr-10 border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 <option value="action">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.ACTION}</option>
                 <option value="info">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.INFORMATION}</option>
@@ -87,11 +87,11 @@ import User from "../script/User";
             <h2 id="stepname-${id}" class="text-sm m-1 text-gray-500 font-extrabold">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.BUTTON_CONFIG}</h2>
             <div style="border-bottom: solid 2px #F3F4F6;">
                 <div class="flex justify-between mb-1 min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.LEFT_BTN_TEXT} : </p>
+                    <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.LEFT_BTN_TEXT} : </p>
                     <input type="text" name="btn-left-label" value="${btnInfos?.option_left?.label??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
                 </div>
                 <div class="flex justify-between mb-1 min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.LEFT_BTN_TARGET} : </p>
+                    <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.LEFT_BTN_TARGET} : </p>
                     <select name="btn-left-redirect" value="${btnInfos?.option_left?.redirect??""}" class="redirect-btn h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 pr-8 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
 
                     </select>
@@ -99,34 +99,34 @@ import User from "../script/User";
             </div>
             <div>
                 <div class="flex justify-between mt-1 mb-1 min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RIGHT_BTN_TEXT} : </p>
+                    <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RIGHT_BTN_TEXT} : </p>
                     <input type="text" name="btn-right-label" value="${btnInfos?.option_right?.label??""}" class="h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
                 </div>
                 <div class="flex justify-between min-w-0 min-h-0">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RIGHT_BTN_TARGET} : </p>
+                    <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.RIGHT_BTN_TARGET} : </p>
                     <select name="btn-right-redirect" value="${btnInfos?.option_right?.redirect??""}" class="redirect-btn h-fit md:size-to-parent whitespace-nowrap inline-flex px-4 pr-8 py-2 border-gray-200 rounded-md shadow-sm text-base font-medium text-black min-w-0 min-h-0 bg-gray-50 hover:bg-gray-100">
 
                     </select>
                 </div>
             </div>
         </div>
-        <div class="justify-between mb-1">
-            <p class="text-gray-500 font-base text-lg p-2 mr-4 whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.TEXT_POSITION} : </p>
-            <div class="flex justify-between">
-                <div class="flex">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">X: </p>
-                    <input type="number" name="pos-x" id="input-stepposx-${id}" value="${pos!=undefined?pos.x:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+        <div class="justify-between min-w-fit">
+            <p class="text-gray-500 font-base text-lg whitespace-nowrap">${User.LANGUAGE.DATA.SCENARIOS.MESSAGES.TEXT_POSITION} : </p>
+            <div class="flex h-fit min-w-fit justify-between">
+                <div class="flex items-center">
+                    <p class="text-gray-500 font-base text-lg px-2 mr-4 my-auto whitespace-nowrap">X: </p>
+                    <input type="number" name="pos-x" id="input-stepposx-${id}" value="${pos!=undefined?pos.x:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center h-fit px-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
-                <div class="flex">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">Y: </p>
-                    <input type="number" name="pos-y" id="input-stepposy-${id}" value="${pos!=undefined?pos.y:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                <div class="flex items-center">
+                    <p class="text-gray-500 font-base text-lg px-2 mr-4 my-auto whitespace-nowrap">Y: </p>
+                    <input type="number" name="pos-y" id="input-stepposy-${id}" value="${pos!=undefined?pos.y:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center h-fit px-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
-                <div class="flex">
-                    <p class="text-gray-500 font-base text-lg p-2 mr-4 my-auto whitespace-nowrap">Z: </p>
-                    <input type="number" name="pos-z" id="input-stepposz-${id}" value="${pos!=undefined?pos.z:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center p-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
+                <div class="flex items-center">
+                    <p class="text-gray-500 font-base text-lg px-2 mr-4 my-auto whitespace-nowrap">Z: </p>
+                    <input type="number" name="pos-z" id="input-stepposz-${id}" value="${pos!=undefined?pos.z:"0"}" class="input-numbers whitespace-nowrap inline-flex max-w-[72px] text-center h-fit px-1 center border-gray-200 rounded-md shadow-sm text-base font-medium text-black bg-gray-50 hover:bg-gray-100">
                 </div>
-                <div class="edit-zone flex">
-                    <button id="edit-position" class="bg-indigo-600 p-4 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg">${User.LANGUAGE.DATA.ACTIONS.EDIT}</button>
+                <div class="edit-zone flex items-center">
+                    <button id="edit-position" class="bg-indigo-600 px-4 py-2 h-fit flex justify-left shadow-md rounded text-white hover:bg-indigo-700 hover:shadow-lg">${User.LANGUAGE.DATA.ACTIONS.EDIT}</button>
                 </div>                
             </div>
         </div>

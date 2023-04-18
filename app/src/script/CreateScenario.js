@@ -708,9 +708,13 @@ let scenarioBlocks = [];
         }
 
         // set the listener for the edit position button
-        newBlock.querySelector("#edit-position")?.addEventListener("click", ev => {
-            editPositionCallback(blockInfoFromDom(newBlock));
-        });
+        const setpos = (ev) => editPositionCallback(blockInfoFromDom(newBlock));
+        newBlock.querySelector("#edit-position")?.addEventListener("click", setpos);
+
+        const xinput = newBlock.querySelector("#input-stepposx-"+id);
+        const yinput = newBlock.querySelector("#input-stepposy-"+id);
+        const zinput = newBlock.querySelector("#input-stepposz-"+id);
+        [xinput, yinput, zinput].forEach(e => e?.addEventListener("change", setpos));
     }, 10);
 }
 
@@ -775,5 +779,6 @@ export {
     createScenarioBlock,
     addMachineSelection,
     setDisplayMachinesCallback,
-    setEditPositionCallback
+    setEditPositionCallback,
+    editPositionCallback
 };
