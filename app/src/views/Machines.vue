@@ -11,12 +11,12 @@
                     <h2 class="text-2xl leading-9 font-extrabold text-indigo-600 px-6 py-2 whitespace-nowrap">{{ User.LANGUAGE.DATA.PAGES.MACHINES }}</h2>
                     <div class="md:pt-8 flex md:flex-col md:overflow-x-visible overflow-x-scroll justify-between">
                         <router-link class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300" 
-                            :class="(window.location.href.split('#')[1] == 'all')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
+                            :class="(window.location.href.split('#')[1] == 'all')?'bg-indigo-600 text-white shadow-lg shadow-indigo-600': ''"
                             to="#all">
                             {{ User.LANGUAGE.DATA.MACHINES.PAGES.VIEW.TITLE }}
                         </router-link>
                         <router-link v-if="User.currentUser.canTeacher()" class="whitespace-nowrap md:min-w-full md:p-4 md:m-4 p-2 m-2 rounded-lg text-base font-semibold text-left text-indigo-800 outline-none hover:border-indigo-300"
-                            :class="(window.location.href.split('#')[1] == 'editing')?'bg-indigo-600 text-indigo-50 shadow-lg shadow-indigo-600': ''"
+                            :class="(window.location.href.split('#')[1] == 'editing')?'bg-indigo-600 text-white shadow-lg shadow-indigo-600': ''"
                             to="#editing">
                             {{ User.LANGUAGE.DATA.MACHINES.PAGES.EDIT.TITLE }}
                         </router-link>
@@ -43,8 +43,8 @@
                     <MachineCard v-if="window.location.href.split('#')[1] == 'editing'" v-for="item in obj.machines.editing" id="machine-container">
                         <template v-slot:title>{{item.title}}</template>
                         <template v-slot:description>{{item.description}}</template>
-                        <template v-slot:href><RedirectButton :href="item.edit" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.EDIT }}</RedirectButton></template>
-                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);" v-if="item.id != 1">{{ User.LANGUAGE.DATA.ACTIONS.DELETE }}</DangerousButton></template>
+                        <template v-slot:href><RedirectButton :href="item.edit">{{ User.LANGUAGE.DATA.ACTIONS.EDIT }}</RedirectButton></template>
+                        <template v-slot:remove><DangerousButton v-on:click="removeMachine(item.id, $event.target);">{{ User.LANGUAGE.DATA.ACTIONS.DELETE }}</DangerousButton></template>
                     </MachineCard>
                     <!-- Delete popup called when the remove button is pressed on a machine card -->
                     <ValidatePopup ref="delete-popup"></ValidatePopup>
@@ -136,6 +136,8 @@ function removeMachine(id, caller) {
             let dom = caller;
             while (dom.id != "machine-container") dom = dom.parentElement;
             dom.remove();
+        obj.machines.all = obj.machines.all.filter(el => el.id != id);
+        obj.machines.editing = obj.machines.editing.filter(el => el.id != id);
         }).catch(console.error);
     });
 }
@@ -144,6 +146,8 @@ function removeMachine(id, caller) {
  * Creates an iterator to retreive all the machines on the server using pagination
  */
 function fetchMachines() {
+    obj.machines.all = [];
+    obj.machines.editing = [];
     iterator = API.iterate(API.ROUTE.MACHINES);
     attachListeners(iterator);
 }

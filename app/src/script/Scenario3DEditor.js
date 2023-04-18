@@ -6,6 +6,7 @@ import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 import API from "./API";
+import { BlockInfo, editPositionCallback } from "./CreateScenario";
 
 /**@type {Label[]} */
 let labels = [];
@@ -68,8 +69,16 @@ let timeoutID = -1;
  * @param {THREE.Renderer} renderer Three js renderer used for rendering
  */
 function resizeCanvas(canvas, camera, renderer) {
+    // premier resize pour suivre le changement de taille des sections
+    const width = canvas.clientWidth; const height = canvas.clientHeight;
+    canvas.width = width; canvas.height = height;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setViewport(0, 0, width, height);
+
     if (timeoutID > 0) clearTimeout(timeoutID);
     
+    // deuxieme resize en cas de changement de ratio de la fenetre (pour etre sur d'etre au bon ratio)
     timeoutID = setTimeout(() => {
         timeoutID = -1;
         const width = canvas.clientWidth; const height = canvas.clientHeight;
@@ -82,14 +91,21 @@ function resizeCanvas(canvas, camera, renderer) {
 
 /**
  * Adds a new text label to the scene (the position attribute is modified when the user moves the label in the editor)
- * @param {string} text Text to render
- * @param {{x:number,y:number,z:number}} position Position of the text
+ * @param {string|BlockInfo} textorblock Text to render or block informations to use to create the label
+ * @param {{x:number,y:number,z:number}} position Position of the text (if block not specified in first arg)
+ * @param {number} id The block id (if block not specified in first arg)
  */
-function setLabel(text, position) {
+function setLabel(textorblock, position, id) {
     clearLabels();
-    labels.push(new Label(
-        text, position
-    ));
+    if (typeof textorblock === "object") {
+        labels.push(new Label(
+            textorblock.label, textorblock.position, textorblock.id
+        ));
+    } else {
+        labels.push(new Label(
+            textorblock, position, id
+        ));
+    }
 }
 
 /**
@@ -106,7 +122,7 @@ function clearLabels() {
  */
 class Label {
     static LABEL_ID_COUNTER = 1;
-    id = Label.LABEL_ID_COUNTER++;
+    id = -1;
     text = "";
     position = {x: 0, y: 0, z: 0}
     /**@type {THREE.Group} */
@@ -118,14 +134,17 @@ class Label {
      * Label constructor, creates the 3D model and adds it to the scene
      * @param {string} text Text of the label
      * @param {{x:number,y:number,z:number}} position Position of the label
+     * @param {number} id Id of the label's related block
      */
-    constructor(text, position) {
+    constructor(text, position, id) {
         this.text = text;
         this.position = position;
+        this.id = id;
         this.model = new THREE.Group();
         this.model.receiveShadow = true;
         this.model.castShadow = true;
         this.model.position.set(position.x, position.y, position.z);
+
         getFont().then(font => {
             // text mesh
             this.txtMesh = new THREE.Mesh(
@@ -147,12 +166,16 @@ class Label {
                 new THREE.PlaneBufferGeometry(dims.max.x - dims.min.x + 0.02, dims.max.y - dims.min.y + 0.02),
                 new THREE.MeshLambertMaterial({color: 0x101010}))
             );
-        })
+        });
+
         if (scene) scene.add(this.model);
         if (transformControls) {
             if (transformControls.object == null)
                 transformControls.detach();
-            transformControls.attach(this.model);
+            const pageMode = window.location.href.split("/").pop().split("?")[0].split("#")[0];
+            if (pageMode != "view") {
+                transformControls.attach(this.model);
+            }
         }
     }
 

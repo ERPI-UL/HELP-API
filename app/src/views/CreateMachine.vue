@@ -3,8 +3,8 @@
         <div class="p-2"> <!-- Header -->
             <Topbar></Topbar>
         </div>
-        <div id="content" class="flex grow min-h-0">
-            <div class="flex m-auto grow-0 w-fit m-2 mx-auto max-w-full">
+        <div id="content" class="flex grow min-h-0 max-h-full">
+            <div class="flex m-auto w-fit m-2 mx-auto max-w-full min-h-0 max-h-full">
                 <div class="flex grow flex-col my-auto min-h-0 max-h-inherit md:max-h-full">
                     <div id="scenario-header" class="flex flex-col grow max-h-full min-h-0">
                         <h2 class="text-2xl text-indigo-600 font-extrabold mx-2 my-1 bg-white p-2 rounded-lg">
@@ -44,7 +44,7 @@
                                 </div>
                                 <div class="flex grow flex-col min-h-0">
                                     <div class="flex flex-col grow space-y-2 p-2 h-fit min-h-0 overflow-y-scroll overflow-x-hidden border border-gray-200 rounded">
-                                        <div v-for="el in machineTargets"> <!-- For each target, display an input with the target's name in it -->
+                                        <div v-for="el in machineTargets" :key="el"> <!-- For each target, display an input with the target's name in it -->
                                             <input 
                                                 type="text" name="machine-target" :id="'machine-target-'+el.id" v-bind:value="el.name" v-on:change="setMachineTarget(el.id, $event.target.value);"
                                                 v-on:focus="setSelectedTarget($event.target);" v-on:blur="setSelectedTarget(null);"
@@ -54,11 +54,11 @@
                                     </div>
                                     <!-- Target deletion / addition buttons -->
                                     <div class="edit-zone flex justify-between space-x-1 pt-2">
-                                        <button ref="delete-btn" v-on:click="removeMachineTarget();" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded opacity-50 cursor-auto">
+                                        <button ref="delete-btn" v-on:click="removeMachineTarget(undefined);" class="bg-red-600 p-1 h-fit w-fit flex flex-row shadow rounded opacity-50 cursor-auto">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /> <!-- Remove button icon -->
                                             </svg>
-                                            <p class="whitespace-nowrap text-white m-auto mx-1">{{ User.LANGUAGE.DATA.ACTIONS.REMOVE }}</p> <!-- Remove button label -->
+                                            <p class="whitespace-nowrap text-white m-auto mx-1">{{ User.LANGUAGE.DATA.ACTIONS.DELETE }}</p> <!-- Remove button label -->
                                         </button>
                                         <button v-on:click="addMachineTarget();" class="bg-indigo-600 p-1 h-fit w-fit flex flex-row shadow rounded">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 m-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -103,7 +103,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
  */
 function logMessage(msg) {
     const btn = document.getElementById("validate-button");
-    btn.innerHTML = pageMode;
+    btn.innerHTML = dom.pageMode;
     const div = document.getElementById("log-zone");
     const txt = div.firstElementChild;
     if (txt.innerHTML.length < 1)
@@ -125,7 +125,7 @@ let machineModelFile = null;
  * Setup the page, adds the event listener for the file input and shows the "auto generate targets" button
  * when the file is uploaded (if the file is a gltf or glb model)
  */
-function setup() {
+function setup(obj) {
     const modelInput = document.getElementById("model-input");
     modelInput?.addEventListener("change", function(e) {
         const file = e.target.files[0];
@@ -138,15 +138,16 @@ function setup() {
         const generateBtn = document.getElementById("generate-btn");
         generateBtn.classList.remove("border-gray-100", "text-gray-500", "cursor-default");
         generateBtn.classList.add("border-gray-200", "text-black", "cursor-pointer", "hover:bg-gray-100", "shadow-sm");
-        generateBtn.addEventListener("click", () => { generateTargets(file); });
+        generateBtn.addEventListener("click", () => { generateTargets(file, obj); });
     });
 
-    if (pageMode == MODE_VIEW) {
+    if (obj.pageMode == MODE_VIEW) {
         document.querySelectorAll(".edit-zone").forEach(el => el.remove());
     }
 }
 
-function generateTargets(file) {
+function generateTargets(file, obj) {
+    obj.machineTargets = [];
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = e.target.result;
@@ -162,7 +163,7 @@ function generateTargets(file) {
                     ];
                     if (conditions.every(condition => condition)) {
                         // add the target (it's a valid name)
-                        addMachineTarget({name: node.name});
+                        addMachineTarget({name: node.name}, obj);
                     }
                 }
             })
@@ -238,12 +239,12 @@ let originalMachine = null;
  */
 function retreiveMachineInfos(obj) {
     return new Promise((resolve, reject) => {
-        if (pageMode == MODE_VIEW || pageMode == MODE_EDIT)
+        if (obj.pageMode == MODE_EDIT)
             API.execute_logged(API.ROUTE.MACHINES+queryParameters.idMachine, API.METHOD_GET, User.currentUser.getCredentials(), {}, API.TYPE_JSON).then(res => {
                 document.getElementById('input-machinename').value = res.name;
                 document.getElementById('input-machinedesc').value = res.description;
-                machineTargets.splice(0, machineTargets.length);
-                res.targets.forEach(target => addMachineTarget(target))
+                obj.machineTargets.splice(0, obj.machineTargets.length);
+                res.targets.forEach(target => addMachineTarget(target, obj))
                 originalMachine = new Machine(res.id, res.name, res.description, res.targets);
                 resolve();
             }).catch(err => {
@@ -388,7 +389,7 @@ function saveMachine(obj) {
     const button = document.getElementById("validate-button");
     button.innerHTML = "...";
 
-    if (pageMode == MODE_EDIT) { // modification mode, should execute saveModifications instead of this function
+    if (obj.pageMode == MODE_EDIT) { // modification mode, should execute saveModifications instead of this function
         saveModifications(machineName.value, machineDesc.value, machineTargs);
         return;
     }
@@ -409,7 +410,7 @@ function saveMachine(obj) {
                 // send the machine model if specified
                 saveMachineModel(res.id).then(() => {
                     logMessage(User.LANGUAGE.DATA.MACHINES.LOGS.CREATED);
-                    $router.go(-1)();
+                    obj.$router.go(-1)();
                 }).catch(err => {
                     logMessage(User.LANGUAGE.DATA.REGISTER.LOGS.ERROR_MESSAGE+" : "+err.message);
                 })
@@ -458,7 +459,7 @@ let IDCounter = 0;
  * Adds a new target to the list of targets, if no target is provided, a new one is created
  * @param {{id:number,name:string}} target the target object to add (optional)
  */
-function addMachineTarget(target=null) {
+function addMachineTarget(target=null, obj) {
     let id = IDCounter++;
     let name = "";
     // if a target is provided, use it and modify the id counter to match the current provided ID
@@ -468,7 +469,7 @@ function addMachineTarget(target=null) {
         IDCounter = id+1;
     }
 
-    machineTargets.push({
+    obj?.machineTargets.push({
         name: name,
         id: id
     });
@@ -479,13 +480,9 @@ function addMachineTarget(target=null) {
  * Sets the selected target to the provided one (for delete button)
  */
 function setSelectedTarget(target) {
-    if (target != null) {
-        dom.$refs["delete-btn"].classList.remove("opacity-50", "cursor-auto");
+    setTimeout(() => {
+        dom.$refs["delete-btn"].classList[target === null ? "add" : "remove"]("opacity-50", "cursor-auto");
         selectedTarget = target;
-    }
-    else setTimeout(() => {
-        dom.$refs["delete-btn"].classList.add("opacity-50", "cursor-auto");
-        selectedTarget = null;
     }, 100);
 }
 
@@ -499,11 +496,11 @@ function removeMachineTarget(index) {
     if (!index) { // if no index is provided
         if (selectedTarget != null) {// check if there is a selected target
             let value = selectedTarget.value;
-            index = machineTargets.findIndex(el => el.name == value); // if so, find the index of this target
+            index = dom.machineTargets.findIndex(el => el.name == value); // if so, find the index of this target
         }
     }
-    if (index != undefined) {
-        machineTargets.splice(index, 1); // remove the target from the lists
+    if (index != -1) {
+        dom.machineTargets.splice(index, 1); // remove the target from the lists
         dom.$refs["delete-btn"].classList.add("opacity-50", "cursor-auto");
     }
     updateDom();
@@ -514,16 +511,18 @@ let machineTargets = []; // current machine targets
 let urlPath = window.location.pathname.split('/'); // current url path
 let queryParameters = {};
 
-// retreive the query parameters (do get the machine's id from the url)
-let parts = window.location.href.split("?");
-if (parts[1]) {
-    parts[1].split("&").forEach(part => {
-        let item = part.split("=");
-        queryParameters[item[0]] = decodeURIComponent(item[1]);
-    });
+// retreive the query parameters (get the machine's id from the url)
+function getQueryParams() {
+    let parts = window.location.href.split("?");
+    queryParameters = {};
+    if (parts[1]) {
+        parts[1].split("&").forEach(part => {
+            let item = part.split("=");
+            queryParameters[item[0]] = decodeURIComponent(item[1]);
+        });
+    }
 }
 
-const pageMode = window.location.pathname.split("/").pop();
 const MODE_VIEW = "view";
 const MODE_EDIT = "edit";
 const MODE_CREATE = "create";
@@ -535,20 +534,26 @@ export default {
         BackButton,
         ValidateButton
     },
-    data() {return {User, machineTargets, pageMode, MODE_VIEW, MODE_CREATE, MODE_EDIT};},
+    data() {return {User, machineTargets, pageMode: "", MODE_VIEW, MODE_CREATE, MODE_EDIT};},
     setup() {
         
     },
     mounted() {
-        setup();
+        getQueryParams();
+        this.machineTargets = [];
+        setup(this);
         dom = this;
-        retreiveMachineInfos(this).then(() => {
-            // if the page is in view mode, disable all the inputs, textareas, etc...
-            if (pageMode == MODE_VIEW) {
-                document.querySelectorAll("input").forEach(el => disableEl(el));
-                document.querySelectorAll("textarea").forEach(el => disableEl(el));
-            }
-        });
+        const stringMode = window.location.pathname.split("/").pop().split("?")[0].split("#")[0];
+        this.pageMode = stringMode.startsWith("edit") ? MODE_EDIT : (stringMode.startsWith("create")? MODE_CREATE : MODE_VIEW);
+        if (this.pageMode !== MODE_CREATE) {
+            retreiveMachineInfos(this).then(() => {
+                // if the page is in view mode, disable all the inputs, textareas, etc...
+                if (this.pageMode == MODE_VIEW) {
+                    document.querySelectorAll("input").forEach(el => disableEl(el));
+                    document.querySelectorAll("textarea").forEach(el => disableEl(el));
+                }
+            });
+        }
     },
     methods: {saveMachine, addMachineTarget, removeMachineTarget, setMachineTarget, setSelectedTarget}
 };
