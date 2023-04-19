@@ -5,7 +5,7 @@ from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
 from app.mail import test_jinja
-from app.routers import admin, auth, easy, scenarios, stats, tts, users
+from app.routers import admin, auth, easy, language, scenarios, stats, tts, users
 
 tags_metadata = [
     {
@@ -20,6 +20,12 @@ tags_metadata = [
     }, {
         "name": "stats",
         "description": "Opération sur les statistiques : création et supression d'une session d'un scénario, listes paginées ",
+    },  {
+        "name": "language",
+        "description": "Génération de traduction textuel ou de voix à partir de texte",
+    }, {
+        "name": "tts",
+        "description": "Génération de voix à partir de texte",
     }, {
         "name": "easy",
         "description": "générer un code d'accès rapide , HTTP Long-Polling pour envoyer le token d'authentification à l'appareil XR",
@@ -62,6 +68,7 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
 app.include_router(tts.router, prefix="/tts", tags=["tts"])
+app.include_router(language.router, prefix="/language", tags=["language"])
 
 # redirect root to docs
 
