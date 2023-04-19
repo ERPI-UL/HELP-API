@@ -13,3 +13,6 @@
 /api/Scripts
 /api/pyvenv.cfg
 app/vite.config.js
+
+openvpn-data
+*.ovpn

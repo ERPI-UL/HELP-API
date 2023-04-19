@@ -48,6 +48,26 @@ services:
     ports:
       - 80:8080
     restart: always
+  # dozzle:
+  #   image: amir20/dozzle:latest
+  #   environment:
+  #     - DOZZLE_FILTER=name=indico
+  #     - username=${DOZZLE_USERNAME}
+  #     - password=${DOZZLE_PASSWORD}
+  #   ports:
+  #     - 8081:8080
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   restart: always
+  # openvpn:
+  #   image: kylemanna/openvpn
+  #   cap_add:
+  #     - NET_ADMIN
+  #   ports:
+  #     - "1194:1194/udp"
+  #   volumes:
+  #     - ./openvpn-data/conf:/etc/openvpn
+  #   restart: always
 
 volumes:
   postgres_data:
