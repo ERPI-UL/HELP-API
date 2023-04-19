@@ -465,3 +465,5 @@ playedStepIn = pydantic_model_creator(
     PlayedStep, name='playedStepIn')
 LanguageOut = pydantic_model_creator(
     Language, name='LanguageFront', exclude_readonly=True)
+LanguageOutWithId = pydantic_model_creator(
+    Language, name='LanguageFrontWithId')

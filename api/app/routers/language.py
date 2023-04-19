@@ -1,5 +1,6 @@
 import random
 from enum import Enum
+from typing import List
 
 from aiofiles import os
 from aiogtts import aiogTTS
@@ -7,6 +8,7 @@ from aiohttp import ClientSession
 from fastapi import APIRouter, BackgroundTasks, Body, Depends
 from fastapi.responses import FileResponse
 
+from app.models import Language, LanguageOutWithId
 from app.utils import get_current_user_in_token
 
 router = APIRouter()
@@ -58,3 +60,9 @@ async def translate(source: str = Body(...), target=Body(...), text=Body(...), _
                 print(resp.text)
                 print(resp.status)
                 return 'Error'
+
+
+@router.get('/all', response_model=List[LanguageOutWithId], summary="Retourne toutes les langues disponibles dans l'API")
+async def get_languages():
+    """ Return all languages """
+    return await Language.all()

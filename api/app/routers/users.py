@@ -57,12 +57,6 @@ async def get_users(page: int = 1, per_page: int = 10, _=Depends(insctructor_req
     }
 
 
-@router.get('/languages', response_model=List[pydantic_model_creator(Language)], summary="Retourne toutes les langues disponibles dans l'API")
-async def get_languages():
-    """ Return all languages """
-    return await Language.all()
-
-
 @router.get('/me')
 async def get_me(current_user: User = Depends(get_current_user_in_token)):
     """ Return informations about the connected user via the token """
