@@ -50,7 +50,7 @@ app = FastAPI(
         "name": "Lorraine Fab Living Lab",
         "url": "https://lf2l.fr"
     },
-    version="0.2.0",
+    version="0.3.0",
     openapi_tags=tags_metadata
 )
 
@@ -68,7 +68,7 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
 app.include_router(tts.router, prefix="/tts", tags=["tts"])
-app.include_router(language.router, prefix="/language", tags=["language"])
+app.include_router(language.router, prefix="/langs", tags=["language"])
 
 # redirect root to docs
 

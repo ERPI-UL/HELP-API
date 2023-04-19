@@ -27,6 +27,12 @@ async def cleanup(filename):
     await os.remove(filename)
 
 
+@router.get('/', response_model=List[LanguageOutWithId], summary="Retourne toutes les langues disponibles dans l'API")
+async def get_languages():
+    """ Return all languages """
+    return await Language.all()
+
+
 @router.post("/tts", response_class=FileResponse, summary="TTS", description="Génération d'un fichier audio à partir d'un texte.")
 async def tts(bg_tasks: BackgroundTasks, language: str = Body(...), text: str = Body(...), _=Depends(get_current_user_in_token)):
     """Route used to generate a TTS file."""
@@ -60,9 +66,3 @@ async def translate(source: str = Body(...), target=Body(...), text=Body(...), _
                 print(resp.text)
                 print(resp.status)
                 return 'Error'
-
-
-@router.get('/all', response_model=List[LanguageOutWithId], summary="Retourne toutes les langues disponibles dans l'API")
-async def get_languages():
-    """ Return all languages """
-    return await Language.all()
