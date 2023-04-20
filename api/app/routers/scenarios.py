@@ -13,7 +13,7 @@ from app.models import (Choice, ChoiceText, Language, LanguageOut, Machine,
                         Position, Scenario, ScenarioPost, ScenarioText,
                         ScenarioUpdate, Step, StepPost, StepText, Target,
                         TargetOut, TargetPost, Type)
-from app.utils import (DATA_DIRECTORY, MODELS_DIRECTORY,
+from app.utils import (MODELS_DIRECTORY,
                        SCENARIOS_DATA_DIRECTORY, Permission, get_admin_level,
                        insctructor_required)
 
@@ -379,7 +379,8 @@ async def create_step(id_scenario: int, step: StepPost, lang: str | None = None,
     return {'id': step_in_db.id}
 
 
-@router.post('/{id_scenario}/steps/{id_step}/ressource', summary="Ajouter ou remplacer la ressource associer à une étape", description="Chaque étape peut avoir un fichier de ressource de type vidéo ou image. Cette dernière sera affiché lor s de l'éxécution de l'étape")
+@router.post('/{id_scenario}/steps/{id_step}/ressource', summary="Ajouter ou remplacer la ressource associer à une étape",
+             description="Chaque étape peut avoir un fichier de ressource de type vidéo ou image. Cette dernière sera affiché lor s de l'éxécution de l'étape")
 @transactions.atomic()
 async def add_ressource_to_a_step(id_scenario: int, id_step: int, ressource_file: UploadFile, _: int = Depends(insctructor_required)):
     """ Add a ressource to a step """
@@ -403,7 +404,7 @@ async def add_ressource_to_a_step(id_scenario: int, id_step: int, ressource_file
             status_code=413, detail="File too large")
     hash_value = hashlib.sha256(content).hexdigest()
     # create the directory if it doesn't exist
-    path = SCENARIOS_DATA_DIRECTORY+str(scenario.id)+'ressources'
+    path = SCENARIOS_DATA_DIRECTORY+str(scenario.id)+'/ressources'
     await aiofiles.os.makedirs(path, exist_ok=True)
     async with aiofiles.open(f"{path}/{hash_value}.{extension}", 'wb') as file:
         await file.write(content)
@@ -521,6 +522,7 @@ async def step_to_json(step):
         'description': step.description,
         'label': step.label,
         'name': step.name,
+        'ressource': step.ressourcePath,
         'position': await position_to_json(step.position),
         'type': step.type.name,
         'choice': await choice_to_json(step.choice),

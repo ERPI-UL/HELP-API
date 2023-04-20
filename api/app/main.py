@@ -1,3 +1,4 @@
+import socketio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -5,7 +6,8 @@ from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
 from app.mail import test_jinja
-from app.routers import admin, auth, easy, language, scenarios, stats, tts, users
+from app.routers import (admin, auth, data, easy, language, scenarios, stats,
+                         tts, users)
 
 tags_metadata = [
     {
@@ -32,6 +34,9 @@ tags_metadata = [
     }, {
         "name": "admin",
         "description": "Opérations réservées aux admins : changer le niveau d'admin d'un utilisateur, supprimer un utilisateur",
+    }, {
+        "name": "data",
+        "description": "Routes permettant d'accéder au contenu qui ne peut pas être public",
     }
 ]
 
@@ -54,6 +59,25 @@ app = FastAPI(
     openapi_tags=tags_metadata
 )
 
+sio_server = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins=origins)
+sio_app = socketio.ASGIApp(socketio_server=sio_server, socketio_path='sockets')
+
+app.mount('/ws', app=sio_app)
+
+
+@sio_server.event
+async def connect(sid, environ):
+    """Connect a client to the socketio server"""
+    print(f'{sid}: connected')
+    await sio_server.emit('join', {'sid': sid})
+
+
+@sio_server.event
+async def disconnect(sid):
+    """ Disconnect a client from the socketio server"""
+    print(f'{sid}: disconnected')
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -61,6 +85,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"])
 app.include_router(stats.router, prefix="/stats", tags=["stats"])
@@ -69,6 +95,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
 app.include_router(tts.router, prefix="/tts", tags=["tts"])
 app.include_router(language.router, prefix="/langs", tags=["language"])
+app.include_router(data.router, prefix="/data", tags=["data"])
 
 # redirect root to docs
 
