@@ -35,6 +35,7 @@ async def simple_send(email: str):
     """ Send a simple email"""
     message = MessageSchema(
         subject="Fastapi-Mail module",
+        subtype="html",
         recipients=[email],  # List of recipients, as many as you can pass
         template_body={"URL": "https://indico.lf2l.fr/reset?token=123456789"},
     )
@@ -48,6 +49,7 @@ async def send_reset_link(email: str, token: str, firstname: str, lastname: str)
     message = MessageSchema(
         subject="Indico - Mot de passe",
         recipients=[email],  # List of recipients, as many as you can pass
+        subtype="html",
         template_body={"URL": f"https://indico.lf2l.fr/reset?token={token}",
                        "PRENOM": firstname, "NOM": lastname},
     )
@@ -63,6 +65,7 @@ async def send_invite_link(email: str, username: str,
     """ Send an invitation link to a user via email"""
     message = MessageSchema(
         subject="Indico - Invitation",
+        subtype="html",
         recipients=[email],  # List of recipients, as many as you can pass
         template_body={"URL": f"https://indico.lf2l.fr/invite?token={token}", "USERNAME": username,
                        "PRENOM": firstname, "NOM": lastname,
