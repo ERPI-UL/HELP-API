@@ -126,6 +126,8 @@ class Step(Model):
     type = fields.ForeignKeyField('models.Type', related_name='steps')
     name = fields.TextField()  # logical purpose , do not translate
     description = fields.TextField()
+    ressourcePath = fields.TextField(null=True)
+    hint = fields.TextField(null=True)
     scenario = fields.ForeignKeyField(
         'models.Scenario', related_name='steps', on_delete=fields.CASCADE)
     targets = fields.ManyToManyField(
@@ -241,6 +243,18 @@ class Session(Model):
 #     id: int
 #     username: str
 #     adminLevel: int
+
+
+class Ressource(Model):
+    """ Ressource model , represent a file link to an object"""
+    id = fields.IntField(pk=True)
+    name = fields.TextField()
+    path = fields.TextField()
+    type = fields.TextField()
+
+    class Meta:
+        """ Meta class for Ressource model"""
+        table = "ressources"
 
 
 class Easy(BaseModel):
