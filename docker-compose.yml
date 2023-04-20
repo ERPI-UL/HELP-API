@@ -1,5 +1,5 @@
 version: '3.9'
- 
+
 services:
   sgbd:
     image: dpage/pgadmin4
@@ -9,7 +9,7 @@ services:
     ports:
       - "5050:80"
     volumes:
-       - ./pgadmin/servers.json:/pgadmin4/servers.json # preconfigured servers/connections
+      - ./pgadmin/servers.json:/pgadmin4/servers.json # preconfigured servers/connections
     depends_on:
       - "database"
 
@@ -25,7 +25,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
-    
   indico:
     build: ./api
     links:
@@ -48,26 +47,15 @@ services:
     ports:
       - 80:8080
     restart: always
-  # dozzle:
-  #   image: amir20/dozzle:latest
-  #   environment:
-  #     - DOZZLE_FILTER=name=indico
-  #     - username=${DOZZLE_USERNAME}
-  #     - password=${DOZZLE_PASSWORD}
-  #   ports:
-  #     - 8081:8080
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   restart: always
-  # openvpn:
-  #   image: kylemanna/openvpn
-  #   cap_add:
-  #     - NET_ADMIN
-  #   ports:
-  #     - "1194:1194/udp"
-  #   volumes:
-  #     - ./openvpn-data/conf:/etc/openvpn
-  #   restart: always
+  dozzle:
+    image: amir20/dozzle:latest
+    environment:
+      - DOZZLE_FILTER=name=indico
+    ports:
+      - 5454:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
 
 volumes:
   postgres_data:
