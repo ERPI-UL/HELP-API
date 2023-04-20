@@ -19,18 +19,6 @@ conf = ConnectionConfig(
 )
 
 
-HTML = """
-<p>Hi this test mail, thanks for using Fastapi-mail</p> 
-"""
-
-
-async def test_jinja(request: Request):
-    """ Test jinja template rendering"""
-    return templates.TemplateResponse('reset.html',
-                                      {"request": request, "PRENOM": "Jean",
-                                       "NOM": "VALJEAN", "URL": "https://indico.lf2l.fr/reset?token=123456789"})
-
-
 async def simple_send(email: str):
     """ Send a simple email"""
     message = MessageSchema(

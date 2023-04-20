@@ -1,12 +1,11 @@
 import socketio
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
-from app.mail import test_jinja
 from app.routers import (admin, auth, data, easy, language, scenarios, stats,
                          tts, users)
 
@@ -120,11 +119,6 @@ async def ping():
     """Ping the server to check if it's alive"""
     return {'ping': 'pong'}
 
-
-@app.get('/test')
-async def test(request: Request):
-    """Test the jinja template"""
-    return await test_jinja(request=request)
 
 register_tortoise(
     app,
