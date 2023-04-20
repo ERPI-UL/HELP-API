@@ -2,6 +2,7 @@ import socketio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
@@ -97,7 +98,14 @@ app.include_router(tts.router, prefix="/tts", tags=["tts"])
 app.include_router(language.router, prefix="/langs", tags=["language"])
 app.include_router(data.router, prefix="/data", tags=["data"])
 
-# redirect root to docs
+
+@app.on_event("startup")
+async def startup_event():
+    """ Startup event """
+    await Tortoise.init(db_url=utils.DB_URL, modules={'models': ['app.models']})
+    await Tortoise.generate_schemas()
+    await utils.init_admin()
+    await utils.init_db_with_data()
 
 
 @app.get("/")
@@ -117,13 +125,6 @@ async def ping():
 async def test(request: Request):
     """Test the jinja template"""
     return await test_jinja(request=request)
-
-
-@app.get('/init')
-async def init():
-    """Init some data for the API"""
-    await utils.init_admin()
-    return {'init': 'ok'}
 
 register_tortoise(
     app,

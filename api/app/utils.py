@@ -1,6 +1,8 @@
+import json
 import os
 from enum import Enum
 
+import aiofiles
 import jwt
 import tortoise
 from dotenv import load_dotenv
@@ -9,7 +11,7 @@ from passlib.hash import bcrypt
 from pydantic import BaseModel
 
 from app.customScheme import CustomOAuth2PasswordBearer
-from app.models import User, UserinFront, UserinToken
+from app.models import Language, Type, User, UserinFront, UserinToken
 
 load_dotenv()
 
@@ -156,6 +158,24 @@ def sanitizer(obj):
         return obj
     else:
         return obj
+
+
+async def init_db_with_data():
+    """ Create the admin user and the types and languages if they don't exist"""
+    if not await Type.exists():
+        types = []
+        types.append(Type(name='action'))
+        types.append(Type(name='info'))
+        types.append(Type(name='choice'))
+        await Type.bulk_create(types)
+    # open langs.json
+    async with aiofiles.open("app/langs.json", "r", encoding="utf-8") as file:
+        langs = json.loads(await file.read())
+        for lang in langs:
+            if not await Language.exists(name=lang['name']):
+                await Language.create(name=lang['name'], code=lang['code'], unicode=lang['unicode'])
+            else:
+                await Language.filter(code=lang['code']).update(unicode=lang['unicode'], name=lang['name'])
 
 
 class Permission(Enum):
