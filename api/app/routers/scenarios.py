@@ -427,6 +427,26 @@ async def add_ressource_to_a_step(id_scenario: int, id_step: int, ressource_file
     return {'ok': f"Ressource {ressource_file.filename} ajoutée à l'étape {step.id}"}
 
 
+@router.delete('steps/{id_step}/ressource', summary="Supprime la ressource associée à une étape",
+               description="Cette route permet de supprimer la ressource mais de garder l'étape")
+@transactions.atomic()
+async def delete_ressource_of_a_step(id_step: int, _: int = Depends(insctructor_required)):
+    """ Delete a ressource to a step """
+    step = await Step.get_or_none(id=id_step).prefetch_related('scenario')
+    if not step:
+        raise HTTPException(status_code=404, detail="Etape introuvable")
+    if step.ressourcePath is not None:
+        # remove the old file
+        path = SCENARIOS_DATA_DIRECTORY+str(step.scenario.id)+'/ressources'
+        try:
+            await aiofiles.os.remove(f"{path}/{step.ressourcePath}")
+            step.ressourcePath = None
+            await step.save()
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="Ressource introuvable") from exc
+    return {'ok': f"Ressource de l'étape {step.id} supprimée"}
+
+
 @router.put('/steps/{id_step}', summary="Met à jour une étape du scénario")
 @transactions.atomic()
 async def update_step(id_step: int, step: StepPost, lang: str | None = None, admin_level: int = Depends(get_admin_level)):
