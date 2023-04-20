@@ -1,4 +1,3 @@
-from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 

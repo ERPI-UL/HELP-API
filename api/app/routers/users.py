@@ -8,13 +8,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from passlib.hash import bcrypt
 from pydantic import parse_obj_as
 from tortoise import transactions
-from tortoise.contrib.pydantic import pydantic_model_creator
 
 from app.mail import send_invite_link
-from app.models import (Invite, Language, Pagination, Reset, ScenarioOut,
-                        Session, User, UserinFront, UserinPut, UserNew)
-from app.utils import (insctructor_required, Permission, get_current_user,
-                       get_current_user_in_token, sanitizer)
+from app.models import (Invite, Pagination, Reset, ScenarioOut, Session, User,
+                        UserinFront, UserinPut, UserNew)
+from app.utils import (Permission, get_current_user, get_current_user_in_token,
+                       insctructor_required, sanitizer)
 
 router = APIRouter()
 

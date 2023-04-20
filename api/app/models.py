@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from random import randint
 
 from passlib.hash import bcrypt
+from pydantic import BaseModel, validator
 from tortoise import fields
 from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
-from pydantic import BaseModel, validator
 
 
 class User(Model):
@@ -481,3 +481,8 @@ LanguageOut = pydantic_model_creator(
     Language, name='LanguageFront', exclude_readonly=True)
 LanguageOutWithId = pydantic_model_creator(
     Language, name='LanguageFrontWithId')
+
+
+class IDResponse(BaseModel):
+    """ IDResponse pydantic model"""
+    id: int

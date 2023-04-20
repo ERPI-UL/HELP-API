@@ -1,22 +1,21 @@
-from aioshutil import rmtree
 import hashlib
 
 import aiofiles
 import aiofiles.os
+from aioshutil import rmtree
 from fastapi import (APIRouter, Body, Depends, File, HTTPException, UploadFile,
                      status)
 from fastapi.responses import FileResponse
 from pydantic import parse_obj_as
 from tortoise import transactions
 
-from app.models import (Choice, ChoiceText, Language, LanguageOut, Machine,
-                        Machinein, MachineOut, MachineText, Pagination,
-                        Position, Scenario, ScenarioPost, ScenarioText,
-                        ScenarioUpdate, Step, StepPost, StepText, Target,
-                        TargetOut, TargetPost, Type)
-from app.utils import (MODELS_DIRECTORY,
-                       SCENARIOS_DATA_DIRECTORY, Permission, get_admin_level,
-                       insctructor_required)
+from app.models import (Choice, ChoiceText, IDResponse, Language, LanguageOut,
+                        Machine, Machinein, MachineOut, MachineText,
+                        Pagination, Position, Scenario, ScenarioPost,
+                        ScenarioText, ScenarioUpdate, Step, StepPost, StepText,
+                        Target, TargetOut, TargetPost, Type)
+from app.utils import (MODELS_DIRECTORY, SCENARIOS_DATA_DIRECTORY, Permission,
+                       get_admin_level, insctructor_required)
 
 router = APIRouter()
 
@@ -330,7 +329,7 @@ async def update_machine(id_machine: int, machine: Machinein, lang: str | None =
     return await Machinein.from_tortoise_orm(await Machine.get(id=id_machine))
 
 
-@router.post('/', summary="Créer un scénario dans la base de données depuis un JSON")
+@router.post('/', summary="Créer un scénario dans la base de données depuis un JSON", response_model=IDResponse)
 @transactions.atomic()
 async def create_scenario(scenario: ScenarioPost, lang: str | None = None, admin_level: int = Depends(get_admin_level)):
     """ Create a scenario and a translation for it in a specific language"""
@@ -360,7 +359,7 @@ async def create_scenario(scenario: ScenarioPost, lang: str | None = None, admin
     return {'id': scenario_in_db.id}
 
 
-@router.post('/{id_scenario}/steps', summary="Ajoute une nouvelle étape au scénario")
+@router.post('/{id_scenario}/steps', summary="Ajoute une nouvelle étape au scénario", response_model=IDResponse)
 @transactions.atomic()
 async def create_step(id_scenario: int, step: StepPost, lang: str | None = None, admin_level: int = Depends(get_admin_level)):
     """ Create a step and a translation for it in a specific language"""
@@ -391,7 +390,7 @@ async def create_step(id_scenario: int, step: StepPost, lang: str | None = None,
 
 
 @router.post('/{id_scenario}/steps/{id_step}/ressource', summary="Ajouter ou remplacer la ressource associer à une étape",
-             description="Chaque étape peut avoir un fichier de ressource de type vidéo ou image. Cette dernière sera affiché lor s de l'éxécution de l'étape")
+             description="Une étape peut avoir une ressource de type vidéo ou image. Cette dernière sera affiché lors de l'éxécution de l'étape")
 @transactions.atomic()
 async def add_ressource_to_a_step(id_scenario: int, id_step: int, ressource_file: UploadFile, _: int = Depends(insctructor_required)):
     """ Add a ressource to a step """
