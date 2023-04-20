@@ -1,3 +1,4 @@
+from aioshutil import rmtree
 import hashlib
 
 import aiofiles
@@ -257,7 +258,9 @@ async def get_scenario(id_scenario: int, lang: str | None = None):
             step.choice.labelright = choice_text.labelright
             step.choice.redirectleft = choice_text.redirectleft
             step.choice.redirectright = choice_text.redirectright
-    machine_text = await MachineText.get(machine=scenario.machine, language=language)
+    machine_text = await MachineText.get_or_none(machine=scenario.machine, language=language)
+    if not machine_text:
+        machine_text = await MachineText.filter(machine=scenario.machine).first()
     scenario.machine.name = machine_text.name
     scenario.machine.description = machine_text.description
     return await scenario_to_json(scenario, language)
@@ -274,7 +277,15 @@ async def get_scenario_languages(id_scenario: int):
 @transactions.atomic()
 async def delete_scenario(id_scenario: int, lang: str | None = None, _=Depends(insctructor_required)):
     """ Delete a scenario and all the objects related to it in a specific language"""
-    scenario = await Scenario.get(id=id_scenario)
+    scenario = await Scenario.get(id=id_scenario).prefetch_related('steps')
+    path = SCENARIOS_DATA_DIRECTORY + str(scenario.id)
+    if await aiofiles.os.path.exists(path):
+        try:
+            await rmtree(path)
+        except Exception as exc:
+            print(exc)
+            raise HTTPException(
+                status_code=500, detail="Erreur lors de la suppression du fichier") from exc
     if not scenario:
         raise HTTPException(status_code=404, detail="Scenario introuvable")
     # on différentie la suppression du scénario d'une traduction du scenario
@@ -374,7 +385,7 @@ async def create_step(id_scenario: int, step: StepPost, lang: str | None = None,
                                 redirectright=step.choice.option_right.redirect)
     await step_in_db.save()
     await StepText.create(step_id=step_in_db.id, language=language, label=step.label, description=step.description)
-    for target in step.targets:
+    for target in step.targets if step.targets else []:
         await step_in_db.targets.add(await Target.get(id=target))
     return {'id': step_in_db.id}
 
@@ -408,6 +419,9 @@ async def add_ressource_to_a_step(id_scenario: int, id_step: int, ressource_file
     await aiofiles.os.makedirs(path, exist_ok=True)
     async with aiofiles.open(f"{path}/{hash_value}.{extension}", 'wb') as file:
         await file.write(content)
+    if step.ressourcePath is not None:
+        # remove the old file
+        await aiofiles.os.remove(f"{path}/{step.ressourcePath}")
     step.ressourcePath = f"{hash_value}.{extension}"
     await step.save()
     return {'ok': f"Ressource {ressource_file.filename} ajoutée à l'étape {step.id}"}
@@ -484,7 +498,12 @@ async def delete_step(id_step: int, lang: str | None = None, _=Depends(insctruct
     Otherwise, delete only the translation in the given language.
     """
     if lang is None:
-        await Step.filter(id=id_step).delete()
+        step = await Step.get(id=id_step).prefetch_related('scenario')
+        if step.ressourcePath:
+            path = SCENARIOS_DATA_DIRECTORY+str(step.scenario.id)+'/ressources'
+            if await aiofiles.os.path.exists(f"{path}/{step.ressourcePath}"):
+                await aiofiles.os.remove(f"{path}/{step.ressourcePath}")
+        await step.delete()
     else:
         language = await Language.get(code=lang)
         await StepText.filter(step_id=id_step, language=language).delete()
