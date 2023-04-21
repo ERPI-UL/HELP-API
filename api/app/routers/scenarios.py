@@ -27,17 +27,15 @@ async def read_scenarios(id_machine: int = None, page: int = 1, per_page: int = 
     # check for zero per_page
     if per_page == 0:
         per_page = 1
+    query_count = Scenario.all()
+    query_offset = Scenario.all()
     if id_machine:
-        scenario_count = await Scenario.filter(machine=id_machine).count()
-        if scenario_count < per_page:
-            per_page = scenario_count
-        scenarios = await Scenario.filter(machine=id_machine).offset((page - 1) * per_page)\
-            .limit(per_page).prefetch_related('machine__texts__language', 'texts', 'texts__language').order_by('id')
-    else:
-        scenario_count = await Scenario.all().count()
-        if scenario_count < per_page:
-            per_page = scenario_count
-        scenarios = await Scenario.all().offset((page - 1) * per_page).limit(per_page)\
+        query_count = query_count.filter(machine=id_machine)
+        query_offset = query_offset.filter(machine=id_machine)
+    scenario_count = await query_count.count()
+    if scenario_count < per_page:
+        per_page = scenario_count
+        scenarios = await query_offset.offset((page - 1) * per_page).limit(per_page)\
             .prefetch_related('machine__texts__language', 'texts', 'texts__language').order_by('id')
     # check for zero per_page
     if per_page == 0:
