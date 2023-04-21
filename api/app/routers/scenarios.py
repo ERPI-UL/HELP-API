@@ -72,20 +72,18 @@ async def read_scenarios(id_machine: int = None, page: int = 1, per_page: int = 
 @router.put("/{id_scenario}", summary="Mettre a jour les informations d'un scenario")
 async def update_scenario(id_scenario: int, scenario: ScenarioUpdate, lang: str | None = None, _=Depends(insctructor_required)):
     """ Update a scenario by id"""
-    scenario_in_db = await Scenario.get(id=id_scenario)
     if lang is None:
         lang = "fr"
-    scenario_text = await ScenarioText.get(scenario=scenario_in_db, language__code=lang)
-    if scenario.name.strip() != "":
-        scenario_in_db.name = scenario.name
+    # met a jour le scenario dans la base de données et son scenario text
+    await Scenario.filter(id=id_scenario).update(machine_id=scenario.idMachine)
+    scenario_text = await ScenarioText.get_or_none(scenario_id=id_scenario, language__code=lang).prefetch_related("language")
+    if scenario_text is None:
+        lang = await Language.get(code=lang)
+        await ScenarioText.create(scenario_id=id_scenario, language=lang, name=scenario.name, description=scenario.description)
+    else:
         scenario_text.name = scenario.name
-    if scenario.description.strip() != "":
-        scenario_in_db.description = scenario.description
         scenario_text.description = scenario.description
-    machine = await Machine.get(id=scenario.idMachine)
-    scenario_in_db.machine = machine
-    await scenario_in_db.save()
-    await scenario_text.save()
+        await scenario_text.save()
     return {'ok': "scenario mis à jour"}
 
 
