@@ -460,10 +460,13 @@ async def update_step(id_step: int, step: StepPost, lang: str | None = None, adm
     step_in_db.description = step.description
     step_in_db.ordernumber = step.ordernumber
     step_in_db.type = await Type.get(name=step.type.name).first()
-    step_text_in_db = await StepText.get(step_id=step_in_db.id, language=language)
-    step_text_in_db.label = step.label
-    step_text_in_db.description = step.description
-    await step_text_in_db.save()
+    step_text_in_db = await StepText.get_or_none(step_id=step_in_db.id, language=language)
+    if not step_text_in_db:
+        await StepText.create(step_id=step_in_db.id, language=language, label=step.label, description=step.description)
+    else:
+        step_text_in_db.label = step.label
+        step_text_in_db.description = step.description
+        await step_text_in_db.save()
     if step.type.name == 'choice':
         if step_in_db.choice:
             step_in_db.choice.labelleft = step.choice.option_left.label
@@ -471,12 +474,18 @@ async def update_step(id_step: int, step: StepPost, lang: str | None = None, adm
             step_in_db.choice.redirectleft = step.choice.option_left.redirect
             step_in_db.choice.redirectright = step.choice.option_right.redirect
             await step_in_db.choice.save()
-            choice_text_in_db = await ChoiceText.get(choice_id=step_in_db.choice.id, language=language)
-            choice_text_in_db.labelleft = step.choice.option_left.label
-            choice_text_in_db.labelright = step.choice.option_right.label
-            choice_text_in_db.redirectleft = step.choice.option_left.redirect
-            choice_text_in_db.redirectright = step.choice.option_right.redirect
-            await choice_text_in_db.save()
+            choice_text_in_db = await ChoiceText.get_or_none(choice_id=step_in_db.choice.id, language=language)
+            if not choice_text_in_db:
+                await ChoiceText.create(choice_id=step_in_db.choice.id, language=language, labelleft=step.choice.option_left.label,
+                                        labelright=step.choice.option_right.label,
+                                        redirectleft=step.choice.option_left.redirect,
+                                        redirectright=step.choice.option_right.redirect)
+            else:
+                choice_text_in_db.labelleft = step.choice.option_left.label
+                choice_text_in_db.labelright = step.choice.option_right.label
+                choice_text_in_db.redirectleft = step.choice.option_left.redirect
+                choice_text_in_db.redirectright = step.choice.option_right.redirect
+                await choice_text_in_db.save()
         else:
             step_in_db.choice = await Choice.create(labelleft=step.choice.option_left.label,
                                                     labelright=step.choice.option_right.label,
