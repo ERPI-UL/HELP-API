@@ -2,9 +2,11 @@ import tortoise
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import parse_obj_as
 from tortoise import transactions
+from tortoise.functions import Sum
 
-from app.models import (Pagination, PlayedStepPost, Scenario, Session,
-                        SessionIn, SessionOut, User, PlayedStep, playedStepIn)
+from app.models import (Pagination, PlayedStep, PlayedStepPost, Scenario,
+                        ScenarioStats, Session, SessionIn, SessionOut, User,
+                        playedStepIn)
 from app.utils import Permission, get_current_user, get_current_user_in_token
 
 router = APIRouter()
@@ -230,6 +232,38 @@ async def perform_time(id_scenario: int, _=Depends(get_current_user_in_token)):
         data_list.append({'id': step.id, 'name': step.name,
                           'performTime': played_steps[0]['count']/number_of_time_scenario_played[0]['count']})
     return {'scenario': scenario.id, 'data': data_list}
+
+
+@router.get("/scenarios/{id_scenario}", response_model=ScenarioStats)
+async def get_scenario_stats(id_scenario: int, _=Depends(get_current_user_in_token)):
+    """ Get scenario stats """
+    scenario = await Scenario.get(id=id_scenario).prefetch_related('steps')
+    # moyenne du temps de réalisation de chaque étape de toute les sessions de ce scénario donc moyenne de moyenne
+    # value = await PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
+    #     avg_time=Avg(PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
+    #         val=F(PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
+    #             sum=Sum('time'))['sum'])/PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
+    #             count=Count('time'))['count'])['val']))
+
+    # value = await PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
+    #     avg_time=Avg('time'))
+    total_played_time_for_scenario = await PlayedStep.annotate(
+        value=Sum('time')
+    ).values("value")
+    total_success = await PlayedStep.filter(step__scenario_id=id_scenario, missed=False, skipped=False).count()
+    total_played_time_for_scenario = total_played_time_for_scenario[0]["value"]
+    number_of_VR_sessions = await Session.filter(scenario_id=id_scenario, vrmode=True).count()
+    number_of_AR_sessions = await Session.filter(scenario_id=id_scenario, vrmode=False).count()
+    number_of_sessions = number_of_AR_sessions + number_of_VR_sessions
+    return ScenarioStats(
+        id=scenario.id,
+        averageTime=(total_played_time_for_scenario / number_of_sessions),
+        averageSuccessRate=total_success/number_of_sessions,
+        numberOfVRSessions=number_of_VR_sessions,
+        numberOfARSessions=number_of_AR_sessions,
+        averageSuccessRateByStep=[],
+        averageTimeByStep=[],
+    )
 
 
 async def user_to_json(user):
