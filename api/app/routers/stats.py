@@ -239,15 +239,6 @@ async def perform_time(id_scenario: int, _=Depends(get_current_user_in_token)):
 async def get_scenario_stats(id_scenario: int, _=Depends(get_current_user_in_token)):
     """ Get scenario stats """
     scenario = await Scenario.get(id=id_scenario).prefetch_related('steps')
-    # moyenne du temps de réalisation de chaque étape de toute les sessions de ce scénario donc moyenne de moyenne
-    # value = await PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
-    #     avg_time=Avg(PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
-    #         val=F(PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
-    #             sum=Sum('time'))['sum'])/PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
-    #             count=Count('time'))['count'])['val']))
-
-    # value = await PlayedStep.filter(step__scenario_id=id_scenario).aggregate(
-    #     avg_time=Avg('time'))
     total_played_time_for_scenario = await PlayedStep.annotate(
         value=Sum('time')
     ).values("value")
@@ -260,7 +251,11 @@ async def get_scenario_stats(id_scenario: int, _=Depends(get_current_user_in_tok
         step_id=F('step_id'),
         count=Count('step_id', _filter=Q(missed=False, skipped=False))
     ).group_by('step_id').values_list("step_id", "count")
-    print(list_of_success_by_step)
+    list_of_time_by_step = await PlayedStep.filter(session__scenario_id=id_scenario).annotate(
+        step_id=F('step_id'),
+        count=Sum('time')
+    ).group_by('step_id').values_list("step_id", "count")
+    average_time_by_step = list()
     list_of_step = await PlayedStep.filter(session__scenario_id=id_scenario).annotate(
         step_id=F('step_id'),
         count=Count('step_id')
@@ -273,6 +268,12 @@ async def get_scenario_stats(id_scenario: int, _=Depends(get_current_user_in_tok
             value=i[1]/list_of_step[list_of_success_by_step.index(i)][1],
             name=step_name[i[0]]
         ))
+    for i in list_of_time_by_step:
+        average_time_by_step.append(StepStat(
+            id=i[0],
+            value=i[1]/list_of_step[list_of_time_by_step.index(i)][1],
+            name=step_name[i[0]]
+        ))
     return ScenarioStats(
         id=scenario.id,
         averageTime=(total_played_time_for_scenario / number_of_sessions),
@@ -280,7 +281,7 @@ async def get_scenario_stats(id_scenario: int, _=Depends(get_current_user_in_tok
         numberOfVRSessions=number_of_vr_sessions,
         numberOfARSessions=number_of_ar_sessions,
         averageSuccessRateByStep=average_success_rate_by_step,
-        averageTimeByStep=[],
+        averageTimeByStep=average_time_by_step,
     )
 
 
