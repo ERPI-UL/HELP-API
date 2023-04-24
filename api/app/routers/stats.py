@@ -2,10 +2,11 @@ import tortoise
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import parse_obj_as
 from tortoise import transactions
-from tortoise.functions import Sum
+from tortoise.functions import Sum, Count
+from tortoise.expressions import Q, F
 
 from app.models import (Pagination, PlayedStep, PlayedStepPost, Scenario,
-                        ScenarioStats, Session, SessionIn, SessionOut, User,
+                        ScenarioStats, Session, SessionIn, SessionOut, StepStat, User,
                         playedStepIn)
 from app.utils import Permission, get_current_user, get_current_user_in_token
 
@@ -252,16 +253,33 @@ async def get_scenario_stats(id_scenario: int, _=Depends(get_current_user_in_tok
     ).values("value")
     total_success = await PlayedStep.filter(step__scenario_id=id_scenario, missed=False, skipped=False).count()
     total_played_time_for_scenario = total_played_time_for_scenario[0]["value"]
-    number_of_VR_sessions = await Session.filter(scenario_id=id_scenario, vrmode=True).count()
-    number_of_AR_sessions = await Session.filter(scenario_id=id_scenario, vrmode=False).count()
-    number_of_sessions = number_of_AR_sessions + number_of_VR_sessions
+    number_of_vr_sessions = await Session.filter(scenario_id=id_scenario, vrmode=True).count()
+    number_of_ar_sessions = await Session.filter(scenario_id=id_scenario, vrmode=False).count()
+    number_of_sessions = number_of_ar_sessions + number_of_vr_sessions
+    list_of_success_by_step = await PlayedStep.filter(session__scenario_id=id_scenario).annotate(
+        step_id=F('step_id'),
+        count=Count('step_id', _filter=Q(missed=False, skipped=False))
+    ).group_by('step_id').values_list("step_id", "count")
+    print(list_of_success_by_step)
+    list_of_step = await PlayedStep.filter(session__scenario_id=id_scenario).annotate(
+        step_id=F('step_id'),
+        count=Count('step_id')
+    ).group_by('step_id').values_list("step_id", "count")
+    average_success_rate_by_step = list()
+    step_name = {step.id: step.name for step in scenario.steps}
+    for i in list_of_success_by_step:
+        average_success_rate_by_step.append(StepStat(
+            id=i[0],
+            value=i[1]/list_of_step[list_of_success_by_step.index(i)][1],
+            name=step_name[i[0]]
+        ))
     return ScenarioStats(
         id=scenario.id,
         averageTime=(total_played_time_for_scenario / number_of_sessions),
         averageSuccessRate=total_success/number_of_sessions,
-        numberOfVRSessions=number_of_VR_sessions,
-        numberOfARSessions=number_of_AR_sessions,
-        averageSuccessRateByStep=[],
+        numberOfVRSessions=number_of_vr_sessions,
+        numberOfARSessions=number_of_ar_sessions,
+        averageSuccessRateByStep=average_success_rate_by_step,
         averageTimeByStep=[],
     )
 
