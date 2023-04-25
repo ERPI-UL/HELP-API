@@ -321,6 +321,25 @@ SessionOut = pydantic_model_creator(
     Session, name='SessionOut', include=['id', 'date', 'evaluation', 'scenario_id', 'vrmode'])
 
 
+class UserCreate(BaseModel):
+    """ Model to create User in the API"""
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    password: str
+    languageCode: str | None = None
+
+
+class UserinPut(BaseModel):
+    """ Model to send User to the API"""
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    languageCode: str
+
+
 class Pagination(BaseModel):
     """ Pagination pydantic model"""
     total: int
