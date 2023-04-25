@@ -11,7 +11,7 @@ from tortoise import transactions
 
 from app.mail import send_invite_link
 from app.models import (Invite, Language, Pagination, Reset, ScenarioOut,
-                        Session, User, UserinFront, UserinPut, UserNew)
+                        Session, User, UserCreate, UserinFront, UserinPut)
 from app.utils import (Permission, get_current_user, get_current_user_in_token,
                        insctructor_required, sanitizer)
 
@@ -20,11 +20,13 @@ router = APIRouter()
 
 @router.post('/', response_model=UserinFront)
 @transactions.atomic()
-async def create_user(user: UserNew):
+async def create_user(user: UserCreate):
     """ Create a new user """
     user = sanitizer(user)
     user_obj = User(username=user.username,
-                    password_hash=bcrypt.hash(user.password_hash), firstname=user.firstname, lastname=user.lastname, email=user.email, adminLevel=1)
+                    password_hash=bcrypt.hash(user.password), firstname=user.firstname, lastname=user.lastname, email=user.email, adminLevel=1)
+    if user.languageCode is not None:
+        user_obj.language = await Language.get(code=user.languageCode)
     await user_obj.save()
     return await UserinFront.from_tortoise_orm(user_obj)
 
