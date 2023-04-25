@@ -10,8 +10,8 @@ from pydantic import parse_obj_as
 from tortoise import transactions
 
 from app.mail import send_invite_link
-from app.models import (Invite, Pagination, Reset, ScenarioOut, Session, User,
-                        UserinFront, UserinPut, UserNew)
+from app.models import (Invite, Language, Pagination, Reset, ScenarioOut,
+                        Session, User, UserinFront, UserinPut, UserNew)
 from app.utils import (Permission, get_current_user, get_current_user_in_token,
                        insctructor_required, sanitizer)
 
@@ -128,6 +128,9 @@ async def update_user(user: UserinPut, current_user: User = Depends(get_current_
         user_obj.email = user.email
     if len(user.username) > 0:
         user_obj.username = user.username
+    if len(user.languageCode) > 0:
+        language = await Language.get(code=user.languageCode)
+        user_obj.language = language
     try:
         await user_obj.save()
     except tortoise.exceptions.IntegrityError as err:
