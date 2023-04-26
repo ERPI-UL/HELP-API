@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.models import Easy
+from app.types.easy import Easy
 from app.utils import get_current_user_in_token
 
 router = APIRouter()

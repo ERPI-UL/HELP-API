@@ -8,12 +8,19 @@ from fastapi import (APIRouter, Body, Depends, File, HTTPException, UploadFile,
 from fastapi.responses import FileResponse
 from pydantic import parse_obj_as
 from tortoise import transactions
+from tortoise.expressions import Q
 
-from app.models import (Choice, ChoiceText, IDResponse, Language, LanguageOut,
-                        Machine, Machinein, MachineOut, MachineText,
-                        Pagination, Position, Scenario, ScenarioPost,
-                        ScenarioText, ScenarioUpdate, Step, StepPost, StepText,
-                        Target, TargetOut, TargetPost, Type)
+from app.models.choice import Choice, ChoiceText
+from app.models.language import Language, LanguageOut
+from app.models.machine import Machine, Machinein, MachineOut, MachineText
+from app.models.position import Position
+from app.models.scenario import (Scenario, ScenarioPost, ScenarioText,
+                                 ScenarioUpdate)
+from app.models.step import Step, StepPost, StepText
+from app.models.target import Target, TargetOut, TargetPost
+from app.models.type import Type
+from app.types.pagination import Pagination
+from app.types.response import IDResponse
 from app.utils import (MODELS_DIRECTORY, SCENARIOS_DATA_DIRECTORY, Permission,
                        get_admin_level, insctructor_required)
 
@@ -235,12 +242,20 @@ async def update_target(target_id: int, target: TargetPost, _=Depends(insctructo
 @router.get('/{id_scenario}', summary="Récupère un scénario sous forme de JSON")
 async def get_scenario(id_scenario: int, lang: str | None = None):
     """ Returns a scenario by id"""
-    scenario = await Scenario.get(id=id_scenario).prefetch_related('steps__targets', 'steps__position', 'steps__choice', 'steps__type', 'machine')
-    # scenario2 = await Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
     if lang is None:
         lang = "fr"
     language = await Language.get(code=lang)
-    scenario_text = await ScenarioText.get(scenario=scenario, language=language)
+
+    scenario = await Scenario.filter(Q(id=id_scenario) & (Q(texts__language__code="fr"))).prefetch_related('texts', 'steps__targets', 'steps__position', 'steps__choice', 'steps__type', 'machine').first()
+    scenario = await Scenario.filter(id=id_scenario, texts__language__code="fr").prefetch_related('texts', 'steps__targets', 'steps__position', 'steps__choice', 'steps__type', 'machine').first()
+    # scenario2 = await Scenario.get(id=id).values('id', 'name', 'description', 'steps__id', 'steps__label', 'steps__name', 'steps__description')
+
+    # scenarioOpti = await Scenario.filter(id=id_scenario).prefetch_related(Prefetch('texts', queryset=ScenarioText.filter((Q(scenario_id=id_scenario) & Q(language=language)) | Q(
+    # scenario_id=id_scenario)).order_by('id').prefetch_related('language').first()), 'steps__targets', 'steps__position', 'steps__choice', 'steps__type', 'machine').first()
+    # scenarioText = ScenarioText.filter(scenario=scenario, language__code="fr").prefetch_related('language')
+    # scenario_text = await ScenarioText.filter(scenario=scenario, language=language).first()
+    scenario_text = await ScenarioText.filter((Q(scenario=scenario) & Q(language=language)) | Q(scenario=scenario)).order_by('id').prefetch_related('language').first()
+
     scenario.name = scenario_text.name
     scenario.description = scenario_text.description
     for step in scenario.steps:
@@ -254,8 +269,9 @@ async def get_scenario(id_scenario: int, lang: str | None = None):
             step.choice.redirectleft = choice_text.redirectleft
             step.choice.redirectright = choice_text.redirectright
     machine_text = await MachineText.get_or_none(machine=scenario.machine, language=language)
-    if not machine_text:
-        machine_text = await MachineText.filter(machine=scenario.machine).first()
+    machine_text = await MachineText.filter((Q(machine=scenario.machine) & Q(language=language)) | Q(machine=scenario.machine)).order_by('id').prefetch_related('language').first()
+    # if not machine_text:
+    #     machine_text = await MachineText.filter(machine=scenario.machine).first()
     scenario.machine.name = machine_text.name
     scenario.machine.description = machine_text.description
     return await scenario_to_json(scenario, language)

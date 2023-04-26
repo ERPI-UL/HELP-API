@@ -2,12 +2,16 @@ import tortoise
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import parse_obj_as
 from tortoise import transactions
-from tortoise.functions import Sum, Count
-from tortoise.expressions import Q, F
+from tortoise.expressions import F, Q
+from tortoise.functions import Count, Sum
 
-from app.models import (Pagination, PlayedStep, PlayedStepPost, Scenario,
-                        ScenarioStats, Session, SessionIn, SessionOut, StepStat, User,
-                        playedStepIn)
+from app.models.playedstep import PlayedStep, PlayedStepPost, playedStepIn
+from app.types.stat import ScenarioStats
+from app.models.session import Session, SessionIn, SessionOut
+from app.types.stat import StepStat
+from app.models.user import User
+from app.models.scenario import Scenario
+from app.types.pagination import Pagination
 from app.utils import Permission, get_current_user, get_current_user_in_token
 
 router = APIRouter()

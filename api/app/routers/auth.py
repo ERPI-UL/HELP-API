@@ -8,7 +8,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from tortoise.expressions import Q
 
 import app.mail as mail
-from app.models import PasswordChange, PasswordReset, Reset, User, UserinToken
+from app.models.reset import Reset
+from app.models.user import User, UserinToken
+from app.types.password import PasswordChange, PasswordReset
 from app.utils import JWT_SECRET, authenticate_user
 
 router = APIRouter()

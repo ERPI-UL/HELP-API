@@ -10,8 +10,13 @@ from pydantic import parse_obj_as
 from tortoise import transactions
 
 from app.mail import send_invite_link
-from app.models import (Invite, Language, Pagination, Reset, ScenarioOut,
-                        Session, User, UserCreate, UserinFront, UserinPut)
+from app.types.invite import Invite
+from app.models.language import Language
+from app.models.scenario import ScenarioOut
+from app.models.session import Session
+from app.models.user import User, UserCreate, UserinFront, UserinPut
+from app.types.pagination import Pagination
+from app.models.reset import Reset
 from app.utils import (Permission, get_current_user, get_current_user_in_token,
                        insctructor_required, sanitizer)
 

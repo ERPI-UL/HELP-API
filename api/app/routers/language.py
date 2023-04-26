@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 from fastapi import APIRouter, BackgroundTasks, Body, Depends
 from fastapi.responses import FileResponse
 
-from app.models import Language, LanguageOutWithId
+from app.models.language import LanguageOutWithId, Language
 from app.utils import get_current_user_in_token
 
 router = APIRouter()

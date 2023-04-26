@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
-from app.models import User, UserinFront
+from app.models.user import User, UserinFront
 import app.utils
 from app.utils import admin_required, Permission, get_current_user_in_token
 router = APIRouter()

@@ -11,7 +11,9 @@ from passlib.hash import bcrypt
 from pydantic import BaseModel
 
 from app.customScheme import CustomOAuth2PasswordBearer
-from app.models import Language, Type, User, UserinFront, UserinToken
+from app.models.language import Language
+from app.models.type import Type
+from app.models.user import User, UserinFront, UserinToken
 
 load_dotenv()
 
