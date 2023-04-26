@@ -79,7 +79,10 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
     if "type" in action.__fields_set__:
         action_db.type = await Type.get(name=action.type)
         if action.type == "choice":
-            pass
+            action_db.left_target_action_id = action.choice.left.target
+            action_db.right_target_action_id = action.choice.right.target
+            action_text.left_choice = action.choice.left.name
+            action_text.right_choice = action.choice.right.name
         else:
             action_db.left_target_action_id = None
             action_db.right_target_action_id = None

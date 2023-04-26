@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, StrictStr
+from pydantic import BaseModel, StrictStr, validator
 from tortoise import Model, fields
 
 from app.models.position import PositionPost
@@ -88,6 +88,18 @@ class ActionInPatch(BaseModel):
 #     # name is optional but if it is set it can't be None
     name:  Optional[StrictStr]
     choice: Optional[ChoiceOut]
+
+    # verify that choice is not None if type is choice
+    @validator('choice')
+    def validate_choice(cls, v, values, **kwargs):
+        """ Verify that choice is not None if type is choice """
+        if v is None and values.get('type') == 'choice':
+            raise ValueError("choice must be set if type is choice")
+        return v
+
+    class Config:
+        """ Config class for ActionInPatch pydantic model """
+        extra = "forbid"
 
 
 class ActionOut(BaseModel):
