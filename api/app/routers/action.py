@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/{action_id}", response_model=ActionOut)
 async def get_action(action_id: int, language_code: str = 'fr'):
     """ Get an action"""
-    action = await Action.get(id=action_id).prefetch_related("texts", "type")
+    action = await Action.get(id=action_id).prefetch_related("texts", "type", "targets")
     action_text = await action.texts.filter(language__code=language_code).first()
     return ActionOut(
         id=action.id,
@@ -37,6 +37,7 @@ async def get_action(action_id: int, language_code: str = 'fr'):
                 name=action_text.right_choice
             )
         ) if action.type.name == "choice" else None),
+        targets=[target.id for target in action.targets],
     )
 
 
@@ -88,6 +89,10 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
             action_db.right_target_action_id = None
             action_text.left_choice = None
             action_text.right_choice = None
+    if "targets" in action.__fields_set__:
+        action_db.targets.clear()
+        for target_id in action.targets:
+            action_db.targets.add(await Action.get(id=target_id))
     if "artifactID" in action.__fields_set__:
         action_db.artifact_id = action.artifactID
     if "position" in action.__fields_set__:

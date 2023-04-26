@@ -88,9 +88,11 @@ class ActionInPatch(BaseModel):
 #     # name is optional but if it is set it can't be None
     name:  Optional[StrictStr]
     choice: Optional[ChoiceOut]
+    targets: Optional[list[int]]
 
     # verify that choice is not None if type is choice
     @validator('choice')
+    @classmethod
     def validate_choice(cls, v, values, **kwargs):
         """ Verify that choice is not None if type is choice """
         if v is None and values.get('type') == 'choice':
@@ -114,3 +116,4 @@ class ActionOut(BaseModel):
     description: str
     artifactID: int | None
     choice: ChoiceOut | None
+    targets: list[int]
