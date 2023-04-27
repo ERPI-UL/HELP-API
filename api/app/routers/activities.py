@@ -25,7 +25,7 @@ async def get_action(activity_id: int, language_code: str = 'fr'):
     )
 
 
-@router.post("/")
+@router.post("/", response_model=IDResponse)
 @atomic()
 async def create_activity(activity: ActivityIn, _=Depends(insctructor_required)):
     """ Create an action """
