@@ -1,17 +1,43 @@
-from app.routers.actions import delete_action_ressource_file
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
+from fastapi_pagination import Page
+from fastapi_pagination.ext.tortoise import paginate
 from tortoise.transactions import atomic
 
 from app.models.action import Action
 from app.models.activity import (Activity, ActivityIn, ActivityInPatch,
-                                 ActivityOut, ActivityText)
+                                 ActivityOut, ActivityOutTrad, ActivityText)
 from app.models.artifact import Artifact
 from app.models.language import Language
+from app.routers.actions import delete_action_ressource_file
 from app.types.response import IDResponse
 from app.utils import insctructor_required
 
 router = APIRouter()
+
+
+@router.get('/', response_model=Page)
+async def get_activities_trad(language_code: str = 'fr'):
+    """ get all actions """
+    pagination = await paginate(Activity.all().prefetch_related("texts", "texts__language", "artifacts").order_by("id"))
+    pagination.items = [ActivityOutTrad(
+        id=activity.id,
+        name=(await get_ask_translation_or_first(activity.texts, language_code)).name,
+        description=(await get_ask_translation_or_first(activity.texts, language_code)).description,
+        language=[text.language.code for text in activity.texts],
+        start=activity.start_id,
+        artifacts=[int(artifact.id) for artifact in activity.artifacts],
+    ) for activity in pagination.items]
+    return pagination
+
+
+async def get_ask_translation_or_first(texts, language_code: str):
+    """ get the traduction of an activity or the first one """
+    # trouve le texte en fr sinon retourne le premier
+    for text in texts:
+        if text.language.code == language_code:
+            return text
+    return texts[0]
 
 
 @router.get("/{activity_id}")

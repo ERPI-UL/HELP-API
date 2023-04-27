@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
+from fastapi_pagination import add_pagination
 
 import app.utils as utils
 from app.routers import (actions, activities, admin, auth, data, easy, language,
@@ -66,6 +67,7 @@ app = FastAPI(
     version="0.3.0",
     openapi_tags=tags_metadata
 )
+add_pagination(app)
 
 sio_server = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins=origins)
 sio_app = socketio.ASGIApp(socketio_server=sio_server, socketio_path='sockets')

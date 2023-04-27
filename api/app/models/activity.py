@@ -37,6 +37,20 @@ class ActivityOut(BaseModel):
         orm_mode = True
 
 
+class ActivityOutTrad(BaseModel):
+    """ ActivityOut pydantic model """
+    id: int
+    name: str
+    description: str
+    language: list[str]
+    start: int = None
+    artifacts: list[int] | list
+
+    class Config:
+        """ Config class for ActivityOut model """
+        orm_mode = True
+
+
 class ActivityIn(BaseModel):
     """ ActivityIn pydantic model """
     name: str
