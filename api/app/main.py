@@ -8,7 +8,7 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
-from app.routers import (action, activities, admin, auth, data, easy, language,
+from app.routers import (actions, activities, admin, auth, data, easy, language,
                          scenarios, stats, tts, users)
 
 tags_metadata = [
@@ -104,7 +104,7 @@ app.include_router(easy.router, prefix="/easy", tags=["easy"])
 app.include_router(tts.router, prefix="/tts", tags=["tts"])
 app.include_router(language.router, prefix="/langs", tags=["language"])
 app.include_router(data.router, prefix="/data", tags=["data"])
-app.include_router(action.router, prefix="/actions", tags=["actions"])
+app.include_router(actions.router, prefix="/actions", tags=["actions"])
 app.include_router(activities.router, prefix="/activities", tags=["activities"])
 
 models = []

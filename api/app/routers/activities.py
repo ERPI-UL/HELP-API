@@ -1,4 +1,4 @@
-from app.routers.action import delete_action_ressource_file
+from app.routers.actions import delete_action_ressource_file
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
