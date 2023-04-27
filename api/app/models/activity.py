@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel, StrictStr, validator
 from tortoise import Model, fields
 
 
@@ -22,7 +23,7 @@ class ActivityText(Model):
         table = "activitytext"
 
 
-class ActivityOut(Model):
+class ActivityOut(BaseModel):
     """ ActivityOut pydantic model """
     id: int
     name: str
@@ -43,3 +44,33 @@ class ActivityIn(BaseModel):
     language: str
     start: int | None
     artifacts: list[int]
+
+
+class ActivityInPatch(BaseModel):
+    """ ActivityInPatch pydantic model """
+    name: Optional[StrictStr]
+    description: Optional[StrictStr]
+    start: Optional[int]
+    artifacts: Optional[list[int]]
+
+    @validator('name')
+    @classmethod
+    def check_name(cls, v):
+        """ Check if name is valid """
+        if v is not None:
+            if len(v) > 50:
+                raise ValueError('Name is too long')
+        else:
+            raise ValueError('Name value cannot be null')
+        return v
+
+    @validator('description')
+    @classmethod
+    def check_description(cls, v):
+        """ Check if description is valid """
+        if v is not None:
+            if len(v) > 500:
+                raise ValueError('Description is too long')
+        else:
+            raise ValueError('Description value cannot be null')
+        return v
