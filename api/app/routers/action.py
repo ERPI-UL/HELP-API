@@ -1,3 +1,7 @@
+import hashlib
+
+import aiofiles
+from fastapi import HTTPException, UploadFile
 from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
 
@@ -5,8 +9,10 @@ from app.models.action import (Action, ActionIn, ActionInPatch, ActionOut,
                                ActionText, ChoiceMember, ChoiceOut)
 from app.models.language import Language
 from app.models.position import PositionPost
+from app.models.target import Target
 from app.models.type import Type
 from app.types.response import IDResponse, OKResponse
+from app.utils import ACTIVITY_DATA_DIRECTORY
 
 router = APIRouter()
 
@@ -20,6 +26,7 @@ async def get_action(action_id: int, language_code: str = 'fr'):
         id=action.id,
         name=action_text.name,
         description=action_text.description,
+        hint=action_text.hint,
         tag=action.tag,
         previous=action.previous_id,
         next=action.next_id,
@@ -54,15 +61,60 @@ async def create_action(action: ActionIn):
         y=action.position.y,
         z=action.position.z,
         activity_id=action.activityID,
-        targets=action.targets
     )
+    targets_to_add = await Target.filter(id__in=action.targets)
+    await action_db.targets.add(*targets_to_add)
     await ActionText.create(
         name=action.name,
         description=action.description,
+        hint=action.hint,
         language_id=(await Language.get(code=action.language)).id,
         action_id=action_db.id
     )
     return IDResponse(id=action_db.id)
+
+
+@router.post("/{action_id}/ressource/", response_model=OKResponse)
+async def add_ressource(action_id: int, ressource_file: UploadFile):
+    """ Add a ressource to an action"""
+    action = await Action.get(id=action_id)
+    extension = ressource_file.filename.split(".")[-1]
+    if extension not in ["png", "jpg", "jpeg", "gif"]:
+        raise HTTPException(status_code=400, detail="Ressource must be an image")
+    content = await ressource_file.read()
+    # verify that the size does not exceed 4MiB
+    if len(content) > 4 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Ressource size must not exceed 4MiB")
+    hash_value = hashlib.sha256(content).hexdigest()
+    # create the directory if it does not exist
+    path = ACTIVITY_DATA_DIRECTORY+str(action.activity_id)+"/ressources/"
+    await aiofiles.os.makedirs(path, exist_ok=True)
+    async with aiofiles.open(f"{path}{hash_value}.{extension}", "wb") as file:
+        await file.write(content)
+    if action.ressourcePath is not None:
+        # on regarde si la ressource est utilisée par une autre action
+        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
+            # si non on la supprime
+            await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
+    action.ressourcePath = f"{action.activity_id}/ressources/{hash_value}.{extension}"
+    await action.save()
+    return OKResponse(ok=f"{ressource_file.filename} added to action {action_id}")
+
+
+@router.delete("/{action_id}/ressource/", response_model=OKResponse)
+async def delete_ressource(action_id: int):
+    """ Delete the ressource of an action"""
+    action = await Action.get(id=action_id)
+    if action.ressourcePath is not None:
+        # on regarde si la ressource est utilisée par une autre action
+        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
+            # si non on la supprime
+            await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
+        action.ressourcePath = None
+        await action.save()
+    else:
+        raise HTTPException(status_code=400, detail="No ressource to delete")
+    return OKResponse(ok=f"ressource deleted from action {action_id}")
 
 
 @router.patch("/{action_id}", response_model=ActionOut)
@@ -103,6 +155,8 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
         action_text.name = action.name
     if "description" in action.__fields_set__:
         action_text.description = action.description
+    if "hint" in action.__fields_set__:
+        action_text.hint = action.hint
     await action_text.save()
     await action_db.save()
 

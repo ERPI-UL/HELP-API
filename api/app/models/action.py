@@ -24,6 +24,8 @@ class Action(Model):
     y = fields.FloatField()
     z = fields.FloatField()
 
+    ressourcePath = fields.CharField(max_length=100, null=True)
+
     class Meta:
         """ Meta class for Action model """
         table = "action"
@@ -35,6 +37,7 @@ class ActionText(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField(max_length=50)
     description = fields.TextField()
+    hint = fields.TextField(null=True)
     language = fields.ForeignKeyField('models.Language', related_name='actionTexts')
     action = fields.ForeignKeyField('models.Action', related_name='texts', on_delete=fields.CASCADE)
 
@@ -55,6 +58,7 @@ class ActionIn(BaseModel):
     position: PositionPost
     name: str
     description: str
+    hint: str = None
     artifactID: int = None
     language: str
     activityID: int
@@ -88,6 +92,7 @@ class ActionInPatch(BaseModel):
     description:  Optional[StrictStr]
     # name is optional but if it is set it can't be None
     name:  Optional[StrictStr]
+    hint: Optional[StrictStr] = None
     choice: Optional[ChoiceOut]
     targets: Optional[list[int]]
 

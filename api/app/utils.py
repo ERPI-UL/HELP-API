@@ -22,6 +22,7 @@ DB_URL = os.getenv('DB_HOST')
 DATA_DIRECTORY = './app/data/'
 MODELS_DIRECTORY = DATA_DIRECTORY+'models/'
 SCENARIOS_DATA_DIRECTORY = DATA_DIRECTORY+'scenarios/'
+ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
 
 
