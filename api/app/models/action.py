@@ -15,7 +15,7 @@ class Action(Model):
     type = fields.ForeignKeyField('models.Type', related_name='actions', on_delete=fields.CASCADE)
     artifact = fields.ForeignKeyField('models.Artifact', related_name='actions', null=True, on_delete=fields.CASCADE)
     targets = fields.ManyToManyField('models.Target', related_name='actions', through='action_target')
-    activity = fields.ForeignKeyField('models.Activity', related_name='actions', on_delete=fields.CASCADE)
+    # activity = fields.ForeignKeyField('models.Activity', related_name='actions', on_delete=fields.CASCADE)
     # choice
     left_target_action = fields.ForeignKeyField('models.Action', related_name='left_choice_set', null=True, on_delete=fields.SET_NULL)
     right_target_action = fields.ForeignKeyField('models.Action', related_name='right_choice_set', null=True, on_delete=fields.SET_NULL)
@@ -29,7 +29,7 @@ class Action(Model):
     class Meta:
         """ Meta class for Action model """
         table = "action"
-        unique_together = (("tag", "activity_id"))
+        # unique_together = (("tag", "activity_id"))
 
 
 class ActionText(Model):
@@ -61,7 +61,7 @@ class ActionIn(BaseModel):
     hint: str = None
     artifactID: int = None
     language: str
-    activityID: int
+    # activityID: int
     targets: list[int] = None
 
 
@@ -168,6 +168,7 @@ class ActionOut(BaseModel):
     position: PositionPost
     name: str
     description: str
+    ressource: str | None
     artifactID: int | None
     choice: ChoiceOut | None
     targets: list[int]

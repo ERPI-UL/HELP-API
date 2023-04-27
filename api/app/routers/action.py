@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 
 import aiofiles
@@ -26,6 +27,7 @@ async def get_action(action_id: int, language_code: str = 'fr'):
         id=action.id,
         name=action_text.name,
         description=action_text.description,
+        ressource=action.ressourcePath,
         hint=action_text.hint,
         tag=action.tag,
         previous=action.previous_id,
@@ -51,6 +53,8 @@ async def get_action(action_id: int, language_code: str = 'fr'):
 @atomic()
 async def create_action(action: ActionIn, _=Depends(insctructor_required)):
     """ Create an action"""
+    if not await verify_tag_unicity_in_activity(action.tag, action.previous, action.next):
+        raise HTTPException(status_code=400, detail="Tag already used in this activity")
     action_db = await Action.create(
         tag=action.tag,
         previous_id=action.previous,
@@ -60,10 +64,11 @@ async def create_action(action: ActionIn, _=Depends(insctructor_required)):
         x=action.position.x,
         y=action.position.y,
         z=action.position.z,
-        activity_id=action.activityID,
+        # activity_id=action.activityID,
     )
-    targets_to_add = await Target.filter(id__in=action.targets)
-    await action_db.targets.add(*targets_to_add)
+    if action.targets is not None:
+        targets_to_add = await Target.filter(id__in=action.targets)
+        await action_db.targets.add(*targets_to_add)
     await ActionText.create(
         name=action.name,
         description=action.description,
@@ -96,7 +101,7 @@ async def add_ressource(action_id: int, ressource_file: UploadFile, _=Depends(in
         if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
             # si non on la supprime
             await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
-    action.ressourcePath = f"{action.activity_id}/ressources/{hash_value}.{extension}"
+    action.ressourcePath = f"{hash_value}.{extension}"
     await action.save()
     return OKResponse(ok=f"{ressource_file.filename} added to action {action_id}")
 
@@ -114,7 +119,7 @@ async def delete_ressource(action_id: int, _=Depends(insctructor_required)):
         await action.save()
     else:
         raise HTTPException(status_code=400, detail="No ressource to delete")
-    return OKResponse(ok=f"ressource deleted from action {action_id}")
+    return OKResponse(ok=f"Ressource {action.ressourcePath} deleted from action {action_id}")
 
 
 @router.patch("/{action_id}", response_model=ActionOut)
@@ -126,10 +131,16 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
     if created and (action.name is None or action.description is None):
         raise HTTPException(status_code=400, detail="You must provide a name and a description when creating a new action translation")
     if "tag" in action.__fields_set__:
+        if not await verify_tag_unicity_in_activity(action.tag, action_db.previous, action_db.next):
+            raise HTTPException(status_code=400, detail="Tag already used in this activity")
         action_db.tag = action.tag
     if "previous" in action.__fields_set__:
+        if not await verify_tag_unicity_in_activity(action_db.tag, action.previous, action_db.next):
+            raise HTTPException(status_code=400, detail="Tag already used in this activity")
         action_db.previous_id = action.previous
     if "next" in action.__fields_set__:
+        if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous, action.next):
+            raise HTTPException(status_code=400, detail="Tag already used in this activity")
         action_db.next_id = action.next
     if "type" in action.__fields_set__:
         action_db.type = await Type.get(name=action.type)
@@ -179,3 +190,30 @@ async def delete_action(action_id: int, _=Depends(insctructor_required)):
     await Action.filter(id=action_id).delete()
     await ActionText.filter(action_id=action_id).delete()
     return OKResponse(ok="Action deleted")
+
+
+async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int):
+    """ Verify that the tag is unique in the activity with a recursive left and right search """
+    async def verify_tag_unicity_left(action_id: int, tag: str):
+        """ Recursive left search """
+        if action_id is None:
+            return True
+        action = await Action.get(id=action_id)
+        if action.tag == tag:
+            return False
+        if action.previous_id is not None:
+            return await verify_tag_unicity_left(action.previous_id, tag)
+        return True
+
+    async def verify_tag_unicity_right(action_id: int, tag: str):
+        """ Recursive right search """
+        if action_id is None:
+            return True
+        action = await Action.get(id=action_id)
+        if action.tag == tag:
+            return False
+        if action.next_id is not None:
+            return await verify_tag_unicity_right(action.next_id, tag)
+        return True
+    left, right = await asyncio.gather(verify_tag_unicity_left(left_id, tag), verify_tag_unicity_right(right_id, tag))
+    return left and right

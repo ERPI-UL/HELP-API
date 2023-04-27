@@ -1,4 +1,5 @@
 import os
+
 import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,8 +8,8 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
-from app.routers import (admin, auth, data, easy, language, scenarios, stats,
-                         tts, users, action)
+from app.routers import (action, activities, admin, auth, data, easy, language,
+                         scenarios, stats, tts, users)
 
 tags_metadata = [
     {
@@ -20,6 +21,9 @@ tags_metadata = [
     }, {
         "name": "scenarios",
         "description": "Opération sur les scénarios , machines et leurs composants : création, modification, suppression, listes paginées",
+    }, {
+        "name": "activities",
+        "description": "Opération sur les activités : création, modification, suppression, listes paginées",
     }, {
         "name": "actions",
         "description": "Opération sur les actions : création, modification, suppression",
@@ -101,7 +105,7 @@ app.include_router(tts.router, prefix="/tts", tags=["tts"])
 app.include_router(language.router, prefix="/langs", tags=["language"])
 app.include_router(data.router, prefix="/data", tags=["data"])
 app.include_router(action.router, prefix="/actions", tags=["actions"])
-
+app.include_router(activities.router, prefix="/activities", tags=["activities"])
 
 models = []
 for file in os.listdir('app/models'):
