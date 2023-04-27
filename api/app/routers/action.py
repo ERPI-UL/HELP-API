@@ -1,7 +1,7 @@
 import hashlib
 
 import aiofiles
-from fastapi import HTTPException, UploadFile
+from fastapi import Depends, HTTPException, UploadFile
 from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
 
@@ -12,7 +12,7 @@ from app.models.position import PositionPost
 from app.models.target import Target
 from app.models.type import Type
 from app.types.response import IDResponse, OKResponse
-from app.utils import ACTIVITY_DATA_DIRECTORY
+from app.utils import ACTIVITY_DATA_DIRECTORY, insctructor_required
 
 router = APIRouter()
 
@@ -49,7 +49,7 @@ async def get_action(action_id: int, language_code: str = 'fr'):
 
 @router.post("/", response_model=IDResponse)
 @atomic()
-async def create_action(action: ActionIn):
+async def create_action(action: ActionIn, _=Depends(insctructor_required)):
     """ Create an action"""
     action_db = await Action.create(
         tag=action.tag,
@@ -75,7 +75,7 @@ async def create_action(action: ActionIn):
 
 
 @router.post("/{action_id}/ressource/", response_model=OKResponse)
-async def add_ressource(action_id: int, ressource_file: UploadFile):
+async def add_ressource(action_id: int, ressource_file: UploadFile, _=Depends(insctructor_required)):
     """ Add a ressource to an action"""
     action = await Action.get(id=action_id)
     extension = ressource_file.filename.split(".")[-1]
@@ -102,7 +102,7 @@ async def add_ressource(action_id: int, ressource_file: UploadFile):
 
 
 @router.delete("/{action_id}/ressource/", response_model=OKResponse)
-async def delete_ressource(action_id: int):
+async def delete_ressource(action_id: int, _=Depends(insctructor_required)):
     """ Delete the ressource of an action"""
     action = await Action.get(id=action_id)
     if action.ressourcePath is not None:
@@ -119,10 +119,12 @@ async def delete_ressource(action_id: int):
 
 @router.patch("/{action_id}", response_model=ActionOut)
 @atomic()
-async def update_action(action_id: int,  action: ActionInPatch, language_code: str = "fr"):
+async def update_action(action_id: int,  action: ActionInPatch, language_code: str = "fr", _=Depends(insctructor_required)):
     """ Update only provided fields """
     action_db = await Action.get(id=action_id)
-    action_text, _ = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id, action_id=action_db.id)
+    action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id, action_id=action_db.id, defaults={"name": "", "description": "", "hint": ""})
+    if created and (action.name is None or action.description is None):
+        raise HTTPException(status_code=400, detail="You must provide a name and a description when creating a new action translation")
     if "tag" in action.__fields_set__:
         action_db.tag = action.tag
     if "previous" in action.__fields_set__:
@@ -142,9 +144,9 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
             action_text.left_choice = None
             action_text.right_choice = None
     if "targets" in action.__fields_set__:
-        action_db.targets.clear()
-        for target_id in action.targets:
-            action_db.targets.add(await Action.get(id=target_id))
+        await action_db.targets.clear()
+        targets_to_add = await Target.filter(id__in=action.targets)
+        await action_db.targets.add(*targets_to_add)
     if "artifactID" in action.__fields_set__:
         action_db.artifact_id = action.artifactID
     if "position" in action.__fields_set__:
@@ -166,8 +168,14 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
 
 @router.delete("/{action_id}")
 @atomic()
-async def delete_action(action_id: int):
+async def delete_action(action_id: int, _=Depends(insctructor_required)):
     """ Delete an action """
+    # on regarde si la ressource est utilisée par une autre action
+    action = await Action.get(id=action_id)
+    if action.ressourcePath is not None:
+        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
+            # si non on la supprime
+            await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
     await Action.filter(id=action_id).delete()
     await ActionText.filter(action_id=action_id).delete()
     return OKResponse(ok="Action deleted")
