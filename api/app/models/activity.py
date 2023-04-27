@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from tortoise import Model, fields
 
 
@@ -27,9 +28,18 @@ class ActivityOut(Model):
     name: str
     description: str
     language: str
-    start: int
+    start: int = None
     artifacts: list[int]
 
     class Config:
         """ Config class for ActivityOut model """
         orm_mode = True
+
+
+class ActivityIn(BaseModel):
+    """ ActivityIn pydantic model """
+    name: str
+    description: str
+    language: str
+    start: int | None
+    artifacts: list[int]
