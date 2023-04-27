@@ -94,59 +94,59 @@ class ActionInPatch(BaseModel):
     # verify that choice is not None if type is choice
     @validator('choice')
     @classmethod
-    def validate_choice(cls, v, values, **kwargs):
+    def validate_choice(cls, value, values):
         """ Verify that choice is not None if type is choice """
-        if v is None and values.get('type') == 'choice':
+        if value is None and values.get('type') == 'choice':
             raise ValueError("choice must be set if type is choice")
-        return v
+        return value
 
     @validator('name')
     @classmethod
-    def validate_name(cls, v, values, **kwargs):
+    def validate_name(cls, value):
         """ Verify that choice is not None if type is choice """
-        if v is None:
+        if value is None:
             raise ValueError("name value must be provided if key set")
-        return v
+        return value
 
     @validator('description')
     @classmethod
-    def validate_description(cls, v, values, **kwargs):
+    def validate_description(cls, value):
         """ prevent description to be None if key set"""
-        if v is None:
+        if value is None:
             raise ValueError("description value must be provided if key set")
-        return v
+        return value
 
     @validator('position')
     @classmethod
-    def validate_position(cls, v, values, **kwargs):
+    def validate_position(cls, value):
         """ prevent position to be None if key set"""
-        if v is None:
+        if value is None:
             raise ValueError("position value must be provided if key set")
-        return v
+        return value
 
     @validator('type')
     @classmethod
-    def validate_type(cls, v, values, **kwargs):
+    def validate_type(cls, value):
         """ prevent type to be None if key set"""
-        if v is None:
+        if value is None:
             raise ValueError("type value must be provided if key set")
-        return v
+        return value
 
     @validator('tag')
     @classmethod
-    def validate_tag(cls, v, values, **kwargs):
+    def validate_tag(cls, value):
         """ prevent tag to be None if key set"""
-        if v is None:
+        if value is None:
             raise ValueError("tag value must be provided if key set")
-        return v
+        return value
 
     @validator('targets')
     @classmethod
-    def validate_targets(cls, v, values, **kwargs):
+    def validate_targets(cls, value):
         """ prevent targets to be None if key set"""
-        if v is None:
+        if value is None:
             raise ValueError("targets value must be provided if key set")
-        return v
+        return value
 
     class Config:
         """ Config class for ActionInPatch pydantic model """

@@ -6,7 +6,7 @@ from app.models.action import (Action, ActionIn, ActionInPatch, ActionOut,
 from app.models.language import Language
 from app.models.position import PositionPost
 from app.models.type import Type
-from app.types.response import IDResponse
+from app.types.response import IDResponse, OKResponse
 
 router = APIRouter()
 
@@ -70,7 +70,7 @@ async def create_action(action: ActionIn):
 async def update_action(action_id: int,  action: ActionInPatch, language_code: str = "fr"):
     """ Update only provided fields """
     action_db = await Action.get(id=action_id)
-    action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id, action_id=action_db.id)
+    action_text, _ = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id, action_id=action_db.id)
     if "tag" in action.__fields_set__:
         action_db.tag = action.tag
     if "previous" in action.__fields_set__:
@@ -108,3 +108,12 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
 
     # retourne l'objet modifié
     return await get_action(action_id, language_code)
+
+
+@router.delete("/{action_id}")
+@atomic()
+async def delete_action(action_id: int):
+    """ Delete an action """
+    await Action.filter(id=action_id).delete()
+    await ActionText.filter(action_id=action_id).delete()
+    return OKResponse(ok="Action deleted")
