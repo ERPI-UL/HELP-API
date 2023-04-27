@@ -19,9 +19,6 @@ tags_metadata = [
         "name": "users",
         "description": "Opération sur les utilisateurs : création, modification, suppression, listes paginées",
     }, {
-        "name": "scenarios",
-        "description": "Opération sur les scénarios , machines et leurs composants : création, modification, suppression, listes paginées",
-    }, {
         "name": "activities",
         "description": "Opération sur les activités : création, modification, suppression, listes paginées",
     }, {
@@ -45,6 +42,9 @@ tags_metadata = [
     }, {
         "name": "data",
         "description": "Routes permettant d'accéder au contenu qui ne peut pas être public",
+    }, {
+        "name": "scenarios",
+        "description": "Opération sur les scénarios , machines et leurs composants : création, modification, suppression, listes paginées",
     }
 ]
 
@@ -96,7 +96,7 @@ app.add_middleware(
 
 
 app.include_router(users.router, prefix="/users", tags=["users"])
-app.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"])
+app.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"], deprecated=True)
 app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
