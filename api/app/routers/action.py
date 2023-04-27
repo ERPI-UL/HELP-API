@@ -2,12 +2,11 @@ from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
 
 from app.models.action import (Action, ActionIn, ActionInPatch, ActionOut,
-                               ActionText)
+                               ActionText, ChoiceMember, ChoiceOut)
 from app.models.language import Language
 from app.models.position import PositionPost
 from app.models.type import Type
 from app.types.response import IDResponse
-from app.models.action import ChoiceOut, ChoiceMember
 
 router = APIRouter()
 
@@ -54,7 +53,8 @@ async def create_action(action: ActionIn):
         x=action.position.x,
         y=action.position.y,
         z=action.position.z,
-        activity_id=action.activityID
+        activity_id=action.activityID,
+        targets=action.targets
     )
     await ActionText.create(
         name=action.name,

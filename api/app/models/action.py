@@ -58,6 +58,7 @@ class ActionIn(BaseModel):
     artifactID: int = None
     language: str
     activityID: int
+    targets: list[int] = None
 
 
 class ChoiceMember(BaseModel):
@@ -74,18 +75,18 @@ class ChoiceOut(BaseModel):
 
 class ActionInPatch(BaseModel):
     """ ActionIn pydantic model """
-#     # tag is optional but if it is set it can't be None
+    # tag is optional but if it is set it can't be None
     tag:  Optional[StrictStr]
     previous: Optional[StrictStr]
     next: Optional[StrictStr]
-#     # type is optional but if it is set it can't be None
+    # type is optional but if it is set it can't be None
     type: Optional[StrictStr]
     artifactID: Optional[int] = None
-#     # position is optional but if it is set it can't be None
+    # position is optional but if it is set it can't be None
     position: Optional[PositionPost]
-#     # description is optional but if it is set it can't be None
+    # description is optional but if it is set it can't be None
     description:  Optional[StrictStr]
-#     # name is optional but if it is set it can't be None
+    # name is optional but if it is set it can't be None
     name:  Optional[StrictStr]
     choice: Optional[ChoiceOut]
     targets: Optional[list[int]]
@@ -97,6 +98,54 @@ class ActionInPatch(BaseModel):
         """ Verify that choice is not None if type is choice """
         if v is None and values.get('type') == 'choice':
             raise ValueError("choice must be set if type is choice")
+        return v
+
+    @validator('name')
+    @classmethod
+    def validate_name(cls, v, values, **kwargs):
+        """ Verify that choice is not None if type is choice """
+        if v is None:
+            raise ValueError("name value must be provided if key set")
+        return v
+
+    @validator('description')
+    @classmethod
+    def validate_description(cls, v, values, **kwargs):
+        """ prevent description to be None if key set"""
+        if v is None:
+            raise ValueError("description value must be provided if key set")
+        return v
+
+    @validator('position')
+    @classmethod
+    def validate_position(cls, v, values, **kwargs):
+        """ prevent position to be None if key set"""
+        if v is None:
+            raise ValueError("position value must be provided if key set")
+        return v
+
+    @validator('type')
+    @classmethod
+    def validate_type(cls, v, values, **kwargs):
+        """ prevent type to be None if key set"""
+        if v is None:
+            raise ValueError("type value must be provided if key set")
+        return v
+
+    @validator('tag')
+    @classmethod
+    def validate_tag(cls, v, values, **kwargs):
+        """ prevent tag to be None if key set"""
+        if v is None:
+            raise ValueError("tag value must be provided if key set")
+        return v
+
+    @validator('targets')
+    @classmethod
+    def validate_targets(cls, v, values, **kwargs):
+        """ prevent targets to be None if key set"""
+        if v is None:
+            raise ValueError("targets value must be provided if key set")
         return v
 
     class Config:
