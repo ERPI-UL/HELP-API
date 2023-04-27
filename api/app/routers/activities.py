@@ -1,3 +1,4 @@
+from app.routers.action import delete_action_ressource_file
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
@@ -32,7 +33,7 @@ async def get_activity(activity_id: int, language_code: str = 'fr'):
 async def create_activity(activity: ActivityIn, _=Depends(insctructor_required)):
     """ Create an action """
     activity_db = await Activity.create(
-        start=activity.start,
+        start_id=activity.start,
     )
     artifacts_to_add = await Artifact.filter(id__in=activity.artifacts)
     await activity_db.artifacts.add(*artifacts_to_add)
@@ -86,6 +87,7 @@ async def delete_activity(activity_id: int, _=Depends(insctructor_required)):
 async def delete_action_by_right(action_id: int):
     """ Delete an action by right """
     action = await Action.get(id=action_id)
+    await delete_action_ressource_file(action)
     await action.delete()
     if action.next_id is not None:
         await delete_action_by_right(action.next_id)

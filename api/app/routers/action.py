@@ -13,7 +13,7 @@ from app.models.position import PositionPost
 from app.models.target import Target
 from app.models.type import Type
 from app.types.response import IDResponse, OKResponse
-from app.utils import ACTIVITY_DATA_DIRECTORY, insctructor_required
+from app.utils import ACTION_DATA_DIRECTORY, insctructor_required
 
 router = APIRouter()
 
@@ -92,15 +92,14 @@ async def add_ressource(action_id: int, ressource_file: UploadFile, _=Depends(in
         raise HTTPException(status_code=400, detail="Ressource size must not exceed 4MiB")
     hash_value = hashlib.sha256(content).hexdigest()
     # create the directory if it does not exist
-    path = ACTIVITY_DATA_DIRECTORY+str(action.activity_id)+"/ressources/"
-    await aiofiles.os.makedirs(path, exist_ok=True)
-    async with aiofiles.open(f"{path}{hash_value}.{extension}", "wb") as file:
+    await aiofiles.os.makedirs(ACTION_DATA_DIRECTORY, exist_ok=True)
+    async with aiofiles.open(f"{ACTION_DATA_DIRECTORY}{hash_value}.{extension}", "wb") as file:
         await file.write(content)
     if action.ressourcePath is not None:
         # on regarde si la ressource est utilisée par une autre action
-        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
+        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1 and action.ressourcePath != f"{hash_value}.{extension}":
             # si non on la supprime
-            await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
+            await aiofiles.os.remove(ACTION_DATA_DIRECTORY+action.ressourcePath)
     action.ressourcePath = f"{hash_value}.{extension}"
     await action.save()
     return OKResponse(ok=f"{ressource_file.filename} added to action {action_id}")
@@ -110,12 +109,7 @@ async def add_ressource(action_id: int, ressource_file: UploadFile, _=Depends(in
 async def delete_ressource(action_id: int, _=Depends(insctructor_required)):
     """ Delete the ressource of an action"""
     action = await Action.get(id=action_id)
-    if action.ressourcePath is not None:
-        # on regarde si la ressource est utilisée par une autre action
-        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
-            # si non on la supprime
-            await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
-        action.ressourcePath = None
+    if await delete_action_ressource_file(action):
         await action.save()
     else:
         raise HTTPException(status_code=400, detail="No ressource to delete")
@@ -186,7 +180,7 @@ async def delete_action(action_id: int, _=Depends(insctructor_required)):
     if action.ressourcePath is not None:
         if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
             # si non on la supprime
-            await aiofiles.os.remove(ACTIVITY_DATA_DIRECTORY+action.ressourcePath)
+            await aiofiles.os.remove(ACTION_DATA_DIRECTORY+action.ressourcePath)
     await Action.filter(id=action_id).delete()
     await ActionText.filter(action_id=action_id).delete()
     return OKResponse(ok="Action deleted")
@@ -217,3 +211,15 @@ async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int):
         return True
     left, right = await asyncio.gather(verify_tag_unicity_left(left_id, tag), verify_tag_unicity_right(right_id, tag))
     return left and right
+
+
+async def delete_action_ressource_file(action: Action):
+    """ Delete the ressource of an action"""
+    if action.ressourcePath is not None:
+        # on regarde si la ressource est utilisée par une autre action
+        if await Action.filter(ressourcePath=action.ressourcePath).count() == 1:
+            # si non on la supprime
+            await aiofiles.os.remove(ACTION_DATA_DIRECTORY+action.ressourcePath)
+        action.ressourcePath = None
+        return True
+    return False

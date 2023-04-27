@@ -23,6 +23,7 @@ DATA_DIRECTORY = './app/data/'
 MODELS_DIRECTORY = DATA_DIRECTORY+'models/'
 SCENARIOS_DATA_DIRECTORY = DATA_DIRECTORY+'scenarios/'
 ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
+ACTION_DATA_DIRECTORY = DATA_DIRECTORY+'actions/'
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
 
 
