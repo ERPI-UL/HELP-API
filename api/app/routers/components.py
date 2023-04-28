@@ -1,12 +1,14 @@
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
 
 from app.models.componentinstance import (ComponentInstance,
-                                          ComponentInstanceIn, ComponentInstanceInPatch,
+                                          ComponentInstanceIn,
+                                          ComponentInstanceInPatch,
                                           ComponentInstanceOut,
                                           PropertyInstance, PropertyInstanceIn)
 from app.types.response import IDResponse, OKResponse
+from app.utils import insctructor_required
 
 router = APIRouter()
 
@@ -30,7 +32,7 @@ async def get_component(component_id: int):
 
 @router.post("/")
 @atomic()
-async def create_component(component: ComponentInstanceIn):
+async def create_component(component: ComponentInstanceIn, _=Depends(insctructor_required)):
     """ Create a component """
     component_db = await ComponentInstance.create(tag=component.tag, script=component.script, blocks=component.blocks, target_id=component.target)
     properties_db = [PropertyInstance(name=property.name, value=property.value, componentInstance=component_db) for property in component.properties]
@@ -40,7 +42,7 @@ async def create_component(component: ComponentInstanceIn):
 
 @router.patch("/{component_id}", response_model=ComponentInstanceOut)
 @atomic()
-async def patch_component(component_id: int, component: ComponentInstanceInPatch):
+async def patch_component(component_id: int, component: ComponentInstanceInPatch, _=Depends(insctructor_required)):
     """ Patch a component """
     component_db = await ComponentInstance.get(id=component_id).prefetch_related("properties")
     if "tag" in component.__fields_set__:
@@ -62,7 +64,7 @@ async def patch_component(component_id: int, component: ComponentInstanceInPatch
 
 @router.delete("/{component_id}")
 @atomic()
-async def delete_component(component_id: int):
+async def delete_component(component_id: int, _=Depends(insctructor_required)):
     """ Delete a component """
     if await ComponentInstance.get(id=component_id).delete():
         return OKResponse(ok="Component deleted")

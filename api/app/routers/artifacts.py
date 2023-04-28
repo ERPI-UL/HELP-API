@@ -1,3 +1,7 @@
+import aiofiles
+from aioshutil import rmtree
+from fastapi import Depends, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
@@ -7,7 +11,8 @@ from app.models.artifact import (Artifact, ArtifactIn, ArtifactOut,
                                  ArtifactOutShort, ArtifactText)
 from app.models.language import Language
 from app.routers.activities import get_ask_translation_or_first
-from app.types.response import IDResponse
+from app.types.response import IDResponse, OKResponse
+from app.utils import MODELS_DIRECTORY, insctructor_required
 
 router = APIRouter()
 
@@ -20,8 +25,7 @@ async def get_artifacts(language_code: str = 'fr'):
         id=artifact.id,
         name=(await get_ask_translation_or_first(artifact.texts, language_code)).name,
         description=(await get_ask_translation_or_first(artifact.texts, language_code)).description,
-        language=[text.language.code for text in artifact.texts],
-        targets=[target.id for target in artifact.targets],
+        language=[text.language.code for text in artifact.texts]
     ) for artifact in pagination.items]
     return pagination
 
@@ -41,7 +45,7 @@ async def get_artifact(artifact_id: int, language_code: str = 'fr'):
 
 @router.post("/")
 @atomic()
-async def create_artifact(artifact: ArtifactIn):
+async def create_artifact(artifact: ArtifactIn, _=Depends(insctructor_required)):
     """ Create an artifact """
     artifact_db = await Artifact.create()
     await ArtifactText.create(
@@ -55,7 +59,36 @@ async def create_artifact(artifact: ArtifactIn):
 
 @router.delete("/{artifact_id}")
 @atomic()
-async def delete_artifact(artifact_id: int):
+async def delete_artifact(artifact_id: int, _=Depends(insctructor_required)):
     """ Delete an artifact """
     await Artifact.get(id=artifact_id).delete()
+    # delete directory with models
+    await rmtree(f"{MODELS_DIRECTORY}{artifact_id}")
     return IDResponse(id=artifact_id)
+
+
+@router.get("/{artifact_id}/model", response_class=FileResponse)
+async def get_artifact_model(artifact_id: int):
+    """ Get the model of an artifact """
+    try:
+        await aiofiles.os.stat(f"{MODELS_DIRECTORY}{artifact_id}/artifact.glb")
+        return FileResponse(f"{MODELS_DIRECTORY}{artifact_id}/artifact.glb", media_type="application/octet-stream", filename="artifact.glb")
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Model not found") from exc
+
+
+@router.put("/{artifact_id}/model")
+@atomic()
+async def update_artifact_model(artifact_id: int, model: UploadFile, _=Depends(insctructor_required)):
+    """ Update the model of an artifact """
+    path = f"{MODELS_DIRECTORY}{artifact_id}"
+    # create directory if not exist
+    await aiofiles.os.makedirs(path, exist_ok=True)
+    content = await model.read()
+    # size does not exceed 2 Mio
+    if len(content) > 2 * 1024 * 1024:
+        raise ValueError("File size is too large")
+    # write file
+    async with aiofiles.open(f"{path}/artifact.glb", "wb") as file:
+        await file.write(content)
+    return OKResponse(ok="Model updated")
