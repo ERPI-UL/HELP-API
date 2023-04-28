@@ -121,7 +121,9 @@ async def delete_ressource(action_id: int, _=Depends(insctructor_required)):
 async def update_action(action_id: int,  action: ActionInPatch, language_code: str = "fr", _=Depends(insctructor_required)):
     """ Update only provided fields """
     action_db = await Action.get(id=action_id)
-    action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id, action_id=action_db.id, defaults={"name": "", "description": "", "hint": ""})
+    action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id,
+                                                          action_id=action_db.id,
+                                                          defaults={"name": "", "description": "", "hint": ""})
     if created and (action.name is None or action.description is None):
         raise HTTPException(status_code=400, detail="You must provide a name and a description when creating a new action translation")
     if "tag" in action.__fields_set__:

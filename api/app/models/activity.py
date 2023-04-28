@@ -69,22 +69,22 @@ class ActivityInPatch(BaseModel):
 
     @validator('name')
     @classmethod
-    def check_name(cls, v):
+    def check_name(cls, value):
         """ Check if name is valid """
-        if v is not None:
-            if len(v) > 50:
+        if value is not None:
+            if len(value) > 50:
                 raise ValueError('Name is too long')
         else:
             raise ValueError('Name value cannot be null')
-        return v
+        return value
 
     @validator('description')
     @classmethod
-    def check_description(cls, v):
+    def check_description(cls, value):
         """ Check if description is valid """
-        if v is not None:
-            if len(v) > 500:
+        if value is not None:
+            if len(value) > 500:
                 raise ValueError('Description is too long')
         else:
             raise ValueError('Description value cannot be null')
-        return v
+        return value

@@ -10,7 +10,7 @@ from fastapi_pagination import add_pagination
 
 import app.utils as utils
 from app.routers import (actions, activities, admin, auth, data, easy, language,
-                         scenarios, stats, tts, users)
+                         scenarios, stats, tts, users, artifacts, targets, components)
 
 tags_metadata = [
     {
@@ -26,9 +26,18 @@ tags_metadata = [
         "name": "actions",
         "description": "Opération sur les actions : création, modification, suppression",
     }, {
+        "name": "artifacts",
+        "description": "Opération sur les artefacts : création, modification, suppression, listes paginées",
+    }, {
+        "name": "components",
+        "description": "Opération sur les composants : création, modification, suppression",
+    }, {
+        "name": "targets",
+        "description": "Opération sur les cibles : création, modification, suppression",
+    }, {
         "name": "stats",
         "description": "Opération sur les statistiques : création et supression d'une session d'un scénario, listes paginées ",
-    },  {
+    }, {
         "name": "language",
         "description": "Génération de traduction textuel ou de voix à partir de texte",
     }, {
@@ -108,6 +117,9 @@ app.include_router(language.router, prefix="/langs", tags=["language"])
 app.include_router(data.router, prefix="/data", tags=["data"])
 app.include_router(actions.router, prefix="/actions", tags=["actions"])
 app.include_router(activities.router, prefix="/activities", tags=["activities"])
+app.include_router(artifacts.router, prefix="/artifacts", tags=["artifacts"])
+app.include_router(targets.router, prefix="/targets", tags=["targets"])
+app.include_router(components.router, prefix="/components", tags=["components"])
 
 models = []
 for file in os.listdir('app/models'):
