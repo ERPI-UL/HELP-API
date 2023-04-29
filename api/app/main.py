@@ -10,7 +10,7 @@ from fastapi_pagination import add_pagination
 
 import app.utils as utils
 from app.routers import (actions, activities, admin, auth, data, easy, language,
-                         scenarios, stats, tts, users, artifacts, targets, components)
+                         scenarios, stats, tts, users, artifacts, targets, components, workplaces)
 
 tags_metadata = [
     {
@@ -28,6 +28,9 @@ tags_metadata = [
     }, {
         "name": "artifacts",
         "description": "Opération sur les artefacts : création, modification, suppression, listes paginées",
+    }, {
+        "name": "workplaces",
+        "description": "Opération sur les espaces : création, modification, suppression, listes paginées",
     }, {
         "name": "components",
         "description": "Opération sur les composants : création, modification, suppression",
@@ -120,6 +123,7 @@ app.include_router(activities.router, prefix="/activities", tags=["activities"])
 app.include_router(artifacts.router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(targets.router, prefix="/targets", tags=["targets"])
 app.include_router(components.router, prefix="/components", tags=["components"])
+app.include_router(workplaces.router, prefix="/workplaces", tags=["workplaces"])
 
 models = []
 for file in os.listdir('app/models'):
