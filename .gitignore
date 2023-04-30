@@ -16,3 +16,4 @@ app/vite.config.js
 
 openvpn-data
 *.ovpn
+api/target/pylist.json
