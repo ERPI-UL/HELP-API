@@ -1,12 +1,16 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
+from tortoise.transactions import atomic
 
 from app.models.language import Language
-from app.models.workplace import ArtifactInstance, ArtifactInstanceIn, Position, WorkPlace, WorkplaceIn, WorkPlaceText, WorkplaceOut, WorkplaceOutShort
+from app.models.workplace import (ArtifactInstance, ArtifactInstanceIn,
+                                  Position, WorkPlace, WorkplaceIn,
+                                  WorkplaceOut, WorkplaceOutShort,
+                                  WorkPlaceText)
 from app.routers.activities import get_ask_translation_or_first
-from app.types.response import IDResponse
+from app.types.response import IDResponse, OKResponse
 from app.utils import insctructor_required
 
 router = APIRouter()
@@ -77,3 +81,14 @@ async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_require
     await ArtifactInstance.bulk_create(artifacts_instances)
 
     return IDResponse(id=workplace_db.id)
+
+
+@router.delete("/{workplace_id}")
+@atomic()
+async def delete_workplace(workplace_id, _=Depends(insctructor_required)):
+    """ delete a workplace by id """
+    # objects that reference this object are also deleted ( cascade )
+    if await WorkPlace.get(id=workplace_id).delete():
+        return OKResponse(ok="Workplace deleted")
+    else:
+        raise HTTPException(status_code=404, detail="Workplace not found")
