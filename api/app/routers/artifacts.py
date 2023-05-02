@@ -7,8 +7,8 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
 from tortoise.transactions import atomic
 
-from app.models.artifact import (Artifact, ArtifactIn, ArtifactOut,
-                                 ArtifactOutShort, ArtifactText)
+from app.models.artifact import (Artifact, ArtifactIn, ArtifactInPatch,
+                                 ArtifactOut, ArtifactOutShort, ArtifactText)
 from app.models.language import Language
 from app.routers.activities import get_ask_translation_or_first
 from app.types.response import IDResponse, OKResponse
@@ -41,6 +41,23 @@ async def get_artifact(artifact_id: int, language_code: str = 'fr'):
         language=artifact_text.language.code,
         targets=[target.id for target in artifact_text.artifact.targets],
     )
+
+
+@router.patch("/{artifact_id}", response_model=ArtifactOut)
+@atomic()
+async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str, _=Depends(insctructor_required)):
+    """ Patch an artifact """
+    artifact_text, created = await ArtifactText.get_or_create(artifact_id=artifact_id,
+                                                              language_id=(await Language.get(code=language_code)).id,
+                                                              defaults={"name": "", "description": ""})
+    if created and (artifact.name is None or artifact.description is None):
+        raise HTTPException(status_code=400, detail="You must specify a name and a description for the artifact when adding a new language")
+    if "name" in artifact.__fields_set__:
+        artifact_text.name = artifact.name
+    if "description" in artifact.__fields_set__:
+        artifact_text.description = artifact.description
+    await artifact_text.save()
+    return await get_artifact(artifact_id, language_code)
 
 
 @router.post("/")

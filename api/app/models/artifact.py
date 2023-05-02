@@ -1,3 +1,6 @@
+from pydantic import validator
+from typing import Optional
+
 from pydantic import BaseModel
 from tortoise import Model, fields
 
@@ -15,6 +18,28 @@ class ArtifactText(Model):
     description = fields.TextField()
     artifact = fields.ForeignKeyField('models.Artifact', related_name='texts', on_delete=fields.CASCADE)
     language = fields.ForeignKeyField('models.Language', related_name='artifactTexts')
+
+
+class ArtifactInPatch(BaseModel):
+    """ ArtifactInPatch pydantic model """
+    name: Optional[str]
+    description: Optional[str]
+
+    @validator('name')
+    @classmethod
+    def name_must_not_be_empty(cls, v):
+        """ Validator for name """
+        if v == "" or v is None:
+            raise ValueError("Name value must not be empty or null")
+        return v
+
+    @validator('description')
+    @classmethod
+    def description_must_not_be_empty(cls, v):
+        """ Validator for description """
+        if v == "" or v is None:
+            raise ValueError("Description value must not be empty or null")
+        return v
 
 
 class ArtifactIn(BaseModel):
