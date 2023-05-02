@@ -4,13 +4,14 @@ import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from fastapi_pagination import add_pagination
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
-from fastapi_pagination import add_pagination
 
 import app.utils as utils
-from app.routers import (actions, activities, admin, auth, data, easy, language,
-                         scenarios, stats, tts, users, artifacts, targets, components, workplaces)
+from app.routers import (actions, activities, admin, artifacts, auth,
+                         components, data, easy, language, targets,
+                         tts, users, workplaces)
 
 tags_metadata = [
     {
@@ -55,9 +56,6 @@ tags_metadata = [
     }, {
         "name": "data",
         "description": "Routes permettant d'accéder au contenu qui ne peut pas être public",
-    }, {
-        "name": "scenarios",
-        "description": "Opération sur les scénarios , machines et leurs composants : création, modification, suppression, listes paginées",
     }
 ]
 
@@ -76,7 +74,7 @@ app = FastAPI(
         "name": "Lorraine Fab Living Lab",
         "url": "https://lf2l.fr"
     },
-    version="0.3.0",
+    version="2.0.0",
     openapi_tags=tags_metadata
 )
 add_pagination(app)
@@ -110,8 +108,7 @@ app.add_middleware(
 
 
 app.include_router(users.router, prefix="/users", tags=["users"])
-app.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"], deprecated=True)
-app.include_router(stats.router, prefix="/stats", tags=["stats"])
+# app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])

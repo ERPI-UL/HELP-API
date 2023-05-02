@@ -12,8 +12,6 @@ from tortoise import transactions
 from app.mail import send_invite_link
 from app.types.invite import Invite
 from app.models.language import Language
-from app.models.scenario import ScenarioOut
-from app.models.session import Session
 from app.models.user import User, UserCreate, UserinFront, UserinPut
 from app.types.pagination import Pagination
 from app.models.reset import Reset
@@ -101,22 +99,22 @@ async def get_user(id_user: int, current_user: User = Depends(get_current_user_i
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return await UserinFront.from_tortoise_orm(user)
 
-
-@router.get('/{id_user}/scenarios', response_model=List[ScenarioOut])
-async def get_user_scenarios(id_user: int, current_user: User = Depends(get_current_user_in_token)):
-    """ Return all scenarios played by a user """
-    user = await User.get_or_none(id=id_user)
-    if current_user.adminLevel < Permission.INSTRUCTOR.value and current_user.id != id_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    sessions = await Session.filter(user=user).prefetch_related('scenario').all()
-    scenarios = set()
-    for session in sessions:
-        scenarios.add(session.scenario)
-    return scenarios
+# FIXME : Make with indico LRS
+# @router.get('/{id_user}/scenarios', response_model=List[ScenarioOut])
+# async def get_user_scenarios(id_user: int, current_user: User = Depends(get_current_user_in_token)):
+#     """ Return all scenarios played by a user """
+#     user = await User.get_or_none(id=id_user)
+#     if current_user.adminLevel < Permission.INSTRUCTOR.value and current_user.id != id_user:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+#     if user is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+#     sessions = await Session.filter(user=user).prefetch_related('scenario').all()
+#     scenarios = set()
+#     for session in sessions:
+#         scenarios.add(session.scenario)
+#     return scenarios
 
 
 @router.put('/me', response_model=UserinFront)
