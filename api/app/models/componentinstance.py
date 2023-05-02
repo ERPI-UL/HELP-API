@@ -8,6 +8,7 @@ class ComponentInstance(Model):
     """ ComponentInstance model , represent a file link to an object"""
     id = fields.IntField(pk=True)
     tag = fields.CharField(max_length=50)
+    type = fields.CharField(max_length=50)
     target = fields.ForeignKeyField('models.Target', related_name='componentInstances', on_delete=fields.CASCADE)
     script = fields.TextField()
     blocks = fields.TextField()
@@ -35,6 +36,7 @@ class PropertyInstanceIn(BaseModel):
 class ComponentInstanceIn(BaseModel):
     """ ComponentInstanceIn pydantic model"""
     tag: str
+    type: str
     target: int
     script: str
     blocks: str
@@ -45,6 +47,7 @@ class ComponentInstanceOut(BaseModel):
     """ ComponentInstanceOut pydantic model"""
     id: int
     tag: str
+    type: str
     target: int
     script: str
     blocks: str
@@ -84,10 +87,11 @@ class PropertyInstanceInPatch(BaseModel):
 class ComponentInstanceInPatch(BaseModel):
     """ ComponentInstanceInPatch pydantic model"""
     tag: Optional[StrictStr]
+    type: Optional[StrictStr]
     target: Optional[int]
     script: Optional[StrictStr]
     blocks: Optional[StrictStr]
-    properties: list[PropertyInstanceInPatch]
+    properties: list[PropertyInstanceInPatch] = []
 
     @validator('tag')
     @classmethod
@@ -119,4 +123,12 @@ class ComponentInstanceInPatch(BaseModel):
         """ blocks_value_validator validator for ComponentInstanceInPatch model"""
         if value is None:
             raise ValueError("blocks cannot be null")
+        return value
+
+    @validator('type')
+    @classmethod
+    def type_value_validator(cls, value):
+        """ type_value_validator validator for ComponentInstanceInPatch model"""
+        if value is None:
+            raise ValueError("type cannot be null")
         return value

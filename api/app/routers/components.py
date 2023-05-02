@@ -20,6 +20,7 @@ async def get_component(component_id: int):
     return ComponentInstanceOut(
         id=component.id,
         tag=component.tag,
+        type=component.type,
         script=component.script,
         blocks=component.blocks,
         target=component.target_id,
@@ -34,7 +35,7 @@ async def get_component(component_id: int):
 @atomic()
 async def create_component(component: ComponentInstanceIn, _=Depends(insctructor_required)):
     """ Create a component """
-    component_db = await ComponentInstance.create(tag=component.tag, script=component.script, blocks=component.blocks, target_id=component.target)
+    component_db = await ComponentInstance.create(tag=component.tag, type=component.type, script=component.script, blocks=component.blocks, target_id=component.target)
     properties_db = [PropertyInstance(name=property.name, value=property.value, componentInstance=component_db) for property in component.properties]
     await PropertyInstance.bulk_create(properties_db)
     return IDResponse(id=component_db.id)
@@ -47,6 +48,8 @@ async def patch_component(component_id: int, component: ComponentInstanceInPatch
     component_db = await ComponentInstance.get(id=component_id).prefetch_related("properties")
     if "tag" in component.__fields_set__:
         component_db.tag = component.tag
+    if "type" in component.__fields_set__:
+        component_db.type = component.type
     if "script" in component.__fields_set__:
         component_db.script = component.script
     if "blocks" in component.__fields_set__:
