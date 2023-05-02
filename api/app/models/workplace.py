@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, validator
 from tortoise import Model, fields
 
 
@@ -43,6 +45,10 @@ class ArtifactInstance(Model):
 
     artifact = fields.ForeignKeyField('models.Artifact', related_name='instances', on_delete=fields.CASCADE)
 
+    class Meta:
+        """ Meta class for ArtifactInstance model"""
+        unique_together = (("workplace_id", "artifact_id"),)
+
 
 class Position(BaseModel):
     """ Position pydantic model"""
@@ -53,9 +59,54 @@ class Position(BaseModel):
 
 class ArtifactInstanceIn(BaseModel):
     """ ArtifactInstanceIn pydantic model"""
-    id: int  # artifact id
+    artifactID: int  # artifact id
     position: Position
     rotation: Position
+
+
+class ArtifactInstanceOut(BaseModel):
+    """ ArtifactInstanceOut pydantic model"""
+    id: int
+    artifactID: int
+    position: Position
+    rotation: Position
+
+
+class ArtifactInstanceInPatch(BaseModel):
+    """ ArtifactInstanceInPatch pydantic model"""
+    artifactID: Optional[int]
+    position: Optional[Position]
+    rotation: Optional[Position]
+
+    @validator('artifactID')
+    @classmethod
+    def artifact_not_none(cls, v):
+        """ validator for artifactID"""
+        if v is None:
+            raise ValueError('artifactID value cannot be None')
+        return v
+
+    @validator('position')
+    @classmethod
+    def position_not_none(cls, v):
+        """ validator for position"""
+        if v is None:
+            raise ValueError('position value cannot be None')
+        return v
+
+    @validator('rotation')
+    @classmethod
+    def rotation_not_none(cls, v):
+        """ validator for rotation"""
+        if v is None:
+            raise ValueError('rotation value cannot be None')
+        return v
+
+
+class WorkplaceInPatch(BaseModel):
+    """ WorkplaceInPatch pydantic model"""
+    name: Optional[str]
+    description: Optional[str]
 
 
 class WorkplaceIn(BaseModel):
@@ -72,7 +123,7 @@ class WorkplaceOut(BaseModel):
     name: str
     description: str
     language: str
-    artifacts: list[ArtifactInstanceIn]
+    artifacts: list[ArtifactInstanceOut]
 
 
 class WorkplaceOutShort(BaseModel):

@@ -6,9 +6,10 @@ from tortoise.transactions import atomic
 
 from app.models.language import Language
 from app.models.workplace import (ArtifactInstance, ArtifactInstanceIn,
+                                  ArtifactInstanceInPatch, ArtifactInstanceOut,
                                   Position, WorkPlace, WorkplaceIn,
-                                  WorkplaceOut, WorkplaceOutShort,
-                                  WorkPlaceText)
+                                  WorkplaceInPatch, WorkplaceOut,
+                                  WorkplaceOutShort, WorkPlaceText)
 from app.routers.activities import get_ask_translation_or_first
 from app.types.response import IDResponse, OKResponse
 from app.utils import insctructor_required
@@ -38,8 +39,9 @@ async def get_workplace(workplace_id: int, language_code: str = "fr"):
         name=workplace_text.name,
         description=workplace_text.description,
         language=workplace_text.language.code,
-        artifacts=[ArtifactInstanceIn(
-            id=instance.artifact_id,
+        artifacts=[ArtifactInstanceOut(
+            id=instance.id,
+            artifactID=instance.artifact_id,
             position=Position(
                 x=instance.x,
                 y=instance.y,
@@ -69,7 +71,7 @@ async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_require
         artifacts_instances.append(
             ArtifactInstance(
                 workplace=workplace_db,
-                artifact_id=artifact.id,
+                artifact_id=artifact.artifactID,
                 x=artifact.position.x,
                 y=artifact.position.y,
                 z=artifact.position.z,
@@ -83,6 +85,22 @@ async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_require
     return IDResponse(id=workplace_db.id)
 
 
+@router.patch("/{workplace_id}")
+async def update_workplace(workplace_id: int, language_code: str, workplace: WorkplaceInPatch, _=Depends(insctructor_required)):
+    """ update a workplace by id """
+    workplace_text, created = await WorkPlaceText.get_or_create(workplace_id=workplace_id,
+                                                                language_id=(await Language.get(code=language_code)).id,
+                                                                defaults={"name": "", "description": ""})
+    if created and (workplace_text.name is None or workplace_text.description is None):
+        raise HTTPException(status_code=400, detail="You must specify a name and a description for the activity when adding a new language")
+    if "name" in workplace.__fields_set__:
+        workplace_text.name = workplace.name
+    if "description" in workplace.__fields_set__:
+        workplace_text.description = workplace.description
+    await workplace_text.save()
+    return await get_workplace(workplace_id, language_code)
+
+
 @router.delete("/{workplace_id}")
 @atomic()
 async def delete_workplace(workplace_id, _=Depends(insctructor_required)):
@@ -92,3 +110,59 @@ async def delete_workplace(workplace_id, _=Depends(insctructor_required)):
         return OKResponse(ok="Workplace deleted")
     else:
         raise HTTPException(status_code=404, detail="Workplace not found")
+
+
+@router.post("/{workplace_id}/instances", response_model=IDResponse)
+async def create_artifact_instance_in_workplace(workplace_id: int, instance: ArtifactInstanceIn, _=Depends(insctructor_required)):
+    """ Add an artifact to a workplace """
+    instance_db = await ArtifactInstance.create(
+        workplace=await WorkPlace.get(id=workplace_id),
+        artifact_id=instance.artifactID,
+        x=instance.position.x,
+        y=instance.position.y,
+        z=instance.position.z,
+        u=instance.rotation.x,
+        v=instance.rotation.y,
+        w=instance.rotation.z,
+    )
+    return IDResponse(id=instance_db.id)
+
+
+@router.patch("/instances/{instance_id}")
+async def update_artifact_instance_in_workplace(instance_id: int, instance: ArtifactInstanceInPatch, _=Depends(insctructor_required)):
+    """ update an artifact instance in a workplace by id """
+    instance_db = await ArtifactInstance.get(id=instance_id)
+    if "artifactID" in instance.__fields_set__:
+        instance_db.artifact_id = instance.artifactID
+    if "position" in instance.__fields_set__:
+        instance_db.x = instance.position.x
+        instance_db.y = instance.position.y
+        instance_db.z = instance.position.z
+    if "rotation" in instance.__fields_set__:
+        instance_db.u = instance.rotation.x
+        instance_db.v = instance.rotation.y
+        instance_db.w = instance.rotation.z
+    await instance_db.save()
+    return ArtifactInstanceOut(
+        id=instance_db.id,
+        artifactID=instance_db.artifact_id,
+        position=Position(
+            x=instance_db.x,
+            y=instance_db.y,
+            z=instance_db.z,
+        ),
+        rotation=Position(
+            x=instance_db.u,
+            y=instance_db.v,
+            z=instance_db.w,
+        ),
+    )
+
+
+@router.delete("/instances/{instance_id}")
+async def delete_artifact_instance_in_workplace(instance_id: int, _=Depends(insctructor_required)):
+    """ delete an artifact instance in a workplace by id """
+    if await ArtifactInstance.get(id=instance_id).delete():
+        return OKResponse(ok="Artifact instance deleted")
+    else:
+        raise HTTPException(status_code=404, detail="Artifact instance not found")
