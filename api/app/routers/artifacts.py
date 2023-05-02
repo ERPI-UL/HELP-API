@@ -1,15 +1,16 @@
 import aiofiles
 from aioshutil import rmtree
-from fastapi import Depends, HTTPException, UploadFile
+from fastapi import Depends, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
 from tortoise.transactions import atomic
 
-from app.models.artifact import (Artifact, ArtifactIn, ArtifactInPatch,
+from app.models.artifact import (Anchor, Artifact, ArtifactIn, ArtifactInPatch,
                                  ArtifactOut, ArtifactOutShort, ArtifactText)
 from app.models.language import Language
+from app.models.workplace import Position
 from app.routers.activities import get_ask_translation_or_first
 from app.types.response import IDResponse, OKResponse
 from app.utils import MODELS_DIRECTORY, insctructor_required
@@ -31,7 +32,7 @@ async def get_artifacts(language_code: str = 'fr'):
 
 
 @router.get("/{artifact_id}")
-async def get_artifact(artifact_id: int, language_code: str = 'fr'):
+async def get_artifact(artifact_id: int, language_code: str = Query("fr", min_length=2, max_length=2)):
     """ Get an artifact"""
     artifact_text = await ArtifactText.get(artifact_id=artifact_id, language__code=language_code).prefetch_related("language", "artifact__targets")
     return ArtifactOut(
@@ -39,6 +40,18 @@ async def get_artifact(artifact_id: int, language_code: str = 'fr'):
         name=artifact_text.name,
         description=artifact_text.description,
         language=artifact_text.language.code,
+        anchor=Anchor(
+            position=Position(
+                x=artifact_text.artifact.x,
+                y=artifact_text.artifact.y,
+                z=artifact_text.artifact.z,
+            ),
+            rotation=Position(
+                x=artifact_text.artifact.u,
+                y=artifact_text.artifact.v,
+                z=artifact_text.artifact.w,
+            ),
+        ),
         targets=[target.id for target in artifact_text.artifact.targets],
     )
 
@@ -47,6 +60,7 @@ async def get_artifact(artifact_id: int, language_code: str = 'fr'):
 @atomic()
 async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str, _=Depends(insctructor_required)):
     """ Patch an artifact """
+    artifact_db = await Artifact.get(id=artifact_id)
     artifact_text, created = await ArtifactText.get_or_create(artifact_id=artifact_id,
                                                               language_id=(await Language.get(code=language_code)).id,
                                                               defaults={"name": "", "description": ""})
@@ -56,6 +70,14 @@ async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_c
         artifact_text.name = artifact.name
     if "description" in artifact.__fields_set__:
         artifact_text.description = artifact.description
+    if "anchor" in artifact.__fields_set__:
+        artifact_db.x = artifact.anchor.position.x
+        artifact_db.y = artifact.anchor.position.y
+        artifact_db.z = artifact.anchor.position.z
+        artifact_db.u = artifact.anchor.rotation.x
+        artifact_db.v = artifact.anchor.rotation.y
+        artifact_db.w = artifact.anchor.rotation.z
+    await artifact_db.save()
     await artifact_text.save()
     return await get_artifact(artifact_id, language_code)
 
@@ -80,7 +102,7 @@ async def delete_artifact(artifact_id: int, _=Depends(insctructor_required)):
     """ Delete an artifact """
     await Artifact.get(id=artifact_id).delete()
     # delete directory with models
-    await rmtree(f"{MODELS_DIRECTORY}{artifact_id}")
+    await rmtree(f"{MODELS_DIRECTORY}{artifact_id}", ignore_errors=True)
     return IDResponse(id=artifact_id)
 
 
