@@ -102,8 +102,8 @@ async def update_artifact_model(artifact_id: int, model: UploadFile, _=Depends(i
     # create directory if not exist
     await aiofiles.os.makedirs(path, exist_ok=True)
     content = await model.read()
-    # size does not exceed 2 Mio
-    if len(content) > 2 * 1024 * 1024:
+    # size does not exceed 10 Mio
+    if len(content) > 10 * 1024 * 1024:
         raise ValueError("File size is too large")
     # write file
     async with aiofiles.open(f"{path}/artifact.glb", "wb") as file:
