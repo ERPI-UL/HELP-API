@@ -25,6 +25,14 @@ class TargetPost(BaseModel):
     name: str
 
 
+class TargetOut(BaseModel):
+    """ TargetOut pydantic model"""
+    id: int
+    name: str
+    artifact: int
+    components: list[int] = []
+
+
 class TargetIn(BaseModel):
     """ TargetIn pydantic model"""
     name: str
