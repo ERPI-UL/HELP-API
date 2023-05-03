@@ -91,7 +91,6 @@ class ArtifactOut(BaseModel):
     language: str
     anchor: Anchor
     targets: list[int] = []
-    components: list[int] = []
 
 
 class ArtifactOutShort(BaseModel):

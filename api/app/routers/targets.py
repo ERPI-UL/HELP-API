@@ -9,7 +9,7 @@ router = APIRouter()
 @router.get("/{target_id}")
 async def get_target(target_id: int):
     """ Get a target"""
-    return Target.get(id=target_id)
+    return await Target.get(id=target_id)
 
 
 @router.post("/")
