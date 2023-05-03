@@ -16,10 +16,6 @@ class Target(Model):
         unique_together = ('name', 'artifact_id')
 
 
-TargetOut = pydantic_model_creator(
-    Target, name='TargetOut', include=['id', 'name'])
-
-
 class TargetPost(BaseModel):
     """ TargetPost pydantic model"""
     name: str
