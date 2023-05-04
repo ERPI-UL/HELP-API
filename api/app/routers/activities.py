@@ -16,7 +16,7 @@ from app.utils import insctructor_required
 router = APIRouter()
 
 
-@router.get('/', response_model=Page)
+@router.get('/', response_model=Page[ActivityOutTrad])
 async def get_activities_trad(language_code: str = 'fr'):
     """ get all actions """
     pagination = await paginate(Activity.all().prefetch_related("texts", "texts__language", "artifacts").order_by("id"))
@@ -40,7 +40,7 @@ async def get_ask_translation_or_first(texts, language_code: str):
     return texts[0]
 
 
-@router.get("/{activity_id}")
+@router.get("/{activity_id}", response_model=ActivityOut)
 async def get_activity(activity_id: int, language_code: str = 'fr'):
     """ Get an action"""
     activity_text = await ActivityText.get(activity_id=activity_id, language__code=language_code).prefetch_related("language", "activity__artifacts")

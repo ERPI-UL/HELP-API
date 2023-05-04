@@ -26,12 +26,12 @@ async def get_artifacts(language_code: str = 'fr'):
         id=artifact.id,
         name=(await get_ask_translation_or_first(artifact.texts, language_code)).name,
         description=(await get_ask_translation_or_first(artifact.texts, language_code)).description,
-        language=[text.language.code for text in artifact.texts]
+        languages=[text.language.code for text in artifact.texts]
     ) for artifact in pagination.items]
     return pagination
 
 
-@router.get("/{artifact_id}")
+@router.get("/{artifact_id}", response_model=ArtifactOut)
 async def get_artifact(artifact_id: int, language_code: str = Query("fr", min_length=2, max_length=2)):
     """ Get an artifact"""
     artifact_text = await ArtifactText.get(artifact_id=artifact_id, language__code=language_code).prefetch_related("language", "artifact__targets")

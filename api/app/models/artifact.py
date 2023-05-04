@@ -98,7 +98,7 @@ class ArtifactOutShort(BaseModel):
     id: int
     name: str
     description: str
-    language: list[str]
+    languages: list[str]
 
     class Config:
         """ Config class for ArtifactOutShort model """
