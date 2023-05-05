@@ -1,0 +1,42 @@
+[
+  {
+    "name": "complete",
+    "description": "Indicate that the actor has completed the object"
+  },
+  {
+    "name": "start",
+    "description": "Indicate that the actor has started the object. For instance,when a person starts a course, a course module, or a test."
+  },
+  {
+    "name": "interacted",
+    "description": "Indicate that the actor has interacted with the object. For instance, when a person touch a component on a artifact."
+  },
+  {
+    "name": "launched",
+    "description": "Indicate that the actor has launched the object. For instance, when a person launches a course, a course module, or a test."
+  },
+  {
+    "name": "help",
+    "description": "Indicate that the actor has requested help about the object. For instance, when a person requests help about a course, a course module, or a test."
+  },
+  {
+    "name": "pressed",
+    "description": "Indicate that the actor has pressed the object. For instance, when a person presses a button on a artifact."
+  },
+  {
+    "name": "released",
+    "description": "Indicate that the actor has released the object. For instance, when a person releases a button on a artifact."
+  },
+  {
+    "name": "paused",
+    "description": "Indicate that the actor has paused the object. For instance, when a person pauses a course, a course module, or a test."
+  },
+  {
+    "name": "skipped",
+    "description": "Indicate that the actor has skipped the object. For instance, when a person skips an action on a activity."
+  },
+  {
+    "name": "viewed",
+    "description": "Indicate that the actor has viewed the object. For instance, when a person views a course, a course module, or a test."
+  }
+]

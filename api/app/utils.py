@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from app.customScheme import CustomOAuth2PasswordBearer
 from app.models.language import Language
+from app.models.statement import Verb
 from app.models.type import Type
 from app.models.user import User, UserinFront, UserinToken
 
@@ -180,6 +181,13 @@ async def init_db_with_data():
                 await Language.create(name=lang['name'], code=lang['code'], unicode=lang['unicode'])
             else:
                 await Language.filter(code=lang['code']).update(unicode=lang['unicode'], name=lang['name'])
+    # open verbs.json
+    async with aiofiles.open("app/verbs.json", "r", encoding="utf-8") as file:
+        verbs = json.loads(await file.read())
+        for verb in verbs:
+            if not await Verb.exists(id=verb['name']):
+                await Verb.create(id=verb['name'])
+
 
 
 class Permission(Enum):
