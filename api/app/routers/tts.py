@@ -11,10 +11,6 @@ from app.utils import get_current_user_in_token
 
 router = APIRouter()
 
-# session = aiohttp.ClientSession(
-#     headers={"Content-Type": "text/plain;charset=UTF-8"})
-
-
 class Languages(dict, Enum):
     """Enum used to define the languages available for the TTS."""
     FRENCH = {'name': 'fr-FR', 'voice': 'fr-FR-Wavenet-C'}
