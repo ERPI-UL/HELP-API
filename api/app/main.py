@@ -10,7 +10,7 @@ from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
 from app.routers import (actions, activities, admin, artifacts, auth,
-                         components, data, easy, language, targets,
+                         components, data, easy, language, performance, targets,
                          tts, users, workplaces)
 
 tags_metadata = [
@@ -38,6 +38,9 @@ tags_metadata = [
     }, {
         "name": "targets",
         "description": "Opération sur les cibles : création, modification, suppression",
+    }, {
+        "name": "performance",
+        "description": "routes pour recolter les données lors de l'utilisation de l'application XR",
     }, {
         "name": "stats",
         "description": "Opération sur les statistiques : création et supression d'une session d'un scénario, listes paginées ",
@@ -121,6 +124,7 @@ app.include_router(artifacts.router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(targets.router, prefix="/targets", tags=["targets"])
 app.include_router(components.router, prefix="/components", tags=["components"])
 app.include_router(workplaces.router, prefix="/workplaces", tags=["workplaces"])
+app.include_router(performance.router, prefix="/performance", tags=["performance"])
 
 models = []
 for file in os.listdir('app/models'):
