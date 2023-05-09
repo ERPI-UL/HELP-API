@@ -137,6 +137,7 @@ for file in os.listdir('app/models'):
 @app.on_event("startup")
 async def startup_event():
     """ Startup event """
+    Tortoise._init_timezone(use_tz=True, timezone='Europe/London')
     await Tortoise.init(db_url=utils.DB_URL, modules={'models': models})
     await Tortoise.generate_schemas()
     await utils.init_admin()

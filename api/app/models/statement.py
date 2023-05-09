@@ -8,6 +8,8 @@ from tortoise import Model, fields
 class Verb(Model):
     """ Model of an xAPI verb """
     id = fields.CharField(pk=True, max_length=200)
+
+
 class Statement(Model):
     """ Model of a Performance Indico API statement,
         which is a substatement/inspiration of an xAPI statement
@@ -21,7 +23,7 @@ class Statement(Model):
     verb = fields.ForeignKeyField('models.Verb', related_name='statements', on_delete=fields.SET_NULL, null=True)
 
     # Jean start the activity 1
-    object_activity = fields.ForeignKeyField('models.Activity', related_name='statements', on_delete=fields.SET_NULL, null=True)
+    object_activity = fields.ForeignKeyField('models.Activity', related_name='statements_objects', on_delete=fields.SET_NULL, null=True)
     # Jean pressed power_on
     object_target = fields.ForeignKeyField('models.Target', related_name='statements', on_delete=fields.SET_NULL, null=True)
     # Alex give a feedback to Jean
@@ -45,6 +47,7 @@ class Statement(Model):
 
     context_platform = fields.ForeignKeyField('models.Platform', related_name='statements', on_delete=fields.SET_NULL, null=True)
     context_language = fields.ForeignKeyField('models.Language', related_name='statements', on_delete=fields.SET_NULL, null=True)
+    context_activity = fields.ForeignKeyField('models.Activity', related_name='statements_context', on_delete=fields.SET_NULL, null=True)
 
     timestamp = fields.DatetimeField(null=True)
     stored = fields.DatetimeField(auto_now_add=True)
@@ -66,7 +69,6 @@ class ScoreInCreate(BaseModel):
     min: float = None
     max: float = None
 
-from datetime import time
 
 class ResultInCreate(BaseModel):
     """ Model of an xAPI result """
@@ -80,25 +82,28 @@ class ResultInCreate(BaseModel):
 
 class AgentInCreate(BaseModel):
     """ Model of an xAPI agent """
-    id:int
+    id: int
     objectType: Literal['agent']
 
 
 class ActivityInCreate(BaseModel):
     """ Model of an xAPI activity """
     objectType: Literal['activity']
-    id:int
+    id: int
 
 
 class TargetInCreate(BaseModel):
     """ Model of an xAPI target """
     objectType: Literal['target']
-    id:int
+    id: int
+
 
 class ContextInCreate(BaseModel):
     """ Model of an xAPI context """
-    platform: Optional[StrictStr]
+    platform: Optional[StrictStr] = "Generic"
     language: Optional[StrictStr]
+    activity: Optional[int]
+
     @validator('language')
     @classmethod
     def language_must_not_be_empty(cls, value):
@@ -108,7 +113,7 @@ class ContextInCreate(BaseModel):
         if len(value) != 2:
             raise ValueError("Language value must be 2 characters long in ISO 639-1 format")
         return value
-    
+
     @validator('platform')
     @classmethod
     def platform_must_not_be_empty(cls, value):
@@ -117,12 +122,20 @@ class ContextInCreate(BaseModel):
             raise ValueError("Platform value must not be empty or null")
         return value
 
+    @validator('activity')
+    @classmethod
+    def activity_must_not_be_null(cls, value):
+        """ Validator for activity """
+        if value is None or value == 0:
+            raise ValueError("Activity value must not be null")
+        return value
+
 
 class StatementInCreate(BaseModel):
     """ Model of an xAPI statement """
     # id: UUID4
     actor: int = None  # id of the user in the LMS
-    verb: str # id of the verb
+    verb: str  # id of the verb
     object: Union[
         ActivityInCreate,
         AgentInCreate,
@@ -131,23 +144,34 @@ class StatementInCreate(BaseModel):
     context: ContextInCreate = None
     result: ResultInCreate = None
     extensions: dict = None
-    timestamp: datetime  | None = None
+    timestamp: datetime | None = None
+
+
 class ObjectOut(BaseModel):
     """ Model of an xAPI object """
     objectType: Literal['activity', 'agent', 'target']
-    id:int
+    id: int
+
+
+class ContextOut(BaseModel):
+    """ Model of an xAPI context """
+    platform: Optional[StrictStr]
+    language: Optional[StrictStr]
+    activity: Optional[int]
+
 
 class StatementOut(BaseModel):
     """ Model of an xAPI statement """
     id: int
     actor: int = None  # id of the user in the LMS
-    verb: str # id of the verb
+    verb: str  # id of the verb
     object: ObjectOut
-    context: ContextInCreate = None
+    context: ContextOut = None
     result: ResultInCreate = None
     extensions: dict = None
-    timestamp: datetime  | None = None
-    stored: datetime  | None = None
+    timestamp: datetime | None = None
+    stored: datetime | None = None
+
     class Config:
         """ Config class for StatementOut model """
         orm_mode = True

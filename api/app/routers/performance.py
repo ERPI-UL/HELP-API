@@ -5,22 +5,24 @@ from fastapi_pagination.ext.tortoise import paginate
 
 from app.models.language import Language
 from app.models.platform import Platform
-from app.models.statement import (ContextInCreate, ObjectOut, PlatformOut,
+from app.models.statement import (ContextOut, ObjectOut, PlatformOut,
                                   ResultInCreate, ScoreInCreate, Statement,
                                   StatementInCreate, StatementOut, Verb)
 from app.utils import Permission, get_current_user
 
 router = APIRouter()
 
+
 @router.get("/platforms", response_model=list[PlatformOut])
 async def get_platforms():
     """ get all platforms """
     return await Platform.all()
 
+
 @router.get("/statements", response_model=Page)
-async def get_statements(actor_id:int = None,verb:str = None,object_id:int = None,platform_name:str = None,user=Depends(get_current_user)):
+async def get_statements(actor_id: int = None, verb: str = None, object_id: int = None, platform_name: str = None, user=Depends(get_current_user)):
     """ get all statements with pagination """
-    query = Statement.all().prefetch_related("object_activity","object_target","object_agent","context_platform","context_language").order_by("-id")
+    query = Statement.all().prefetch_related("object_activity", "object_target", "object_agent", "context_platform", "context_language").order_by("-id")
     if user.adminLevel < Permission.ADMIN.value:
         query = query.filter(actor_id=user.id)
     if actor_id is not None and user.adminLevel >= Permission.ADMIN.value:
@@ -37,9 +39,10 @@ async def get_statements(actor_id:int = None,verb:str = None,object_id:int = Non
         actor=statement_db.actor_id,
         verb=statement_db.verb_id,
         object=find_object(statement_db),
-        context=ContextInCreate(
+        context=ContextOut(
             platform=statement_db.context_platform.name,
-            language=statement_db.context_language.code
+            language=statement_db.context_language.code,
+            activity=statement_db.context_activity_id
         ),
         result=ResultInCreate(
             success=statement_db.result_success,
@@ -58,21 +61,23 @@ async def get_statements(actor_id:int = None,verb:str = None,object_id:int = Non
     ) for statement_db in pagination.items]
     return pagination
 
-def find_object(statement_db:Statement):
+
+def find_object(statement_db: Statement):
     """ find the object of a statement"""
     if statement_db.object_activity_id is not None:
-        return ObjectOut(id=statement_db.object_activity_id,objectType="activity")
+        return ObjectOut(id=statement_db.object_activity_id, objectType="activity")
     elif statement_db.object_agent_id is not None:
-        return ObjectOut(id=statement_db.object_agent_id,objectType="agent")    
+        return ObjectOut(id=statement_db.object_agent_id, objectType="agent")
     elif statement_db.object_target_id is not None:
-        return ObjectOut(id=statement_db.object_target_id,objectType="target")
+        return ObjectOut(id=statement_db.object_target_id, objectType="target")
     else:
         return None
 
-@router.get("/statements/{statement_id}",response_model=StatementOut)
-async def get_statement(statement_id: int,user=Depends(get_current_user)):
+
+@router.get("/statements/{statement_id}", response_model=StatementOut)
+async def get_statement(statement_id: int, user=Depends(get_current_user)):
     """ get a statement """
-    statement_db = await Statement.get(id=statement_id).prefetch_related("verb","actor","object_activity","object_target","object_agent","context_platform","context_language")
+    statement_db = await Statement.get(id=statement_id).prefetch_related("verb", "actor", "object_activity", "object_target", "object_agent", "context_platform", "context_language")
     if user.adminLevel < Permission.ADMIN.value and statement_db.actor_id != user.id:
         raise HTTPException(status_code=403, detail="You are not allowed to access this statement")
     return StatementOut(
@@ -80,9 +85,10 @@ async def get_statement(statement_id: int,user=Depends(get_current_user)):
         actor=statement_db.actor_id,
         verb=statement_db.verb.id,
         object=find_object(statement_db),
-        context=ContextInCreate(
+        context=ContextOut(
             platform=statement_db.context_platform.name,
-            language=statement_db.context_language.code
+            language=statement_db.context_language.code if statement_db.context_language is not None else None,
+            activity=statement_db.context_activity_id
         ),
         result=ResultInCreate(
             success=statement_db.result_success,
@@ -101,11 +107,11 @@ async def get_statement(statement_id: int,user=Depends(get_current_user)):
     )
 
 
-@router.post("/statements",response_model=StatementOut)
-async def create_statement(statement: StatementInCreate,user=Depends(get_current_user)):
+@router.post("/statements", response_model=StatementOut)
+async def create_statement(statement: StatementInCreate, user=Depends(get_current_user)):
     """ Send a statement to the LRS """
-    platform_db,_ = await Platform.get_or_create(name=statement.context.platform)
-    language_db = await Language.get(code=statement.context.language)
+    platform_db, _ = await Platform.get_or_create(name=statement.context.platform)
+    language_db = await Language.get_or_none(code=statement.context.language)
     verb_db = await Verb.get_or_none(id=statement.verb)
     if verb_db is None:
         raise HTTPException(status_code=404, detail="This verb does not exist in the LRS")
@@ -118,7 +124,8 @@ async def create_statement(statement: StatementInCreate,user=Depends(get_current
         object_agent_id=statement.object.id if statement.object.objectType == "agent" else None,
         object_target_id=statement.object.id if statement.object.objectType == "target" else None,
         context_platform=platform_db,
-        context_language=language_db,
+        context_language_id=language_db.id if language_db is not None else None,
+        context_activity_id=statement.context.activity,
         result_success=statement.result.success,
         result_completion=statement.result.completion,
         result_duration=statement.result.duration,
@@ -130,4 +137,4 @@ async def create_statement(statement: StatementInCreate,user=Depends(get_current
         result_extensions=statement.extensions,
         timestamp=statement.timestamp
     )
-    return await get_statement(statement_db.id)
+    return await get_statement(statement_db.id, user=user)
