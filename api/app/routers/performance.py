@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import BackgroundTasks, Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
@@ -8,6 +8,7 @@ from app.models.platform import Platform
 from app.models.statement import (ContextOut, ObjectOut, PlatformOut,
                                   ResultInCreate, ScoreInCreate, Statement,
                                   StatementInCreate, StatementOut, Verb)
+from app.routers.stats import parse_statement
 from app.utils import Permission, get_current_user
 
 router = APIRouter()
@@ -66,6 +67,8 @@ def find_object(statement_db: Statement):
     """ find the object of a statement"""
     if statement_db.object_activity_id is not None:
         return ObjectOut(id=statement_db.object_activity_id, objectType="activity")
+    elif statement_db.object_action_id is not None:
+        return ObjectOut(id=statement_db.object_action_id, objectType="action")
     elif statement_db.object_agent_id is not None:
         return ObjectOut(id=statement_db.object_agent_id, objectType="agent")
     elif statement_db.object_target_id is not None:
@@ -108,7 +111,7 @@ async def get_statement(statement_id: int, user=Depends(get_current_user)):
 
 
 @router.post("/statements", response_model=StatementOut)
-async def create_statement(statement: StatementInCreate, user=Depends(get_current_user)):
+async def create_statement(statement: StatementInCreate, background_tasks: BackgroundTasks, user=Depends(get_current_user)):
     """ Send a statement to the LRS """
     platform_db, _ = await Platform.get_or_create(name=statement.context.platform)
     language_db = await Language.get_or_none(code=statement.context.language)
@@ -123,18 +126,20 @@ async def create_statement(statement: StatementInCreate, user=Depends(get_curren
         object_activity_id=statement.object.id if statement.object.objectType == "activity" else None,
         object_agent_id=statement.object.id if statement.object.objectType == "agent" else None,
         object_target_id=statement.object.id if statement.object.objectType == "target" else None,
+        object_action_id=statement.object.id if statement.object.objectType == "action" else None,
         context_platform=platform_db,
         context_language_id=language_db.id if language_db is not None else None,
         context_activity_id=statement.context.activity,
-        result_success=statement.result.success,
-        result_completion=statement.result.completion,
-        result_duration=statement.result.duration,
-        result_response=statement.result.response,
-        result_score_scaled=statement.result.score.scaled,
-        result_score_raw=statement.result.score.raw,
-        result_score_min=statement.result.score.min,
-        result_score_max=statement.result.score.max,
+        result_success=statement.result.success if statement.result is not None else None,
+        result_completion=statement.result.completion if statement.result is not None else None,
+        result_duration=statement.result.duration if statement.result is not None else None,
+        result_response=statement.result.response if statement.result is not None else None,
+        result_score_scaled=statement.result.score.scaled if statement.result is not None else None,
+        result_score_raw=statement.result.score.raw if statement.result is not None else None,
+        result_score_min=statement.result.score.min if statement.result is not None else None,
+        result_score_max=statement.result.score.max if statement.result is not None else None,
         result_extensions=statement.extensions,
         timestamp=statement.timestamp
     )
+    background_tasks.add_task(parse_statement, statement_db)
     return await get_statement(statement_db.id, user=user)

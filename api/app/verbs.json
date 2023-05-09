@@ -8,11 +8,11 @@
     "description": "Indicate that the actor has started the object. For instance,when a person starts a course, a course module, or a test."
   },
   {
-    "name": "interacted",
+    "name": "interact",
     "description": "Indicate that the actor has interacted with the object. For instance, when a person touch a component on a artifact."
   },
   {
-    "name": "launched",
+    "name": "launch",
     "description": "Indicate that the actor has launched the object. For instance, when a person launches a course, a course module, or a test."
   },
   {
@@ -20,23 +20,23 @@
     "description": "Indicate that the actor has requested help about the object. For instance, when a person requests help about a course, a course module, or a test."
   },
   {
-    "name": "pressed",
+    "name": "press",
     "description": "Indicate that the actor has pressed the object. For instance, when a person presses a button on a artifact."
   },
   {
-    "name": "released",
+    "name": "release",
     "description": "Indicate that the actor has released the object. For instance, when a person releases a button on a artifact."
   },
   {
-    "name": "paused",
+    "name": "pause",
     "description": "Indicate that the actor has paused the object. For instance, when a person pauses a course, a course module, or a test."
   },
   {
-    "name": "skipped",
+    "name": "skip",
     "description": "Indicate that the actor has skipped the object. For instance, when a person skips an action on a activity."
   },
   {
-    "name": "viewed",
+    "name": "view",
     "description": "Indicate that the actor has viewed the object. For instance, when a person views a course, a course module, or a test."
   }
 ]

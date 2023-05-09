@@ -24,6 +24,8 @@ class Statement(Model):
 
     # Jean start the activity 1
     object_activity = fields.ForeignKeyField('models.Activity', related_name='statements_objects', on_delete=fields.SET_NULL, null=True)
+    # Jean start the action 42
+    object_action = fields.ForeignKeyField('models.Action', related_name='statements', on_delete=fields.SET_NULL, null=True)
     # Jean pressed power_on
     object_target = fields.ForeignKeyField('models.Target', related_name='statements', on_delete=fields.SET_NULL, null=True)
     # Alex give a feedback to Jean
@@ -98,6 +100,11 @@ class TargetInCreate(BaseModel):
     id: int
 
 
+class ActionInCreate(BaseModel):
+    objectType: Literal['action']
+    id: int
+
+
 class ContextInCreate(BaseModel):
     """ Model of an xAPI context """
     platform: Optional[StrictStr] = "Generic"
@@ -139,7 +146,8 @@ class StatementInCreate(BaseModel):
     object: Union[
         ActivityInCreate,
         AgentInCreate,
-        TargetInCreate
+        TargetInCreate,
+        ActionInCreate
     ] = Field(..., discriminator='objectType')
     context: ContextInCreate = None
     result: ResultInCreate = None
@@ -149,7 +157,7 @@ class StatementInCreate(BaseModel):
 
 class ObjectOut(BaseModel):
     """ Model of an xAPI object """
-    objectType: Literal['activity', 'agent', 'target']
+    objectType: Literal['activity', 'agent', 'target', 'action']
     id: int
 
 

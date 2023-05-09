@@ -11,7 +11,7 @@ from tortoise.contrib.fastapi import register_tortoise
 import app.utils as utils
 from app.routers import (actions, activities, admin, artifacts, auth,
                          components, data, easy, language, performance, targets,
-                         tts, users, workplaces)
+                         tts, users, workplaces, stats)
 
 tags_metadata = [
     {
@@ -111,7 +111,7 @@ app.add_middleware(
 
 
 app.include_router(users.router, prefix="/users", tags=["users"])
-# app.include_router(stats.router, prefix="/stats", tags=["stats"])
+app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
