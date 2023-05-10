@@ -10,8 +10,6 @@ class Session(Model):
     represent a session of an activity played by a user
     """
     id = fields.IntField(pk=True)
-    start_statement = fields.ForeignKeyField('models.Statement', related_name='sessions', on_delete=fields.CASCADE, null=True)
-    end_statement = fields.ForeignKeyField('models.Statement', related_name='sessions_end', on_delete=fields.SET_NULL, null=True)
     # user can be null only if the user is deleted
     user = fields.ForeignKeyField('models.User', related_name='sessions', on_delete=fields.SET_NULL, null=True)
     activity = fields.ForeignKeyField('models.Activity', related_name='sessions', on_delete=fields.CASCADE)
@@ -21,6 +19,9 @@ class Session(Model):
     duration = fields.IntField(null=True)
     # true when missing end on a session or action
     abandoned = fields.BooleanField(default=False)
+
+    # stat for this session have already been computed
+    computed = fields.BooleanField(default=False)
 
     # teacher fields
     mark = fields.FloatField(null=True)
@@ -35,7 +36,7 @@ class ActionStats(Model):
     represent an action played by a user in a session
     """
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField('models.Session', related_name='actions', on_delete=fields.CASCADE)
+    session = fields.ForeignKeyField('models.Session', related_name='actionStats', on_delete=fields.CASCADE)
     action = fields.ForeignKeyField('models.Action', related_name='stats', on_delete=fields.CASCADE)
     start = fields.DatetimeField()
     end = fields.DatetimeField(null=True)
@@ -46,6 +47,8 @@ class ActionStats(Model):
     skipped = fields.BooleanField(default=False)
     # number of help request in a action
     help = fields.IntField(default=0)
+    # stat for this action have already been computed
+    computed = fields.BooleanField(default=False)
 
 
 class SessionShort(BaseModel):
@@ -56,7 +59,7 @@ class SessionShort(BaseModel):
     activity_id: int = None  # activity id
     start: datetime
     end: datetime = None
-    duration: int
+    duration: int = None
     abandoned: bool
 
     class Config:

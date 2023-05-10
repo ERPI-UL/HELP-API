@@ -50,6 +50,8 @@ class Statement(Model):
     context_platform = fields.ForeignKeyField('models.Platform', related_name='statements', on_delete=fields.SET_NULL, null=True)
     context_language = fields.ForeignKeyField('models.Language', related_name='statements', on_delete=fields.SET_NULL, null=True)
     context_activity = fields.ForeignKeyField('models.Activity', related_name='statements_context', on_delete=fields.SET_NULL, null=True)
+    context_action = fields.ForeignKeyField('models.Action', related_name='statements_context', on_delete=fields.SET_NULL, null=True)
+    context_session = fields.ForeignKeyField('models.Session', related_name='statements', on_delete=fields.SET_NULL, null=True)
 
     timestamp = fields.DatetimeField(null=True)
     stored = fields.DatetimeField(auto_now_add=True)
@@ -110,6 +112,8 @@ class ContextInCreate(BaseModel):
     platform: Optional[StrictStr] = "Generic"
     language: Optional[StrictStr]
     activity: Optional[int]
+    action: Optional[int]
+    session: Optional[int]
 
     @validator('language')
     @classmethod
@@ -135,6 +139,14 @@ class ContextInCreate(BaseModel):
         """ Validator for activity """
         if value is None or value == 0:
             raise ValueError("Activity value must not be null")
+        return value
+
+    @validator('action')
+    @classmethod
+    def action_must_not_be_null(cls, value):
+        """ Validator for action """
+        if value is None:
+            raise ValueError("Action value must not be null")
         return value
 
 
@@ -166,6 +178,8 @@ class ContextOut(BaseModel):
     platform: Optional[StrictStr]
     language: Optional[StrictStr]
     activity: Optional[int]
+    action: Optional[int]
+    session: Optional[int]
 
 
 class StatementOut(BaseModel):

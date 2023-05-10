@@ -1,3 +1,4 @@
+from app.models.session import Session
 from fastapi import BackgroundTasks, Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -91,7 +92,8 @@ async def get_statement(statement_id: int, user=Depends(get_current_user)):
         context=ContextOut(
             platform=statement_db.context_platform.name,
             language=statement_db.context_language.code if statement_db.context_language is not None else None,
-            activity=statement_db.context_activity_id
+            activity=statement_db.context_activity_id,
+            session=statement_db.context_session_id
         ),
         result=ResultInCreate(
             success=statement_db.result_success,
@@ -120,6 +122,7 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         raise HTTPException(status_code=404, detail="This verb does not exist in the LRS")
     if user.id != statement.actor:
         raise HTTPException(status_code=403, detail="You are not allowed to send a statement for another user")
+    # FIXME: make an optional chaining function
     statement_db = await Statement.create(
         actor_id=statement.actor,
         verb=verb_db,
@@ -129,7 +132,8 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         object_action_id=statement.object.id if statement.object.objectType == "action" else None,
         context_platform=platform_db,
         context_language_id=language_db.id if language_db is not None else None,
-        context_activity_id=statement.context.activity,
+        context_activity_id=statement.context.activity if statement.context is not None else None,
+        context_session_id=statement.context.session if statement.context is not None else None,
         result_success=statement.result.success if statement.result is not None else None,
         result_completion=statement.result.completion if statement.result is not None else None,
         result_duration=statement.result.duration if statement.result is not None else None,
@@ -141,5 +145,13 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         result_extensions=statement.extensions,
         timestamp=statement.timestamp
     )
+    if statement_db.object_activity_id is not None and statement_db.verb_id == "start":
+        # create a session
+        session_db = await Session.create(
+            user_id=statement_db.actor_id,
+            activity_id=statement_db.object_activity_id,
+            start=statement_db.timestamp)
+        statement_db.context_session_id = session_db.id
+        await statement_db.save()
     background_tasks.add_task(parse_statement, statement_db)
     return await get_statement(statement_db.id, user=user)

@@ -20,10 +20,10 @@ class ScenarioStats(BaseModel):
     averageSuccessRateByStep: list[StepStat]
 
 
-class ActionStat(BaseModel):
+class ActionStatsOut(BaseModel):
     """ Pydantic model to send a scenario stats"""
     id: int
-    name: str
+    tag: str
     start: datetime
     end: datetime = None
     duration: int
@@ -36,10 +36,12 @@ class SessionStat(BaseModel):
     """ Pydantic model used to return stats about a session"""
     id: int
     activity_id: int
-    name: str
+    user: int
     start: datetime
     end: datetime
     duration: int
     abandoned: bool
-    skippedRate: float  # percentage of skipped actions , skipped actions / total actions
-    actions: list[ActionStat]
+    skipped: float  # number of skipped actions in the session
+    help: float  # number of help request in the session
+    interactions: float  # number of interactions in the session
+    actions: list[ActionStatsOut]
