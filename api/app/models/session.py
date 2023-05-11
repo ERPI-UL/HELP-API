@@ -20,6 +20,11 @@ class Session(Model):
     # true when missing end on a session or action
     abandoned = fields.BooleanField(default=False)
 
+    help = fields.IntField(default=0)
+    interactions = fields.IntField(default=0)
+    skipped = fields.IntField(default=0)
+    interactions = fields.IntField(default=0)
+
     # stat for this session have already been computed
     computed = fields.BooleanField(default=False)
 

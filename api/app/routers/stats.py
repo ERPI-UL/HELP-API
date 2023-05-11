@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
@@ -20,7 +22,10 @@ async def get_activity_stats(id_activity: int, _=Depends(insctructor_required)):
     """
     Get average stats of all sessions of an activity
     """
-    pass
+    # TODO: see what teacher want to see
+    sessions = await Session.filter(activity_id=id_activity).prefetch_related("actionStats", "actionStats__action").order_by("-id").all()
+    # call compute_session if needed in parallel
+    await asyncio.gather(*[compute_session(session) for session in sessions if not session.computed])
 
 
 @router.get("/users/{id_user}/sessions", response_model=Page[SessionShort])
@@ -39,33 +44,32 @@ async def get_session_stats(id_session: int, user=Depends(get_current_user_in_to
         raise HTTPException(status_code=403, detail="You don't have the permission to access this resource")
     if not session.computed:
         await compute_session(session)
-    else:
-        return SessionStat(
-            id=session.id,
-            activity_id=session.activity_id,
-            user=session.user_id,
-            start=session.start,
-            end=session.end,
-            duration=session.duration,
-            abandoned=session.abandoned,
-            actions=[
-                ActionStatsOut(
-                    id=action_stats.id,
-                    action_id=action_stats.action_id,
-                    tag=action_stats.action.tag,
-                    start=action_stats.start,
-                    end=action_stats.end,
-                    duration=action_stats.duration,
-                    completed=action_stats.completed,
-                    skipped=action_stats.skipped,
-                    help=action_stats.help,
-                    interactions=action_stats.interactions,
-                ) for action_stats in session.actionStats
-            ],
-            skipped=sum([1 for action_stats in session.actionStats if action_stats.skipped]),
-            help=sum([action_stats.help for action_stats in session.actionStats]),
-            interactions=sum([action_stats.interactions for action_stats in session.actionStats]),
-        )
+    return SessionStat(
+        id=session.id,
+        activity_id=session.activity_id,
+        user=session.user_id,
+        start=session.start,
+        end=session.end,
+        duration=session.duration,
+        abandoned=session.abandoned,
+        actions=[
+            ActionStatsOut(
+                id=action_stats.id,
+                action_id=action_stats.action_id,
+                tag=action_stats.action.tag,
+                start=action_stats.start,
+                end=action_stats.end,
+                duration=action_stats.duration,
+                completed=action_stats.completed,
+                skipped=action_stats.skipped,
+                help=action_stats.help,
+                interactions=action_stats.interactions,
+            ) for action_stats in session.actionStats
+        ],
+        skipped=sum([1 for action_stats in session.actionStats if action_stats.skipped]),
+        help=sum([action_stats.help for action_stats in session.actionStats]),
+        interactions=sum([action_stats.interactions for action_stats in session.actionStats]),
+    )
 
 
 @router.get("/sessions/{id_session}/statements", response_model=list[StatementOut])
@@ -102,8 +106,26 @@ async def get_session_statements(id_session: int, user=Depends(get_current_user_
     ) for statement_db in statements]
 
 
-async def compute_session(session: Session):
-    pass
+async def compute_session(session: Session) -> None:
+    """
+    Compute missing data of a session,
+    in case of a crash or a bug ( or an abandonned session)
+    """
+    # get last statement of the session
+    last_statement = await Statement.filter(context_session_id=session.id).order_by("-timestamp").first()
+    # last not computed actionstat
+    last_action_stat = await ActionStats.filter(session=session, computed=False).order_by("-id").first()
+    if last_action_stat is not None:
+        last_action_stat.end = last_statement.timestamp
+        last_action_stat.completed = False
+        last_action_stat.duration = (last_action_stat.end - last_action_stat.start).total_seconds()
+        last_action_stat.computed = True
+        await last_action_stat.save()
+    session.end = last_statement.timestamp
+    session.duration = (session.end - session.start).total_seconds()
+    # session.computed = True
+    session.abandoned = True
+    await session.save()
 
 
 def find_object_type(statement: Statement):
@@ -129,35 +151,38 @@ async def parse_statement(statement: Statement):
     try:
         match find_object_type(statement):
             case "action":
-                session = await Session.get_or_none(id=statement.context_session_id)
+                session = await Session.get_or_none(id=statement.context_session_id, computed=False)
                 if session is None:
                     print("session not found")
                 match statement.verb_id:
                     case "start":
                         played_action = await ActionStats.create(session=session, action_id=statement.object_action_id, start=statement.timestamp)
                     case "complete":
-                        played_action = await ActionStats.get(session=session, action=statement.object_action_id, completed=False, end__isnull=True)
+                        played_action = await ActionStats.get(session=session, action=statement.object_action_id, completed=False, end__isnull=True, computed=False)
                         played_action.end = statement.timestamp
                         played_action.duration = (played_action.end - played_action.start).total_seconds()
                         played_action.completed = True
                         played_action.computed = True  # object is completed, no need to compute it again ( we should'nt interact with it anymore)
                         await played_action.save()
                     case "skip":
-                        played_action = await ActionStats.get(session=session, action=statement.object_action_id)
+                        played_action = await ActionStats.get(session=session, action=statement.object_action_id, computed=False)
                         played_action.skipped = True
                         played_action.end = statement.timestamp
                         played_action.duration = (played_action.end - played_action.start).total_seconds()
                         played_action.computed = True  # same thing as above
+                        session.skipped += 1
                         await played_action.save()
                     case "help":
-                        played_action = await ActionStats.get(session=session, action=statement.object_action_id)
+                        played_action = await ActionStats.get(session=session, action=statement.object_action_id, computed=False)
                         played_action.help += 1
+                        session.help += 1
                         await played_action.save()
             case "target":
                 match statement.verb_id:
                     case "interact" | "press":
-                        played_action = await ActionStats.get(action=statement.context_action_id, session__user_id=statement.actor_id)
+                        played_action = await ActionStats.get(action=statement.context_action_id, session__user_id=statement.actor_id, computed=False)
                         played_action.interactions += 1
+                        session.interactions += 1
                         await played_action.save()
                     case "view":
                         pass
@@ -166,7 +191,7 @@ async def parse_statement(statement: Statement):
             case "activity":
                 match statement.verb_id:
                     case "complete":
-                        session = await Session.get(user=statement.actor_id, activity=statement.object_activity_id).order_by("-id").first()
+                        session = await Session.get(id=statement.context_session_id, computed=False)
                         session.end = statement.timestamp
                         session.duration = (session.end - session.start).total_seconds()
                         session.computed = True

@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.10-2023-05-01
 
 ENV IN_DOCKER=1 \
     PYTHONDONTWRITEBYTECODE=1\

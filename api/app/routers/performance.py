@@ -1,4 +1,3 @@
-from app.models.session import Session
 from fastapi import BackgroundTasks, Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -6,6 +5,7 @@ from fastapi_pagination.ext.tortoise import paginate
 
 from app.models.language import Language
 from app.models.platform import Platform
+from app.models.session import Session
 from app.models.statement import (ContextOut, ObjectOut, PlatformOut,
                                   ResultInCreate, ScoreInCreate, Statement,
                                   StatementInCreate, StatementOut, Verb)
