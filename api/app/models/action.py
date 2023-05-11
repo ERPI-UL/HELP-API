@@ -151,6 +151,8 @@ class ActionInPatch(BaseModel):
         """ prevent targets to be None if key set"""
         if value is None:
             raise ValueError("targets value must be provided if key set")
+        if len(value) == 0:
+            raise ValueError("action must have at least one target")
         return value
 
     class Config:
