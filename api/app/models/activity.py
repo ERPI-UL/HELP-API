@@ -49,6 +49,16 @@ class ActivityOutTrad(BaseModel):
     class Config:
         """ Config class for ActivityOut model """
         orm_mode = True
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Introduction à l'utilisation de la machine à café",
+                "description": "Cette activité permet de découvrir les fonctionnalités de la machine à café.",
+                "language": ["fr", "en"],
+                "start": 1,
+                "artifacts": [42]
+            }
+        }
 
 
 class ActivityIn(BaseModel):

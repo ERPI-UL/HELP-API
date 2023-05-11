@@ -16,7 +16,7 @@ from app.utils import insctructor_required
 router = APIRouter()
 
 
-@router.get('/', response_model=Page[ActivityOutTrad])
+@router.get('/', response_model=Page, responses={200: {"description": "Successful Response", "model": Page[ActivityOutTrad]}})
 async def get_activities_trad(language_code: str = 'fr'):
     """ get all actions """
     pagination = await paginate(Activity.all().prefetch_related("texts", "texts__language", "artifacts").order_by("id"))
