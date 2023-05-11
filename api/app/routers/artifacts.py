@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=Page)
-async def get_artifacts(language_code: str = 'fr'):
+async def get_artifacts(search: str = None, language_code: str = 'fr'):
     """ Get all artifacts """
     pagination = await paginate(Artifact.all().prefetch_related("texts", "texts__language", "targets").order_by("id"))
     pagination.items = [ArtifactOutShort(
@@ -28,6 +28,10 @@ async def get_artifacts(language_code: str = 'fr'):
         description=(await get_ask_translation_or_first(artifact.texts, language_code)).description,
         languages=[text.language.code for text in artifact.texts]
     ) for artifact in pagination.items]
+    # not too slow because it is only on maximum 100 items
+    if search is not None:
+        pagination.items = [artifact for artifact in pagination.items if search.lower() in artifact.name.lower()]
+        pagination.total = len(pagination.items)
     return pagination
 
 
