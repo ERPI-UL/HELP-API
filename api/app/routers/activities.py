@@ -54,6 +54,12 @@ async def get_activity(activity_id: int, language_code: str = 'fr'):
     )
 
 
+@router.get("/{activity_id}/languages", response_model=list[str])
+async def get_action_languages(activity_id: int):
+    """ Get the available languages for an action"""
+    return [text.language.code for text in await ActivityText.filter(activity_id=activity_id).prefetch_related("language")]
+
+
 @router.post("/", response_model=IDResponse)
 @atomic()
 async def create_activity(activity: ActivityIn, _=Depends(insctructor_required)):
