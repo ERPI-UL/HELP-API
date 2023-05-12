@@ -164,6 +164,7 @@ class ActionOut(BaseModel):
     """ ActionOut pydantic model """
     id: int
     tag: str
+    hint: str | None
     previous: int | None
     next: int | None
     type: str
