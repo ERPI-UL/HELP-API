@@ -81,8 +81,8 @@ class ActionInPatch(BaseModel):
     """ ActionIn pydantic model """
     # tag is optional but if it is set it can't be None
     tag:  Optional[StrictStr]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    previous: Optional[int]
+    next: Optional[int]
     # type is optional but if it is set it can't be None
     type: Optional[StrictStr]
     artifactID: Optional[int] = None
