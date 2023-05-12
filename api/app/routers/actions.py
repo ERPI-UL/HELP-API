@@ -127,16 +127,10 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
     if created and (action.name is None or action.description is None):
         raise HTTPException(status_code=400, detail="You must provide a name and a description when creating a new action translation")
     if "tag" in action.__fields_set__:
-        if not await verify_tag_unicity_in_activity(action.tag, action_db.previous, action_db.next):
-            raise HTTPException(status_code=400, detail="Tag already used in this activity")
         action_db.tag = action.tag
     if "previous" in action.__fields_set__:
-        if not await verify_tag_unicity_in_activity(action_db.tag, action.previous, action_db.next):
-            raise HTTPException(status_code=400, detail="Tag already used in this activity")
         action_db.previous_id = action.previous
     if "next" in action.__fields_set__:
-        if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous, action.next):
-            raise HTTPException(status_code=400, detail="Tag already used in this activity")
         action_db.next_id = action.next
     if "type" in action.__fields_set__:
         action_db.type = await Type.get(name=action.type)
@@ -166,9 +160,10 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
         action_text.description = action.description
     if "hint" in action.__fields_set__:
         action_text.hint = action.hint
-    await action_text.save()
     await action_db.save()
-
+    await action_text.save()
+    if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous_id, action_db.next_id):
+        raise HTTPException(status_code=400, detail="Tag already used in this activity")  # transaction rollback
     # retourne l'objet modifié
     return await get_action(action_id, language_code)
 
