@@ -1,3 +1,4 @@
+from app.types.anchor import Anchor
 from pydantic import validator
 from typing import Optional
 
@@ -28,12 +29,6 @@ class ArtifactText(Model):
     description = fields.TextField()
     artifact = fields.ForeignKeyField('models.Artifact', related_name='texts', on_delete=fields.CASCADE)
     language = fields.ForeignKeyField('models.Language', related_name='artifactTexts')
-
-
-class Anchor(BaseModel):
-    """ Anchor pydantic model """
-    position: Position
-    rotation: Position
 
 
 class ArtifactInPatch(BaseModel):

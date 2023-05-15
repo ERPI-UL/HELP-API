@@ -1,3 +1,4 @@
+from app.types.anchor import Anchor
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -33,12 +34,24 @@ async def get_workplaces(language_code: str = "fr"):
 @router.get("/{workplace_id}", response_model=WorkplaceOut)
 async def get_workplace(workplace_id: int, language_code: str = "fr"):
     """ Get a workplace by id """
-    workplace_text = await WorkPlaceText.get(workplace_id=workplace_id, language__code=language_code).prefetch_related("language", "workplace__instances")
+    workplace_text = await WorkPlaceText.get(workplace_id=workplace_id, language__code=language_code).prefetch_related("language", "workplace", "workplace__instances")
     return WorkplaceOut(
         id=workplace_text.workplace.id,
         name=workplace_text.name,
         description=workplace_text.description,
         language=workplace_text.language.code,
+        anchor=Anchor(
+            position=Position(
+                x=workplace_text.workplace.x,
+                y=workplace_text.workplace.y,
+                z=workplace_text.workplace.z
+            ),
+            rotation=Position(
+                x=workplace_text.workplace.u,
+                y=workplace_text.workplace.v,
+                z=workplace_text.workplace.w
+            )
+        ) if workplace_text.workplace.x is not None else None,
         artifacts=[ArtifactInstanceOut(
             id=instance.id,
             artifactID=instance.artifact_id,
@@ -59,7 +72,17 @@ async def get_workplace(workplace_id: int, language_code: str = "fr"):
 @router.post("/", response_model=IDResponse)
 async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_required)):
     """ Create a workplace """
-    workplace_db = await WorkPlace.create()
+    if workplace.anchor is None:
+        workplace_db = await WorkPlace.create()
+    else:
+        workplace_db = await WorkPlace.create(
+            x=workplace.anchor.position.x,
+            y=workplace.anchor.position.y,
+            z=workplace.anchor.position.z,
+            u=workplace.anchor.rotation.x,
+            v=workplace.anchor.rotation.y,
+            w=workplace.anchor.rotation.z,
+        )
     await WorkPlaceText.create(
         workplace=workplace_db,
         name=workplace.name,
@@ -91,12 +114,29 @@ async def update_workplace(workplace_id: int, language_code: str, workplace: Wor
     workplace_text, created = await WorkPlaceText.get_or_create(workplace_id=workplace_id,
                                                                 language_id=(await Language.get(code=language_code)).id,
                                                                 defaults={"name": "", "description": ""})
+    workplace_db = await WorkPlace.get(id=workplace_id)
     if created and (workplace_text.name is None or workplace_text.description is None):
         raise HTTPException(status_code=400, detail="You must specify a name and a description for the activity when adding a new language")
     if "name" in workplace.__fields_set__:
         workplace_text.name = workplace.name
     if "description" in workplace.__fields_set__:
         workplace_text.description = workplace.description
+    if "anchor" in workplace.__fields_set__:
+        if workplace.anchor is None:
+            workplace_db.x = None
+            workplace_db.y = None
+            workplace_db.z = None
+            workplace_db.u = None
+            workplace_db.v = None
+            workplace_db.w = None
+        else:
+            workplace_db.x = workplace.anchor.position.x
+            workplace_db.y = workplace.anchor.position.y
+            workplace_db.z = workplace.anchor.position.z
+            workplace_db.u = workplace.anchor.rotation.x
+            workplace_db.v = workplace.anchor.rotation.y
+            workplace_db.w = workplace.anchor.rotation.z
+    await workplace_db.save()
     await workplace_text.save()
     return await get_workplace(workplace_id, language_code)
 

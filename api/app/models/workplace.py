@@ -3,10 +3,23 @@ from typing import Optional
 from pydantic import BaseModel, validator
 from tortoise import Model, fields
 
+from app.models.artifact import Anchor
+from app.types.position import Position
+
 
 class WorkPlace(Model):
     """ WorkPlace model"""
     id = fields.IntField(pk=True)
+
+    # anchor position
+    x = fields.FloatField(default=None, null=True)
+    y = fields.FloatField(default=None, null=True)
+    z = fields.FloatField(default=None, null=True)
+    # anchor orientation
+    u = fields.FloatField(default=None, null=True)
+    v = fields.FloatField(default=None, null=True)
+    w = fields.FloatField(default=None, null=True)
+
     author = fields.ForeignKeyField(
         'models.User', related_name='workplaces', on_delete=fields.SET_NULL, null=True)
 
@@ -48,13 +61,6 @@ class ArtifactInstance(Model):
     class Meta:
         """ Meta class for ArtifactInstance model"""
         unique_together = (("workplace_id", "artifact_id"),)
-
-
-class Position(BaseModel):
-    """ Position pydantic model"""
-    x: float
-    y: float
-    z: float
 
 
 class ArtifactInstanceIn(BaseModel):
@@ -107,6 +113,23 @@ class WorkplaceInPatch(BaseModel):
     """ WorkplaceInPatch pydantic model"""
     name: Optional[str]
     description: Optional[str]
+    anchor: Optional[Anchor]
+
+    @validator('name')
+    @classmethod
+    def name_not_none(cls, value):
+        """ validator for name"""
+        if value is None or value == '':
+            raise ValueError('name value cannot be None')
+        return value
+
+    @validator('description')
+    @classmethod
+    def description_not_none(cls, value):
+        """ validator for description"""
+        if value is None or value == '':
+            raise ValueError('description value cannot be None')
+        return value
 
 
 class WorkplaceIn(BaseModel):
@@ -114,6 +137,7 @@ class WorkplaceIn(BaseModel):
     name: str
     description: str
     language: str
+    anchor: Anchor = None
     artifacts: list[ArtifactInstanceIn]
 
 
@@ -123,6 +147,7 @@ class WorkplaceOut(BaseModel):
     name: str
     description: str
     language: str
+    anchor: Anchor = None
     artifacts: list[ArtifactInstanceOut]
 
 
