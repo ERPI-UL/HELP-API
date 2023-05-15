@@ -5,12 +5,12 @@ from typing import List
 from aiofiles import os
 from aiogtts import aiogTTS
 from aiohttp import ClientSession
-from fastapi import APIRouter, BackgroundTasks, Body, Depends
+from fastapi import (APIRouter, BackgroundTasks, Body, Depends, HTTPException,
+                     status)
 from fastapi.responses import FileResponse
 
-from app.models.language import LanguageOutWithId, Language
+from app.models.language import Language, LanguageOutWithId
 from app.utils import get_current_user_in_token
-from fastapi import HTTPException, status
 
 router = APIRouter()
 
