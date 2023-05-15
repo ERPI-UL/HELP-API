@@ -10,8 +10,8 @@ from tortoise.contrib.fastapi import register_tortoise
 
 import app.utils as utils
 from app.routers import (actions, activities, admin, artifacts, auth,
-                         components, data, easy, language, performance, targets,
-                         tts, users, workplaces, stats)
+                         components, data, easy, language, performance, stats,
+                         targets, users, workplaces)
 
 tags_metadata = [
     {
@@ -47,9 +47,6 @@ tags_metadata = [
     }, {
         "name": "language",
         "description": "Génération de traduction textuel ou de voix à partir de texte",
-    }, {
-        "name": "tts",
-        "description": "Génération de voix à partir de texte",
     }, {
         "name": "easy",
         "description": "générer un code d'accès rapide , HTTP Long-Polling pour envoyer le token d'authentification à l'appareil XR",
@@ -115,7 +112,6 @@ app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(easy.router, prefix="/easy", tags=["easy"])
-app.include_router(tts.router, prefix="/tts", tags=["tts"])
 app.include_router(language.router, prefix="/langs", tags=["language"])
 app.include_router(data.router, prefix="/data", tags=["data"])
 app.include_router(actions.router, prefix="/actions", tags=["actions"])
