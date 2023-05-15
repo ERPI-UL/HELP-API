@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse
 
 from app.models.language import LanguageOutWithId, Language
 from app.utils import get_current_user_in_token
+from fastapi import HTTPException, status
 
 router = APIRouter()
 
@@ -18,8 +19,9 @@ class Languages(dict, Enum):
     """Enum used to define the languages available for the TTS."""
     FRENCH = {'name': 'fr-FR', 'voice': 'fr-FR-Wavenet-C'}
     ENGLISH = {'name': 'en-US', 'voice': 'en-US-Wavenet-F'}
-    ESPANOL = {'name': 'es-ES', 'voice': 'es-ES-Wavenet-C'}
-    GERMAN = {'name': 'de-DE', 'voice': 'de-DE-Wavenet-F'}
+    SPANISH = {'name': 'es-ES', 'voice': 'es-ES-Wavenet-C'}
+    GERMAN = {'name': 'de', 'voice': 'de-DE-Wavenet-F'}
+    ITALIAN = {'name': 'it', 'voice': 'it-IT-Wavenet-D'}
 
 
 async def cleanup(filename):
@@ -39,7 +41,12 @@ async def tts(bg_tasks: BackgroundTasks, language: str = Body(...), text: str = 
     # TODO: legal problem ?
     aiogtts = aiogTTS()
     filename = 'temp'+str(random.randint(10, 100000000))+'.mp3'
-    await aiogtts.save(text, filename, lang=language)
+    if language not in Languages.__members__:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Language not found",
+        )
+    await aiogtts.save(text, filename, lang=Languages[language]['name'])
     bg_tasks.add_task(cleanup, filename)
     return FileResponse(filename, media_type='application/octet-stream', filename='res.mp3')
 
