@@ -1,11 +1,10 @@
-before_script:
-    - docker-compose down --rmi all --remove-orphans
+build_prod:
+  before_script:
+    - docker-compose -f docker-compose.prod.yml down --rmi all
     - echo y | docker network prune
-
-build_staging:
   variables:
+      POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
-      DB_LLTK_PW: $DB_LLTK_PW
       SECRET_KEY: $SECRET_KEY
       ENV: production
   stage: deploy
@@ -16,5 +15,27 @@ build_staging:
       - master
   script:
     # - export PYTHONDONTWRITEBYTECODE=1
-    - chmod +x ./api/docker-entrypoint.sh
-    -  docker-compose up -d --force-recreate
+ #   - chmod +x ./api/docker-entrypoint.sh
+    -  docker-compose -f docker-compose.prod.yml up -d --force-recreate
+
+
+build_staging:
+  before_script:
+    - docker-compose -f docker-compose.dev.yml down --rmi all
+    - echo y | docker network prune
+  variables:
+      POSTGRES_USER: $POSTGRES_USER_DEV
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD_DEV
+      SECRET_KEY: $SECRET_KEY_DEV
+      ENV: production
+  stage: deploy
+  tags : 
+    - indico-dev
+  only:
+    refs:
+      - dev
+  script:
+    # - export PYTHONDONTWRITEBYTECODE=1
+    # - chmod +x ./api/docker-entrypoint.sh
+    -  docker-compose -f docker-compose.dev.yml up -d --force-recreate
+
