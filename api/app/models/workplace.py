@@ -48,13 +48,13 @@ class ArtifactInstance(Model):
     id = fields.IntField(pk=True)
     workplace = fields.ForeignKeyField('models.WorkPlace', related_name='instances', on_delete=fields.CASCADE)
     # position
-    x = fields.IntField()
-    y = fields.IntField()
-    z = fields.IntField()
+    x = fields.FloatField()
+    y = fields.FloatField()
+    z = fields.FloatField()
     # angle
-    u = fields.IntField()
-    v = fields.IntField()
-    w = fields.IntField()
+    u = fields.FloatField()
+    v = fields.FloatField()
+    w = fields.FloatField()
 
     artifact = fields.ForeignKeyField('models.Artifact', related_name='instances', on_delete=fields.CASCADE)
 
