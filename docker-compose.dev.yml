@@ -1,64 +1,56 @@
 version: '3.9'
  
 services:
-  database:
+  databasedev:
     build: ./database
     environment:
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
     ports:
-      - '5432:5432'
+      - '5431:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
     restart: always
     networks:
-      - indico_prod
+      - indico_dev
 
-  indico:
+  indico-dev:
     build:
       context: ./api
       dockerfile: Dockerfile
     depends_on:
-      - database
+      - databasedev
     links:
-      - database
+      - databasedev
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - DATABASE=postgres
       - ENV
-      - DB_HOST=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      - DB_HOST=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@databasedev:5432/${POSTGRES_DB}
       - SECRET_KEY
       - SQL_DB_PORT=5432
     volumes:
       - "./api/app:/opt/app"
     restart: always
     networks:
-      - indico_prod
+      - indico_dev
 
-  dozzle:
+  dozzle-dev:
     image: amir20/dozzle:latest
     environment:
       - DOZZLE_FILTER=name=indico
     ports:
-      - 5453:8080
+      - 5454:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
     networks:
-      - indico_prod
-
-  web:
-    build: ./app/
-    ports:
-      - 80:8080
-    restart: always
-    networks:
-      - indico_prod
+      - indico_dev
 
 volumes:
-  postgres_data:
+  postgres_data_dev:
 
 networks:
-  indico_prod:
+  indico_dev:
