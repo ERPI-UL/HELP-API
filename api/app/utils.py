@@ -4,17 +4,15 @@ from enum import Enum
 
 import aiofiles
 import jwt
-import tortoise
-from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
-from passlib.hash import bcrypt
-from pydantic import BaseModel
-
 from app.customScheme import CustomOAuth2PasswordBearer
 from app.models.language import Language
 from app.models.statement import Verb
 from app.models.type import Type
 from app.models.user import User, UserinFront, UserinToken
+from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
+from passlib.hash import bcrypt
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -26,6 +24,10 @@ SCENARIOS_DATA_DIRECTORY = DATA_DIRECTORY+'scenarios/'
 ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
 ACTION_DATA_DIRECTORY = DATA_DIRECTORY+'actions/'
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
+
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME').strip()
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL').strip()
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD').strip()
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -124,19 +126,16 @@ async def authenticate_user(username: str, password: str):
 
 async def init_admin():
     """ Create the admin user if it doesn't exist"""
-    try:
-        user = await User.get(username='toxicbloud')
+    if ADMIN_USERNAME and ADMIN_EMAIL and ADMIN_PASSWORD:
+        user = await User.get_or_none(username=ADMIN_USERNAME)
         if not user:
-            user = await User.create(username='toxicbloud', email='truc@gmail.com',
-                                     adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),
-                                     firstname='Antonin', lastname='Rousseau')
+            user = await User.create(username=ADMIN_USERNAME, email=ADMIN_EMAIL,
+                                     adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(ADMIN_PASSWORD),
+                                     firstname="SUPER", lastname="ADMIN")
         else:
             user.adminLevel = Permission.ADMIN.value
+            user.password_hash = bcrypt.hash(ADMIN_PASSWORD)
             await user.save()
-    except tortoise.exceptions.DoesNotExist:
-        user = await User.create(username='toxicbloud', email='truc@gmail.com',
-                                 adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),
-                                 firstname='Antonin', lastname='Rousseau')
 
 
 def htmlspecialchars(html):
@@ -187,7 +186,6 @@ async def init_db_with_data():
         for verb in verbs:
             if not await Verb.exists(id=verb['name']):
                 await Verb.create(id=verb['name'])
-
 
 
 class Permission(Enum):
