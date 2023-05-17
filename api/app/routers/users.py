@@ -10,11 +10,11 @@ from pydantic import parse_obj_as
 from tortoise import transactions
 
 from app.mail import send_invite_link
-from app.types.invite import Invite
 from app.models.language import Language
-from app.models.user import User, UserCreate, UserinFront, UserinPut
-from app.types.pagination import Pagination
 from app.models.reset import Reset
+from app.models.user import User, UserCreate, UserinFront, UserInPatch
+from app.types.invite import Invite
+from app.types.pagination import Pagination
 from app.utils import (Permission, get_current_user, get_current_user_in_token,
                        insctructor_required, sanitizer)
 
@@ -117,25 +117,23 @@ async def get_user(id_user: int, current_user: User = Depends(get_current_user_i
 #     return scenarios
 
 
-@router.put('/me', response_model=UserinFront)
-async def update_user(user: UserinPut, current_user: User = Depends(get_current_user_in_token)):
+@router.patch('/me', response_model=UserinFront)
+async def update_user(user: UserInPatch, current_user: User = Depends(get_current_user_in_token)):
     """ Update the connected user """
-    user = sanitizer(user)
-    user_obj = await User.get(id=current_user.id)
+    user_obj = await User.get_or_none(id=current_user.id)
     if user_obj is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if len(user.firstname) > 0:
+    if "firstname" in user.__fields_set__:
         user_obj.firstname = user.firstname
-    if len(user.lastname) > 0:
+    if "lastname" in user.__fields_set__:
         user_obj.lastname = user.lastname
-    if len(user.email) > 0:
+    if "email" in user.__fields_set__:
         user_obj.email = user.email
-    if len(user.username) > 0:
+    if "username" in user.__fields_set__:
         user_obj.username = user.username
-    if len(user.languageCode) > 0:
-        language = await Language.get(code=user.languageCode)
-        user_obj.language = language
+    if "language_code" in user.__fields_set__:
+        user_obj.language = await Language.get(code=user.language_code)
     try:
         await user_obj.save()
     except tortoise.exceptions.IntegrityError as err:
