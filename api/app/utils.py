@@ -4,15 +4,16 @@ from enum import Enum
 
 import aiofiles
 import jwt
+from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
+from passlib.hash import bcrypt
+from pydantic import BaseModel
+
 from app.customScheme import CustomOAuth2PasswordBearer
 from app.models.language import Language
 from app.models.statement import Verb
 from app.models.type import Type
 from app.models.user import User, UserinFront, UserinToken
-from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
-from passlib.hash import bcrypt
-from pydantic import BaseModel
 
 load_dotenv()
 
@@ -130,7 +131,8 @@ async def init_admin():
         user = await User.get_or_none(username=ADMIN_USERNAME)
         if not user:
             user = await User.create(username=ADMIN_USERNAME, email=ADMIN_EMAIL,
-                                     adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(ADMIN_PASSWORD),
+                                     adminLevel=Permission.ADMIN.value,
+                                     password_hash=bcrypt.hash(ADMIN_PASSWORD),
                                      firstname="SUPER", lastname="ADMIN")
         else:
             user.adminLevel = Permission.ADMIN.value
@@ -177,9 +179,11 @@ async def init_db_with_data():
         langs = json.loads(await file.read())
         for lang in langs:
             if not await Language.exists(name=lang['name']):
-                await Language.create(name=lang['name'], code=lang['code'], unicode=lang['unicode'])
+                await Language.create(name=lang['name'], code=lang['code'],
+                                      unicode=lang['unicode'])
             else:
-                await Language.filter(code=lang['code']).update(unicode=lang['unicode'], name=lang['name'])
+                await Language.filter(code=lang['code']).update(unicode=lang['unicode'],
+                                                                name=lang['name'])
     # open verbs.json
     async with aiofiles.open("app/verbs.json", "r", encoding="utf-8") as file:
         verbs = json.loads(await file.read())
