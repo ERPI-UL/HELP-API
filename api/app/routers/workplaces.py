@@ -26,7 +26,7 @@ async def get_workplaces(language_code: str = "fr"):
         id=workplace.id,
         name=(await get_ask_translation_or_first(workplace.texts, language_code)).name,
         description=(await get_ask_translation_or_first(workplace.texts, language_code)).description,
-        language=[text.language.code for text in workplace.texts]
+        languages=[text.language.code for text in workplace.texts]
     ) for workplace in pagination.items]
     return pagination
 

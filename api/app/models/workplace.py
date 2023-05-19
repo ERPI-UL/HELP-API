@@ -156,4 +156,4 @@ class WorkplaceOutShort(BaseModel):
     id: int
     name: str
     description: str
-    language: list[str]
+    languages: list[str]
