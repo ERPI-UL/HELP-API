@@ -41,9 +41,12 @@ async def get_ask_translation_or_first(texts, language_code: str):
 
 
 @router.get("/{activity_id}", response_model=ActivityOut)
-async def get_activity(activity_id: int, language_code: str = 'fr'):
+async def get_activity(activity_id: int, language_code: str = None):
     """ Get an action"""
-    activity_text = await ActivityText.get(activity_id=activity_id, language__code=language_code).prefetch_related("language", "activity__artifacts")
+    if not language_code:
+        activity_text = await ActivityText.filter(activity_id=activity_id).prefetch_related("language", "activity__artifacts").order_by("id").first()
+    else:
+        activity_text = await ActivityText.get(activity_id=activity_id, language__code=language_code).prefetch_related("language", "activity__artifacts")
     return ActivityOut(
         id=activity_text.activity.id,
         name=activity_text.name,
@@ -81,9 +84,11 @@ async def create_activity(activity: ActivityIn, _=Depends(insctructor_required))
 
 @router.patch("/{activity_id}", response_model=ActivityOut)
 @atomic()
-async def update_activity(activity_id: int, activity: ActivityInPatch, language_code: str = "fr", _=Depends(insctructor_required)):
+async def update_activity(activity_id: int, activity: ActivityInPatch, language_code: str = None, _=Depends(insctructor_required)):
     """ Update an action without specifying all the fields """
-    activity_db = await Activity.get(id=activity_id)
+    activity_db = await Activity.get(id=activity_id).prefetch_related("texts__language")
+    if not language_code:
+        language_code = activity_db.texts[0].language.code
     activity_text, created = await ActivityText.get_or_create(activity=activity_db,
                                                               language_id=(await Language.get(code=language_code)).id,
                                                               defaults={"name": "", "description": ""})
