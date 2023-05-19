@@ -60,7 +60,6 @@ class ArtifactInstance(Model):
 
     class Meta:
         """ Meta class for ArtifactInstance model"""
-        unique_together = (("workplace_id", "artifact_id"),)
 
 
 class ArtifactInstanceIn(BaseModel):
