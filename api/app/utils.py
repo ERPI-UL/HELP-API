@@ -17,6 +17,12 @@ from app.models.user import User, UserinFront, UserinToken
 
 load_dotenv()
 
+
+def getenv_strip(key: str):
+    """ Return the value of an environment variable without the spaces"""
+    return os.getenv(key).strip() if os.getenv(key) else None
+
+
 JWT_SECRET = os.getenv('SECRET_KEY')
 DB_URL = os.getenv('DB_HOST')
 DATA_DIRECTORY = './app/data/'
@@ -26,9 +32,9 @@ ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
 ACTION_DATA_DIRECTORY = DATA_DIRECTORY+'actions/'
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
 
-ADMIN_USERNAME = os.getenv('ADMIN_USERNAME').strip()
-ADMIN_EMAIL = os.getenv('ADMIN_EMAIL').strip()
-ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD').strip()
+ADMIN_USERNAME = getenv_strip('ADMIN_USERNAME')
+ADMIN_EMAIL = getenv_strip('ADMIN_EMAIL')
+ADMIN_PASSWORD = getenv_strip('ADMIN_PASSWORD')
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
