@@ -1,4 +1,3 @@
-from app.types.anchor import Anchor
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -12,6 +11,7 @@ from app.models.workplace import (ArtifactInstance, ArtifactInstanceIn,
                                   WorkplaceInPatch, WorkplaceOut,
                                   WorkplaceOutShort, WorkPlaceText)
 from app.routers.activities import get_ask_translation_or_first
+from app.types.anchor import Anchor
 from app.types.response import IDResponse, OKResponse
 from app.utils import insctructor_required
 
@@ -67,6 +67,12 @@ async def get_workplace(workplace_id: int, language_code: str = "fr"):
             ),
         ) for instance in workplace_text.workplace.instances],
     )
+
+
+@router.get("/{workplace_id}/languages", response_model=list[str])
+async def get_workplace_languages(workplace_id: int):
+    """ Get the available languages for a workplace"""
+    return [text.language.code for text in await WorkPlaceText.filter(workplace_id=workplace_id).prefetch_related("language")]
 
 
 @router.post("/", response_model=IDResponse)

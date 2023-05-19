@@ -49,6 +49,12 @@ async def get_action(action_id: int, language_code: str = 'fr'):
     )
 
 
+@router.get("/{action_id}/languages", response_model=list[str])
+async def get_action_languages(action_id: int):
+    """ Get the available languages for an action"""
+    return [text.language.code for text in await ActionText.filter(action_id=action_id).prefetch_related("language")]
+
+
 @router.post("/", response_model=IDResponse)
 @atomic()
 async def create_action(action: ActionIn, _=Depends(insctructor_required)):

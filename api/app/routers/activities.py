@@ -24,7 +24,7 @@ async def get_activities_trad(language_code: str = 'fr'):
         id=activity.id,
         name=(await get_ask_translation_or_first(activity.texts, language_code)).name,
         description=(await get_ask_translation_or_first(activity.texts, language_code)).description,
-        language=[text.language.code for text in activity.texts],
+        languages=[text.language.code for text in activity.texts],
         start=activity.start_id,
         artifacts=[int(artifact.id) for artifact in activity.artifacts],
     ) for activity in pagination.items]
@@ -56,7 +56,7 @@ async def get_activity(activity_id: int, language_code: str = 'fr'):
 
 @router.get("/{activity_id}/languages", response_model=list[str])
 async def get_action_languages(activity_id: int):
-    """ Get the available languages for an action"""
+    """ Get the available languages for an activity"""
     return [text.language.code for text in await ActivityText.filter(activity_id=activity_id).prefetch_related("language")]
 
 

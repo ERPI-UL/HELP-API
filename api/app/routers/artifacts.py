@@ -60,6 +60,12 @@ async def get_artifact(artifact_id: int, language_code: str = Query("fr", min_le
     )
 
 
+@router.get("/{artifact_id}/languages", response_model=list[str])
+async def get_artifact_languages(artifact_id: int):
+    """ Get the available languages for an artifact"""
+    return [text.language.code for text in await ArtifactText.filter(artifact_id=artifact_id).prefetch_related("language")]
+
+
 @router.patch("/{artifact_id}", response_model=ArtifactOut)
 @atomic()
 async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str, _=Depends(insctructor_required)):
