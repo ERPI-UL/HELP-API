@@ -85,27 +85,27 @@ class ArtifactInstanceInPatch(BaseModel):
 
     @validator('artifactID')
     @classmethod
-    def artifact_not_none(cls, v):
+    def artifact_not_none(cls, value):
         """ validator for artifactID"""
-        if v is None:
+        if value is None:
             raise ValueError('artifactID value cannot be None')
-        return v
+        return value
 
     @validator('position')
     @classmethod
-    def position_not_none(cls, v):
+    def position_not_none(cls, value):
         """ validator for position"""
-        if v is None:
+        if value is None:
             raise ValueError('position value cannot be None')
-        return v
+        return value
 
     @validator('rotation')
     @classmethod
-    def rotation_not_none(cls, v):
+    def rotation_not_none(cls, value):
         """ validator for rotation"""
-        if v is None:
+        if value is None:
             raise ValueError('rotation value cannot be None')
-        return v
+        return value
 
 
 class WorkplaceInPatch(BaseModel):
