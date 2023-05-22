@@ -130,9 +130,11 @@ async def delete_ressource(action_id: int, _=Depends(insctructor_required)):
 
 @router.patch("/{action_id}", response_model=ActionOut)
 @atomic()
-async def update_action(action_id: int,  action: ActionInPatch, language_code: str = "fr", _=Depends(insctructor_required)):
+async def update_action(action_id: int,  action: ActionInPatch, language_code: str = None, _=Depends(insctructor_required)):
     """ Update only provided fields """
-    action_db = await Action.get(id=action_id)
+    action_db = await Action.get(id=action_id).prefetch_related("texts")
+    if not language_code:
+        language_code = action_db.texts[0].language.code
     action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id,
                                                           action_id=action_db.id,
                                                           defaults={"name": "", "description": "", "hint": ""})
