@@ -40,11 +40,11 @@ async def get_artifact(artifact_id: int, language_code: str = Query(None, min_le
     """ Get an artifact"""
     if not language_code:
         artifact_text = await ArtifactText.filter(artifact_id=artifact_id).prefetch_related("language", "artifact__targets").order_by("id").first()
-        if artifact_text is None:
-            raise HTTPException(status_code=404, detail="Artifact not found")
     else:
-        artifact_text = await ArtifactText.get(artifact_id=artifact_id,
-                                               language__code=language_code).prefetch_related("language", "artifact__targets")
+        artifact_text = await ArtifactText.get_or_none(artifact_id=artifact_id,
+                                                       language__code=language_code).prefetch_related("language", "artifact__targets")
+    if artifact_text is None:
+        raise HTTPException(status_code=404, detail="Artifact not found in this language")
     return ArtifactOut(
         id=artifact_text.artifact.id,
         name=artifact_text.name,

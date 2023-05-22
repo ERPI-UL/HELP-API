@@ -45,10 +45,11 @@ async def get_activity(activity_id: int, language_code: str = None):
     """ Get an action"""
     if not language_code:
         activity_text = await ActivityText.filter(activity_id=activity_id).prefetch_related("language", "activity__artifacts").order_by("id").first()
-        if activity_text is None:
-            raise HTTPException(status_code=404, detail="Activity not found")
     else:
-        activity_text = await ActivityText.get(activity_id=activity_id, language__code=language_code).prefetch_related("language", "activity__artifacts")
+        activity_text = await ActivityText.get_or_none(activity_id=activity_id,
+                                                       language__code=language_code).prefetch_related("language", "activity__artifacts")
+    if activity_text is None:
+        raise HTTPException(status_code=404, detail="Activity not found in this language")
     return ActivityOut(
         id=activity_text.activity.id,
         name=activity_text.name,

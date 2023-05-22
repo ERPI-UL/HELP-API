@@ -38,12 +38,13 @@ async def get_workplace(workplace_id: int, language_code: str = None):
         workplace_text = await WorkPlaceText.filter(workplace_id=workplace_id).prefetch_related("language",
                                                                                                 "workplace",
                                                                                                 "workplace__instances").order_by("id").first()
-        if workplace_text is None:
-            raise HTTPException(status_code=404, detail="Workplace not found")
     else:
-        workplace_text = await WorkPlaceText.get(workplace_id=workplace_id, language__code=language_code).prefetch_related("language",
-                                                                                                                           "workplace",
-                                                                                                                           "workplace__instances")
+        workplace_text = await WorkPlaceText.get_or_none(workplace_id=workplace_id,
+                                                         language__code=language_code).prefetch_related("language",
+                                                                                                        "workplace",
+                                                                                                        "workplace__instances")
+    if workplace_text is None:
+        raise HTTPException(status_code=404, detail="Workplace not found in this language")
     return WorkplaceOut(
         id=workplace_text.workplace.id,
         name=workplace_text.name,
