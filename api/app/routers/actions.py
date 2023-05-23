@@ -65,8 +65,6 @@ async def get_action_languages(action_id: int):
 @atomic()
 async def create_action(action: ActionIn, _=Depends(insctructor_required)):
     """ Create an action"""
-    if not await verify_tag_unicity_in_activity(action.tag, action.previous, action.next):
-        raise HTTPException(status_code=400, detail="Tag already used in this activity")
     action_db = await Action.create(
         tag=action.tag,
         previous_id=action.previous,
@@ -78,6 +76,8 @@ async def create_action(action: ActionIn, _=Depends(insctructor_required)):
         z=action.position.z,
         # activity_id=action.activityID,
     )
+    if not await verify_tag_unicity_in_activity(action.tag, action.previous, action.next, action_db.id):
+        raise HTTPException(status_code=400, detail="Tag already used in this activity")
     if action.targets is not None:
         targets_to_add = await Target.filter(id__in=action.targets)
         await action_db.targets.add(*targets_to_add)
@@ -176,7 +176,7 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
         action_text.hint = action.hint
     await action_db.save()
     await action_text.save()
-    if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous_id, action_db.next_id):
+    if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous_id, action_db.next_id, action_db.id):
         raise HTTPException(status_code=400, detail="Tag already used in this activity")  # transaction rollback
     # retourne l'objet modifié
     return await get_action(action_id, language_code)
@@ -197,11 +197,11 @@ async def delete_action(action_id: int, _=Depends(insctructor_required)):
     return OKResponse(ok="Action deleted")
 
 
-async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int):
+async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int, center_id: int):
     """ Verify that the tag is unique in the activity with a recursive left and right search """
     async def verify_tag_unicity_left(action_id: int, tag: str):
         """ Recursive left search """
-        if action_id is None:
+        if action_id is None or action_id == center_id:
             return True
         action = await Action.get(id=action_id)
         if action.tag == tag:
@@ -212,7 +212,7 @@ async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int):
 
     async def verify_tag_unicity_right(action_id: int, tag: str):
         """ Recursive right search """
-        if action_id is None:
+        if action_id is None or action_id == center_id:
             return True
         action = await Action.get(id=action_id)
         if action.tag == tag:
