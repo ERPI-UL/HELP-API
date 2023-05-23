@@ -1,15 +1,19 @@
 import json
 import os
+from datetime import datetime, timedelta
 from enum import Enum
 
 import aiofiles
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
+from fastapi_utils.tasks import repeat_every
 from passlib.hash import bcrypt
 from pydantic import BaseModel
+from tortoise.expressions import Q
 
 from app.customScheme import CustomOAuth2PasswordBearer
+from app.models.action import Action
 from app.models.language import Language
 from app.models.statement import Verb
 from app.models.type import Type
@@ -204,3 +208,14 @@ class Permission(Enum):
     APPRENTICE = 1
     INSTRUCTOR = 2
     ADMIN = 3
+
+
+@repeat_every(seconds=60*60*24)
+async def garbage_collector():
+    """
+    Delete all action that are not linked to another action if they are not touch for 1 day
+    """
+    print("=== Garbage Collection Launched ===")
+    deleted = await Action.filter(
+        Q(previous_id__isnull=True) & Q(next_id__isnull=True) & Q(updated_at__lte=datetime.now() - timedelta(days=1))).delete()
+    print(f"=== Garbage Collection Done ({deleted} actions deleted) ===")
