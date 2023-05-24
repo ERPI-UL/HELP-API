@@ -44,6 +44,8 @@ async def get_workplace(workplace_id: int, language_code: str = None):
                                                                                                         "workplace",
                                                                                                         "workplace__instances")
     if workplace_text is None:
+        if not await WorkPlace.exists(id=workplace_id):
+            raise HTTPException(status_code=404, detail=f"Workplace {workplace_id} not found")
         raise HTTPException(status_code=404, detail="Workplace not found in this language")
     return WorkplaceOut(
         id=workplace_text.workplace.id,

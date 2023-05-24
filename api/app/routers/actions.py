@@ -21,7 +21,9 @@ router = APIRouter()
 @router.get("/{action_id}", response_model=ActionOut)
 async def get_action(action_id: int, language_code: str = None):
     """ Get an action"""
-    action = await Action.get(id=action_id).prefetch_related("texts", "type", "targets")
+    action = await Action.get_or_none(id=action_id).prefetch_related("texts", "type", "targets")
+    if action is None:
+        raise HTTPException(status_code=404, detail=f"Action {action_id} not found")
     if not language_code:
         action_text = await ActionText.filter(action_id=action_id).prefetch_related("language").order_by("id").first()
     else:

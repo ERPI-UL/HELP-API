@@ -49,6 +49,8 @@ async def get_activity(activity_id: int, language_code: str = None):
         activity_text = await ActivityText.get_or_none(activity_id=activity_id,
                                                        language__code=language_code).prefetch_related("language", "activity__artifacts")
     if activity_text is None:
+        if not await Activity.exists(id=activity_id):
+            raise HTTPException(status_code=404, detail=f"Activity {activity_id} not found")
         raise HTTPException(status_code=404, detail="Activity not found in this language")
     return ActivityOut(
         id=activity_text.activity.id,
