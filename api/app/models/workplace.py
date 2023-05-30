@@ -146,6 +146,7 @@ class WorkplaceOut(BaseModel):
     name: str
     description: str
     language: str
+    languages: list[str]
     anchor: Anchor = None
     artifacts: list[ArtifactInstanceOut]
 

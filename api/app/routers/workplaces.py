@@ -36,12 +36,12 @@ async def get_workplace(workplace_id: int, language_code: str = None):
     """ Get a workplace by id """
     if not language_code:
         workplace_text = await WorkPlaceText.filter(workplace_id=workplace_id).prefetch_related("language",
-                                                                                                "workplace",
+                                                                                                "workplace__texts__language",
                                                                                                 "workplace__instances").order_by("id").first()
     else:
         workplace_text = await WorkPlaceText.get_or_none(workplace_id=workplace_id,
                                                          language__code=language_code).prefetch_related("language",
-                                                                                                        "workplace",
+                                                                                                        "workplace__texts__language",
                                                                                                         "workplace__instances")
     if workplace_text is None:
         if not await WorkPlace.exists(id=workplace_id):
@@ -52,6 +52,7 @@ async def get_workplace(workplace_id: int, language_code: str = None):
         name=workplace_text.name,
         description=workplace_text.description,
         language=workplace_text.language.code,
+        languages=[text.language.code for text in workplace_text.workplace.texts],
         anchor=Anchor(
             position=Position(
                 x=workplace_text.workplace.x,
