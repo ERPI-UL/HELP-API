@@ -106,7 +106,12 @@ async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_c
 @ atomic()
 async def create_artifact(artifact: ArtifactIn, _=Depends(insctructor_required)):
     """ Create an artifact """
-    artifact_db = await Artifact.create()
+    artifact_db = await Artifact.create(x=artifact.anchor.position.x,
+                                        y=artifact.anchor.position.y,
+                                        z=artifact.anchor.position.z,
+                                        u=artifact.anchor.rotation.x,
+                                        v=artifact.anchor.rotation.y,
+                                        w=artifact.anchor.rotation.z)
     await ArtifactText.create(
         name=artifact.name,
         description=artifact.description,
