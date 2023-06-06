@@ -30,7 +30,7 @@ build_staging:
       ENV: production
   stage: deploy
   tags : 
-    - indico-dev
+    - indico-v2
   only:
     refs:
       - dev
