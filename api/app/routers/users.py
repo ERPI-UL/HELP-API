@@ -142,7 +142,7 @@ async def update_user(user: UserInPatch, current_user: User = Depends(get_curren
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Ce nom d'utilisateur est déjà utilisé") from err
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Adresse déjà utilisée.") from err
-    return await UserinFront.from_tortoise_orm(user_obj)
+    return await get_user(user_obj.id, current_user)
 
 
 @router.post("/invite", tags=["auth"])
