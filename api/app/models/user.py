@@ -1,5 +1,8 @@
+from pydantic import EmailStr
+from typing import Optional
+
 from passlib.hash import bcrypt
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr, validator
 from tortoise import fields
 from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
@@ -41,13 +44,53 @@ class UserCreate(BaseModel):
     languageCode: str | None = None
 
 
-class UserinPut(BaseModel):
+class UserInPatch(BaseModel):
     """ Model to send User to the API"""
-    username: str
-    firstname: str
-    lastname: str
-    email: str
-    languageCode: str
+    username: Optional[StrictStr]
+    firstname: Optional[StrictStr]
+    lastname: Optional[StrictStr]
+    email: Optional[EmailStr]
+    language_code: Optional[StrictStr]
+
+    @validator('username')
+    @classmethod
+    def username_must_not_be_empty(cls, value):
+        """ Validator for username """
+        if not value.strip():
+            raise ValueError("Username value must not be empty or null")
+        return value
+
+    @validator('firstname')
+    @classmethod
+    def firstname_must_not_be_empty(cls, value):
+        """ Validator for firstname """
+        if not value.strip():
+            raise ValueError("Firstname value must not be empty or null")
+        return value
+
+    @validator('lastname')
+    @classmethod
+    def lastname_must_not_be_empty(cls, value):
+        """ Validator for lastname """
+        if not value.strip():
+            raise ValueError("Lastname value must not be empty or null")
+        return value
+
+    @validator('email')
+    @classmethod
+    def email_must_not_be_empty(cls, value):
+        """ Validator for email """
+        if not value.strip():
+            raise ValueError("Email value must not be empty or null")
+        return value
+
+    @validator('language_code')
+    @classmethod
+    def language_code_must_not_be_empty(cls, value):
+        """ Validator for languageCode """
+        if not value.strip():
+            raise ValueError("LanguageCode value must not be empty or null")
+        return value
 
 
 User_Pydantic = pydantic_model_creator(User, name='User')

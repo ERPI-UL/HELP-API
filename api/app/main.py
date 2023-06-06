@@ -138,6 +138,8 @@ async def startup_event():
     await Tortoise.generate_schemas()
     await utils.init_admin()
     await utils.init_db_with_data()
+    # launch garbage collector
+    await utils.garbage_collector()
 
 
 @app.get("/")

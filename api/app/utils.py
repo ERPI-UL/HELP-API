@@ -1,22 +1,31 @@
 import json
 import os
+from datetime import datetime, timedelta
 from enum import Enum
 
 import aiofiles
 import jwt
-import tortoise
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
+from fastapi_utils.tasks import repeat_every
 from passlib.hash import bcrypt
 from pydantic import BaseModel
+from tortoise.expressions import Q
 
 from app.customScheme import CustomOAuth2PasswordBearer
+from app.models.action import Action
 from app.models.language import Language
 from app.models.statement import Verb
 from app.models.type import Type
 from app.models.user import User, UserinFront, UserinToken
 
 load_dotenv()
+
+
+def getenv_strip(key: str):
+    """ Return the value of an environment variable without the spaces"""
+    return os.getenv(key).strip() if os.getenv(key) else None
+
 
 JWT_SECRET = os.getenv('SECRET_KEY')
 DB_URL = os.getenv('DB_HOST')
@@ -26,6 +35,10 @@ SCENARIOS_DATA_DIRECTORY = DATA_DIRECTORY+'scenarios/'
 ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
 ACTION_DATA_DIRECTORY = DATA_DIRECTORY+'actions/'
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
+
+ADMIN_USERNAME = getenv_strip('ADMIN_USERNAME')
+ADMIN_EMAIL = getenv_strip('ADMIN_EMAIL')
+ADMIN_PASSWORD = getenv_strip('ADMIN_PASSWORD')
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -124,19 +137,17 @@ async def authenticate_user(username: str, password: str):
 
 async def init_admin():
     """ Create the admin user if it doesn't exist"""
-    try:
-        user = await User.get(username='toxicbloud')
+    if ADMIN_USERNAME and ADMIN_EMAIL and ADMIN_PASSWORD:
+        user = await User.get_or_none(username=ADMIN_USERNAME)
         if not user:
-            user = await User.create(username='toxicbloud', email='truc@gmail.com',
-                                     adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),
-                                     firstname='Antonin', lastname='Rousseau')
+            user = await User.create(username=ADMIN_USERNAME, email=ADMIN_EMAIL,
+                                     adminLevel=Permission.ADMIN.value,
+                                     password_hash=bcrypt.hash(ADMIN_PASSWORD),
+                                     firstname="SUPER", lastname="ADMIN")
         else:
             user.adminLevel = Permission.ADMIN.value
+            user.password_hash = bcrypt.hash(ADMIN_PASSWORD)
             await user.save()
-    except tortoise.exceptions.DoesNotExist:
-        user = await User.create(username='toxicbloud', email='truc@gmail.com',
-                                 adminLevel=Permission.ADMIN.value, password_hash=bcrypt.hash(JWT_SECRET),
-                                 firstname='Antonin', lastname='Rousseau')
 
 
 def htmlspecialchars(html):
@@ -178,9 +189,11 @@ async def init_db_with_data():
         langs = json.loads(await file.read())
         for lang in langs:
             if not await Language.exists(name=lang['name']):
-                await Language.create(name=lang['name'], code=lang['code'], unicode=lang['unicode'])
+                await Language.create(name=lang['name'], code=lang['code'],
+                                      unicode=lang['unicode'])
             else:
-                await Language.filter(code=lang['code']).update(unicode=lang['unicode'], name=lang['name'])
+                await Language.filter(code=lang['code']).update(unicode=lang['unicode'],
+                                                                name=lang['name'])
     # open verbs.json
     async with aiofiles.open("app/verbs.json", "r", encoding="utf-8") as file:
         verbs = json.loads(await file.read())
@@ -189,10 +202,20 @@ async def init_db_with_data():
                 await Verb.create(id=verb['name'])
 
 
-
 class Permission(Enum):
     """ Enum for the permission level of a user"""
     VISITOR = 0
     APPRENTICE = 1
     INSTRUCTOR = 2
     ADMIN = 3
+
+
+@repeat_every(seconds=60*60*24)
+async def garbage_collector():
+    """
+    Delete all action that are not linked to another action if they are not touch for 1 day
+    """
+    print("=== Garbage Collection Launched ===")
+    deleted = await Action.filter(
+        Q(previous_id__isnull=True) & Q(next_id__isnull=True) & Q(updated_at__lte=datetime.now() - timedelta(days=1))).delete()
+    print(f"=== Garbage Collection Done ({deleted} actions deleted) ===")

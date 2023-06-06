@@ -20,6 +20,9 @@ class Action(Model):
     left_target_action = fields.ForeignKeyField('models.Action', related_name='left_choice_set', null=True, on_delete=fields.SET_NULL)
     right_target_action = fields.ForeignKeyField('models.Action', related_name='right_choice_set', null=True, on_delete=fields.SET_NULL)
 
+    # for garbage collector
+    updated_at = fields.DatetimeField(auto_now=True)
+
     x = fields.FloatField()
     y = fields.FloatField()
     z = fields.FloatField()

@@ -1,4 +1,3 @@
-from app.types.anchor import Anchor
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -12,6 +11,7 @@ from app.models.workplace import (ArtifactInstance, ArtifactInstanceIn,
                                   WorkplaceInPatch, WorkplaceOut,
                                   WorkplaceOutShort, WorkPlaceText)
 from app.routers.activities import get_ask_translation_or_first
+from app.types.anchor import Anchor
 from app.types.response import IDResponse, OKResponse
 from app.utils import insctructor_required
 
@@ -26,20 +26,33 @@ async def get_workplaces(language_code: str = "fr"):
         id=workplace.id,
         name=(await get_ask_translation_or_first(workplace.texts, language_code)).name,
         description=(await get_ask_translation_or_first(workplace.texts, language_code)).description,
-        language=[text.language.code for text in workplace.texts]
+        languages=[text.language.code for text in workplace.texts]
     ) for workplace in pagination.items]
     return pagination
 
 
 @router.get("/{workplace_id}", response_model=WorkplaceOut)
-async def get_workplace(workplace_id: int, language_code: str = "fr"):
+async def get_workplace(workplace_id: int, language_code: str = None):
     """ Get a workplace by id """
-    workplace_text = await WorkPlaceText.get(workplace_id=workplace_id, language__code=language_code).prefetch_related("language", "workplace", "workplace__instances")
+    if not language_code:
+        workplace_text = await WorkPlaceText.filter(workplace_id=workplace_id).prefetch_related("language",
+                                                                                                "workplace__texts__language",
+                                                                                                "workplace__instances").order_by("id").first()
+    else:
+        workplace_text = await WorkPlaceText.get_or_none(workplace_id=workplace_id,
+                                                         language__code=language_code).prefetch_related("language",
+                                                                                                        "workplace__texts__language",
+                                                                                                        "workplace__instances")
+    if workplace_text is None:
+        if not await WorkPlace.exists(id=workplace_id):
+            raise HTTPException(status_code=404, detail=f"Workplace {workplace_id} not found")
+        raise HTTPException(status_code=404, detail="Workplace not found in this language")
     return WorkplaceOut(
         id=workplace_text.workplace.id,
         name=workplace_text.name,
         description=workplace_text.description,
         language=workplace_text.language.code,
+        languages=[text.language.code for text in workplace_text.workplace.texts],
         anchor=Anchor(
             position=Position(
                 x=workplace_text.workplace.x,
@@ -67,6 +80,12 @@ async def get_workplace(workplace_id: int, language_code: str = "fr"):
             ),
         ) for instance in workplace_text.workplace.instances],
     )
+
+
+@router.get("/{workplace_id}/languages", response_model=list[str])
+async def get_workplace_languages(workplace_id: int):
+    """ Get the available languages for a workplace"""
+    return [text.language.code for text in await WorkPlaceText.filter(workplace_id=workplace_id).prefetch_related("language")]
 
 
 @router.post("/", response_model=IDResponse)
@@ -109,12 +128,14 @@ async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_require
 
 
 @router.patch("/{workplace_id}")
-async def update_workplace(workplace_id: int, language_code: str, workplace: WorkplaceInPatch, _=Depends(insctructor_required)):
+async def update_workplace(workplace_id: int, workplace: WorkplaceInPatch, language_code: str = None, _=Depends(insctructor_required)):
     """ update a workplace by id """
+    workplace_db = await WorkPlace.get(id=workplace_id).prefetch_related("texts__language")
+    if not language_code:
+        language_code = workplace_db.texts[0].language.code
     workplace_text, created = await WorkPlaceText.get_or_create(workplace_id=workplace_id,
                                                                 language_id=(await Language.get(code=language_code)).id,
                                                                 defaults={"name": "", "description": ""})
-    workplace_db = await WorkPlace.get(id=workplace_id)
     if created and (workplace_text.name is None or workplace_text.description is None):
         raise HTTPException(status_code=400, detail="You must specify a name and a description for the activity when adding a new language")
     if "name" in workplace.__fields_set__:

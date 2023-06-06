@@ -9,6 +9,7 @@ from app.models.activity import (Activity, ActivityIn, ActivityInPatch,
                                  ActivityOut, ActivityOutTrad, ActivityText)
 from app.models.artifact import Artifact
 from app.models.language import Language
+from app.models.workplace import WorkPlace
 from app.routers.actions import delete_action_ressource_file
 from app.types.response import IDResponse
 from app.utils import insctructor_required
@@ -24,7 +25,26 @@ async def get_activities_trad(language_code: str = 'fr'):
         id=activity.id,
         name=(await get_ask_translation_or_first(activity.texts, language_code)).name,
         description=(await get_ask_translation_or_first(activity.texts, language_code)).description,
-        language=[text.language.code for text in activity.texts],
+        languages=[text.language.code for text in activity.texts],
+        start=activity.start_id,
+        artifacts=[int(artifact.id) for artifact in activity.artifacts],
+    ) for activity in pagination.items]
+    return pagination
+
+
+@router.get("/search", description="Search activities that are compatible with the artifacts of the selected workplace", response_model=Page,
+            responses={200: {"description": "Successful Response", "model": Page[ActivityOutTrad]}})
+async def search_activities(workplace: int, language_code: str = 'fr'):
+    """ Search activities that are compatible with the artifacts of the selected workplace """
+    workplace = await WorkPlace.get_or_none(id=workplace).prefetch_related("instances")
+    if workplace is None:
+        raise HTTPException(status_code=404, detail="Workplace not found")
+    pagination = await paginate(Activity.filter(artifacts__instances__workplace=workplace).distinct().prefetch_related("texts__language", "artifacts__instances__workplace").order_by("id"))
+    pagination.items = [ActivityOutTrad(
+        id=activity.id,
+        name=(await get_ask_translation_or_first(activity.texts, language_code)).name,
+        description=(await get_ask_translation_or_first(activity.texts, language_code)).description,
+        languages=[text.language.code for text in activity.texts],
         start=activity.start_id,
         artifacts=[int(artifact.id) for artifact in activity.artifacts],
     ) for activity in pagination.items]
@@ -41,9 +61,17 @@ async def get_ask_translation_or_first(texts, language_code: str):
 
 
 @router.get("/{activity_id}", response_model=ActivityOut)
-async def get_activity(activity_id: int, language_code: str = 'fr'):
+async def get_activity(activity_id: int, language_code: str = None):
     """ Get an action"""
-    activity_text = await ActivityText.get(activity_id=activity_id, language__code=language_code).prefetch_related("language", "activity__artifacts")
+    if not language_code:
+        activity_text = await ActivityText.filter(activity_id=activity_id).prefetch_related("language", "activity__artifacts").order_by("id").first()
+    else:
+        activity_text = await ActivityText.get_or_none(activity_id=activity_id,
+                                                       language__code=language_code).prefetch_related("language", "activity__artifacts")
+    if activity_text is None:
+        if not await Activity.exists(id=activity_id):
+            raise HTTPException(status_code=404, detail=f"Activity {activity_id} not found")
+        raise HTTPException(status_code=404, detail="Activity not found in this language")
     return ActivityOut(
         id=activity_text.activity.id,
         name=activity_text.name,
@@ -56,7 +84,7 @@ async def get_activity(activity_id: int, language_code: str = 'fr'):
 
 @router.get("/{activity_id}/languages", response_model=list[str])
 async def get_action_languages(activity_id: int):
-    """ Get the available languages for an action"""
+    """ Get the available languages for an activity"""
     return [text.language.code for text in await ActivityText.filter(activity_id=activity_id).prefetch_related("language")]
 
 
@@ -81,9 +109,11 @@ async def create_activity(activity: ActivityIn, _=Depends(insctructor_required))
 
 @router.patch("/{activity_id}", response_model=ActivityOut)
 @atomic()
-async def update_activity(activity_id: int, activity: ActivityInPatch, language_code: str = "fr", _=Depends(insctructor_required)):
+async def update_activity(activity_id: int, activity: ActivityInPatch, language_code: str = None, _=Depends(insctructor_required)):
     """ Update an action without specifying all the fields """
-    activity_db = await Activity.get(id=activity_id)
+    activity_db = await Activity.get(id=activity_id).prefetch_related("texts__language")
+    if not language_code:
+        language_code = activity_db.texts[0].language.code
     activity_text, created = await ActivityText.get_or_create(activity=activity_db,
                                                               language_id=(await Language.get(code=language_code)).id,
                                                               defaults={"name": "", "description": ""})

@@ -42,7 +42,7 @@ class ActivityOutTrad(BaseModel):
     id: int
     name: str
     description: str
-    language: list[str]
+    languages: list[str]
     start: int = None
     artifacts: list[int] | list
 

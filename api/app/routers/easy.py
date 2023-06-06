@@ -80,4 +80,7 @@ async def get_token(code: str):
         if easyAuth[code]['token'] != 'tokenbidon':
             run = False
         await asyncio.sleep(1)
-    return {'token': easyAuth[code]['token']}
+        token = easyAuth[code]['token']
+        # delete code
+        del easyAuth[code]
+    return {'token': token}

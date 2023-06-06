@@ -36,9 +36,17 @@ async def get_artifacts(search: str = None, language_code: str = 'fr'):
 
 
 @router.get("/{artifact_id}", response_model=ArtifactOut)
-async def get_artifact(artifact_id: int, language_code: str = Query("fr", min_length=2, max_length=2)):
+async def get_artifact(artifact_id: int, language_code: str = Query(None, min_length=2, max_length=2)):
     """ Get an artifact"""
-    artifact_text = await ArtifactText.get(artifact_id=artifact_id, language__code=language_code).prefetch_related("language", "artifact__targets")
+    if not language_code:
+        artifact_text = await ArtifactText.filter(artifact_id=artifact_id).prefetch_related("language", "artifact__targets").order_by("id").first()
+    else:
+        artifact_text = await ArtifactText.get_or_none(artifact_id=artifact_id,
+                                                       language__code=language_code).prefetch_related("language", "artifact__targets")
+    if artifact_text is None:
+        if not await Artifact.exists(id=artifact_id):
+            raise HTTPException(status_code=404, detail=f"Artifact {artifact_id} not found")
+        raise HTTPException(status_code=404, detail="Artifact not found in this language")
     return ArtifactOut(
         id=artifact_text.artifact.id,
         name=artifact_text.name,
@@ -60,11 +68,19 @@ async def get_artifact(artifact_id: int, language_code: str = Query("fr", min_le
     )
 
 
+@router.get("/{artifact_id}/languages", response_model=list[str])
+async def get_artifact_languages(artifact_id: int):
+    """ Get the available languages for an artifact"""
+    return [text.language.code for text in await ArtifactText.filter(artifact_id=artifact_id).prefetch_related("language")]
+
+
 @router.patch("/{artifact_id}", response_model=ArtifactOut)
 @atomic()
-async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str, _=Depends(insctructor_required)):
+async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str = None, _=Depends(insctructor_required)):
     """ Patch an artifact """
-    artifact_db = await Artifact.get(id=artifact_id)
+    artifact_db = await Artifact.get(id=artifact_id).prefetch_related("texts__language")
+    if not language_code:
+        language_code = artifact_db.texts[0].language.code
     artifact_text, created = await ArtifactText.get_or_create(artifact_id=artifact_id,
                                                               language_id=(await Language.get(code=language_code)).id,
                                                               defaults={"name": "", "description": ""})
@@ -86,11 +102,16 @@ async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_c
     return await get_artifact(artifact_id, language_code)
 
 
-@router.post("/")
-@atomic()
+@ router.post("/")
+@ atomic()
 async def create_artifact(artifact: ArtifactIn, _=Depends(insctructor_required)):
     """ Create an artifact """
-    artifact_db = await Artifact.create()
+    artifact_db = await Artifact.create(x=artifact.anchor.position.x,
+                                        y=artifact.anchor.position.y,
+                                        z=artifact.anchor.position.z,
+                                        u=artifact.anchor.rotation.x,
+                                        v=artifact.anchor.rotation.y,
+                                        w=artifact.anchor.rotation.z)
     await ArtifactText.create(
         name=artifact.name,
         description=artifact.description,

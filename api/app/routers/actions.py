@@ -19,10 +19,18 @@ router = APIRouter()
 
 
 @router.get("/{action_id}", response_model=ActionOut)
-async def get_action(action_id: int, language_code: str = 'fr'):
+async def get_action(action_id: int, language_code: str = None):
     """ Get an action"""
-    action = await Action.get(id=action_id).prefetch_related("texts", "type", "targets")
-    action_text = await action.texts.filter(language__code=language_code).first()
+    action = await Action.get_or_none(id=action_id).prefetch_related("texts", "type", "targets")
+    if action is None:
+        raise HTTPException(status_code=404, detail=f"Action {action_id} not found")
+    if not language_code:
+        action_text = await ActionText.filter(action_id=action_id).prefetch_related("language").order_by("id").first()
+    else:
+        action_text = await ActionText.get_or_none(action_id=action_id,
+                                                   language__code=language_code).prefetch_related("language")
+    if action_text is None:
+        raise HTTPException(status_code=404, detail="Action not found in this language")
     return ActionOut(
         id=action.id,
         name=action_text.name,
@@ -49,12 +57,16 @@ async def get_action(action_id: int, language_code: str = 'fr'):
     )
 
 
+@router.get("/{action_id}/languages", response_model=list[str])
+async def get_action_languages(action_id: int):
+    """ Get the available languages for an action"""
+    return [text.language.code for text in await ActionText.filter(action_id=action_id).prefetch_related("language")]
+
+
 @router.post("/", response_model=IDResponse)
 @atomic()
 async def create_action(action: ActionIn, _=Depends(insctructor_required)):
     """ Create an action"""
-    if not await verify_tag_unicity_in_activity(action.tag, action.previous, action.next):
-        raise HTTPException(status_code=400, detail="Tag already used in this activity")
     action_db = await Action.create(
         tag=action.tag,
         previous_id=action.previous,
@@ -66,6 +78,8 @@ async def create_action(action: ActionIn, _=Depends(insctructor_required)):
         z=action.position.z,
         # activity_id=action.activityID,
     )
+    if not await verify_tag_unicity_in_activity(action.tag, action.previous, action.next, action_db.id):
+        raise HTTPException(status_code=400, detail="Tag already used in this activity")
     if action.targets is not None:
         targets_to_add = await Target.filter(id__in=action.targets)
         await action_db.targets.add(*targets_to_add)
@@ -118,9 +132,11 @@ async def delete_ressource(action_id: int, _=Depends(insctructor_required)):
 
 @router.patch("/{action_id}", response_model=ActionOut)
 @atomic()
-async def update_action(action_id: int,  action: ActionInPatch, language_code: str = "fr", _=Depends(insctructor_required)):
+async def update_action(action_id: int,  action: ActionInPatch, language_code: str = None, _=Depends(insctructor_required)):
     """ Update only provided fields """
-    action_db = await Action.get(id=action_id)
+    action_db = await Action.get(id=action_id).prefetch_related("texts__language")
+    if not language_code:
+        language_code = action_db.texts[0].language.code
     action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id,
                                                           action_id=action_db.id,
                                                           defaults={"name": "", "description": "", "hint": ""})
@@ -162,7 +178,7 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
         action_text.hint = action.hint
     await action_db.save()
     await action_text.save()
-    if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous_id, action_db.next_id):
+    if not await verify_tag_unicity_in_activity(action_db.tag, action_db.previous_id, action_db.next_id, action_db.id):
         raise HTTPException(status_code=400, detail="Tag already used in this activity")  # transaction rollback
     # retourne l'objet modifié
     return await get_action(action_id, language_code)
@@ -183,11 +199,11 @@ async def delete_action(action_id: int, _=Depends(insctructor_required)):
     return OKResponse(ok="Action deleted")
 
 
-async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int):
+async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int, center_id: int):
     """ Verify that the tag is unique in the activity with a recursive left and right search """
     async def verify_tag_unicity_left(action_id: int, tag: str):
         """ Recursive left search """
-        if action_id is None:
+        if action_id is None or action_id == center_id:
             return True
         action = await Action.get(id=action_id)
         if action.tag == tag:
@@ -198,7 +214,7 @@ async def verify_tag_unicity_in_activity(tag: str, left_id: int, right_id: int):
 
     async def verify_tag_unicity_right(action_id: int, tag: str):
         """ Recursive right search """
-        if action_id is None:
+        if action_id is None or action_id == center_id:
             return True
         action = await Action.get(id=action_id)
         if action.tag == tag:
