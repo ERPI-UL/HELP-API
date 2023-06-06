@@ -15,7 +15,7 @@ async def change_admin_level(id_user: int, admin_level: int = Body(..., embed=Tr
     if user.adminLevel == current_user.adminLevel:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Vous ne pouvez pas changer le role d'un utilisateur de votre niveau")
-    if admin_level >= app.utils.Permission.ADMIN.value:
+    if admin_level > app.utils.Permission.ADMIN.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Vous ne pouvez pas mettre un niveau d'administration plus élevé que le votre"
