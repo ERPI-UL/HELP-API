@@ -5,7 +5,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.types.easy import Easy, EasyConnect
+from app.types.easy import Easy, EasyConnect, EasyCode, EasyToken
 from app.utils import get_current_user_in_token, get_redis
 router = APIRouter()
 
@@ -36,7 +36,13 @@ async def easy_login(code: EasyConnect, _=Depends(get_current_user_in_token)):
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Token manquant"
         )
-    easy = Easy.parse_raw(await redis.get(code.code))
+    code_bytes = await redis.get(code.code)
+    if not code_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Code appareil invalide",
+        )
+    easy = Easy.parse_raw(code_bytes)
     ttl = await redis.ttl(code.code)
     if not easy:
         raise HTTPException(
@@ -48,13 +54,13 @@ async def easy_login(code: EasyConnect, _=Depends(get_current_user_in_token)):
     return {'ok'}
 
 
-@router.get("/generate")
+@router.get("/generate", response_model=EasyCode)
 async def generate_easy_code():
     """ Génère un code aléatoire de 5 caractères et le retourne """
     return await get_easy_code()
 
 
-@router.get("/{code}")
+@router.get("/{code}", response_model=EasyToken)
 async def get_token(code: str, password: str):
     """ Retourne le token associé au code """
     redis = await get_redis()
@@ -72,8 +78,13 @@ async def get_token(code: str, password: str):
         )
     run = True
     while run:
-        easy = Easy.parse_raw(await redis.get(code))
-        print(easy)
+        code_bytes = await redis.get(code)
+        if not code_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Code appareil invalide",
+            )
+        easy = Easy.parse_raw(code_bytes)
         if easy.token:
             run = False
         await asyncio.sleep(1)
