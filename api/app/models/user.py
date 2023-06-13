@@ -43,6 +43,15 @@ class UserCreate(BaseModel):
     password: str
     languageCode: str | None = None
 
+    @validator('languageCode')
+    @classmethod
+    def language_code_iso_639_1(cls, value):
+        """ Validator for languageCode """
+        if value:
+            if len(value) != 2:
+                raise ValueError("LanguageCode must be ISO 639-1")
+        return value
+
 
 class UserInPatch(BaseModel):
     """ Model to send User to the API"""

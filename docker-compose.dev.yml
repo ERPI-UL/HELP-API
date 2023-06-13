@@ -35,7 +35,7 @@ services:
       - ADMIN_EMAIL
       - ADMIN_PASSWORD
     volumes:
-      - "./api/app:/opt/app"
+      - indico_dev_data:/opt/app/data
     restart: always
     networks:
       - indico_dev
@@ -54,6 +54,7 @@ services:
 
 volumes:
   postgres_data_dev:
+  indico_dev_data:
 
 networks:
   indico_dev:
