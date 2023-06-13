@@ -10,12 +10,14 @@ RUN apt-get update && apt-get install -y netcat
 
 COPY app /opt/app/
 COPY requirements.txt /opt/
-COPY docker-entrypoint.sh /opt/
 WORKDIR /opt/
 
 RUN pip install -r requirements.txt
 
 EXPOSE 5000
-RUN ["chmod", "+x", "/opt/docker-entrypoint.sh"]
 
-ENTRYPOINT ["sh", "/opt/docker-entrypoint.sh"]
+ENV WAIT_VERSION 2.7.2
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
+RUN chmod +x /wait
+
+CMD uvicorn app.main:app --port 5000 --host 0.0.0.0 --forwarded-allow-ips="*" --proxy-headers
