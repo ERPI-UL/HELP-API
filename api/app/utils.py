@@ -18,6 +18,9 @@ from app.models.language import Language
 from app.models.statement import Verb
 from app.models.type import Type
 from app.models.user import User, UserinFront, UserinToken
+from redis.asyncio.client import Redis
+
+import redis.asyncio as redis
 
 load_dotenv()
 
@@ -29,7 +32,11 @@ def getenv_strip(key: str):
 
 JWT_SECRET = os.getenv('SECRET_KEY')
 DB_URL = os.getenv('DB_HOST')
+REDIS_HOST = os.environ.get("REDIS_HOST")
+POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")  # FIXME: Ask alex for another secret for redis
 DATA_DIRECTORY = './app/data/'
+
+
 MODELS_DIRECTORY = DATA_DIRECTORY+'models/'
 SCENARIOS_DATA_DIRECTORY = DATA_DIRECTORY+'scenarios/'
 ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
@@ -133,6 +140,11 @@ async def authenticate_user(username: str, password: str):
     if not user.verify_password(password):
         return False
     return user
+
+
+async def get_redis() -> Redis:
+    """ Return the redis client"""
+    return redis.from_url(f"redis://:{POSTGRES_PASSWORD}@{REDIS_HOST}:6379/0")
 
 
 async def init_admin():

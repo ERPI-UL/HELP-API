@@ -14,6 +14,13 @@ services:
     restart: always
     networks:
       - indico_dev
+  redisdev:
+    image: redis:latest
+    command: >
+      redis-server --requirepass ${POSTGRES_PASSWORD}
+    restart: always
+    networks:
+      - indico_dev
 
   indico-dev:
     build:
@@ -34,6 +41,8 @@ services:
       - ADMIN_USERNAME
       - ADMIN_EMAIL
       - ADMIN_PASSWORD
+      - POSTGRES_PASSWORD
+      - REDIS_HOST=redisdev
     volumes:
       - indico_dev_data:/opt/app/data
     restart: always
