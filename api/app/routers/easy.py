@@ -1,12 +1,12 @@
 
 import asyncio
-import random
-from datetime import datetime
+from secrets import SystemRandom, token_hex
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.types.easy import Easy, EasyConnect, EasyCode, EasyToken
+from app.types.easy import Easy, EasyCode, EasyConnect, EasyToken
 from app.utils import get_current_user_in_token, get_redis
+
 router = APIRouter()
 
 
@@ -19,10 +19,10 @@ async def get_easy_code() -> Easy:
     redis = await get_redis()
     run = True
     while run:
-        code = ''.join(random.choices('123456789', k=5))
+        code = ''.join(SystemRandom().choice('0123456789') for _ in range(5))
         run = await redis.get(code)
     # generate a 32 hex password
-    password = ''.join(random.choices('0123456789abcdef', k=32))
+    password = token_hex(32)
     await redis.setex(code, 60*5, Easy(code=code, password=password).json())
     return Easy(code=code, password=password)
 
