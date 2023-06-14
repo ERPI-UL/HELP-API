@@ -1,26 +1,23 @@
 import json
 import os
-from datetime import datetime, timedelta
 from enum import Enum
 
 import aiofiles
 import jwt
+import redis.asyncio as redis
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi_utils.tasks import repeat_every
 from passlib.hash import bcrypt
 from pydantic import BaseModel
-from tortoise.expressions import Q
+from redis.asyncio.client import Redis
+from tortoise import Tortoise
 
 from app.customScheme import CustomOAuth2PasswordBearer
-from app.models.action import Action
 from app.models.language import Language
 from app.models.statement import Verb
 from app.models.type import Type
 from app.models.user import User, UserinFront, UserinToken
-from redis.asyncio.client import Redis
-
-import redis.asyncio as redis
 
 load_dotenv()
 
@@ -228,6 +225,8 @@ async def garbage_collector():
     Delete all action that are not linked to another action if they are not touch for 1 day
     """
     print("=== Garbage Collection Launched ===")
-    deleted = await Action.filter(
-        Q(previous_id__isnull=True) & Q(next_id__isnull=True) & Q(updated_at__lte=datetime.now() - timedelta(days=1))).delete()
-    print(f"=== Garbage Collection Done ({deleted} actions deleted) ===")
+    conn = Tortoise.get_connection("default")
+    await conn.execute_query_dict("""
+    delete from action where next_id is null and previous_id is null and now() - updated_at > interval '1 day'
+                     and id not in (select start_id from activity);
+    """)
