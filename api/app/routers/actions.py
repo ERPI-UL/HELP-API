@@ -98,7 +98,7 @@ async def add_ressource(action_id: int, ressource_file: UploadFile, _=Depends(in
     """ Add a ressource to an action"""
     action = await Action.get(id=action_id)
     extension = ressource_file.filename.split(".")[-1]
-    if extension not in ["png", "jpg", "jpeg", "gif"]:
+    if extension not in ["png", "jpg", "jpeg", "mp4", "webm", "wav", "mp3", "ogg"]:
         raise HTTPException(status_code=400, detail="Ressource must be an image")
     content = await ressource_file.read()
     # verify that the size does not exceed 4MiB
