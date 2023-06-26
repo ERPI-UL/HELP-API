@@ -6,7 +6,7 @@ from tortoise.transactions import atomic
 
 from app.models.action import Action
 from app.models.activity import (Activity, ActivityIn, ActivityInPatch,
-                                 ActivityOut, ActivityOutTrad, ActivityText)
+                                 ActivityOut, ActivityOutTranslated, ActivityText)
 from app.models.artifact import Artifact
 from app.models.language import Language
 from app.models.workplace import WorkPlace
@@ -17,11 +17,11 @@ from app.utils import insctructor_required
 router = APIRouter()
 
 
-@router.get('/', response_model=Page, responses={200: {"description": "Successful Response", "model": Page[ActivityOutTrad]}})
-async def get_activities_trad(language_code: str = 'fr'):
+@router.get('/', response_model=Page, responses={200: {"description": "Successful Response", "model": Page[ActivityOutTranslated]}})
+async def get_activities_translated(language_code: str = 'fr'):
     """ get all actions """
     pagination = await paginate(Activity.all().prefetch_related("texts", "texts__language", "artifacts").order_by("id"))
-    pagination.items = [ActivityOutTrad(
+    pagination.items = [ActivityOutTranslated(
         id=activity.id,
         name=(await get_ask_translation_or_first(activity.texts, language_code)).name,
         description=(await get_ask_translation_or_first(activity.texts, language_code)).description,
@@ -33,14 +33,14 @@ async def get_activities_trad(language_code: str = 'fr'):
 
 
 @router.get("/search", description="Search activities that are compatible with the artifacts of the selected workplace", response_model=Page,
-            responses={200: {"description": "Successful Response", "model": Page[ActivityOutTrad]}})
+            responses={200: {"description": "Successful Response", "model": Page[ActivityOutTranslated]}})
 async def search_activities(workplace: int, language_code: str = 'fr'):
     """ Search activities that are compatible with the artifacts of the selected workplace """
     workplace = await WorkPlace.get_or_none(id=workplace).prefetch_related("instances")
     if workplace is None:
         raise HTTPException(status_code=404, detail="Workplace not found")
     pagination = await paginate(Activity.filter(artifacts__instances__workplace=workplace).distinct().prefetch_related("texts__language", "artifacts__instances__workplace").order_by("id"))
-    pagination.items = [ActivityOutTrad(
+    pagination.items = [ActivityOutTranslated(
         id=activity.id,
         name=(await get_ask_translation_or_first(activity.texts, language_code)).name,
         description=(await get_ask_translation_or_first(activity.texts, language_code)).description,
@@ -52,7 +52,7 @@ async def search_activities(workplace: int, language_code: str = 'fr'):
 
 
 async def get_ask_translation_or_first(texts, language_code: str):
-    """ get the traduction of an activity or the first one """
+    """ get the translation of an activity or the first one """
     # trouve le texte en fr sinon retourne le premier
     for text in texts:
         if text.language.code == language_code:

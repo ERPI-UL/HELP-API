@@ -37,7 +37,7 @@ class ActivityOut(BaseModel):
         orm_mode = True
 
 
-class ActivityOutTrad(BaseModel):
+class ActivityOutTranslated(BaseModel):
     """ ActivityOut pydantic model """
     id: int
     name: str
@@ -54,7 +54,7 @@ class ActivityOutTrad(BaseModel):
                 "id": 1,
                 "name": "Introduction à l'utilisation de la machine à café",
                 "description": "Cette activité permet de découvrir les fonctionnalités de la machine à café.",
-                "language": ["fr", "en"],
+                "languages": ["fr", "en"],
                 "start": 1,
                 "artifacts": [42]
             }
