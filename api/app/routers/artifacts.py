@@ -13,7 +13,7 @@ from app.models.language import Language
 from app.models.workplace import Position
 from app.routers.activities import get_ask_translation_or_first
 from app.types.response import IDResponse, OKResponse
-from app.utils import MODELS_DIRECTORY, insctructor_required
+from app.utils import MODELS_DIRECTORY, instructor_required
 
 router = APIRouter()
 
@@ -76,7 +76,7 @@ async def get_artifact_languages(artifact_id: int):
 
 @router.patch("/{artifact_id}", response_model=ArtifactOut)
 @atomic()
-async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str = None, _=Depends(insctructor_required)):
+async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_code: str = None, _=Depends(instructor_required)):
     """ Patch an artifact """
     artifact_db = await Artifact.get(id=artifact_id).prefetch_related("texts__language")
     if not language_code:
@@ -104,7 +104,7 @@ async def patch_artifact(artifact_id: int, artifact: ArtifactInPatch, language_c
 
 @ router.post("/")
 @ atomic()
-async def create_artifact(artifact: ArtifactIn, _=Depends(insctructor_required)):
+async def create_artifact(artifact: ArtifactIn, _=Depends(instructor_required)):
     """ Create an artifact """
     artifact_db = await Artifact.create(x=artifact.anchor.position.x,
                                         y=artifact.anchor.position.y,
@@ -123,7 +123,7 @@ async def create_artifact(artifact: ArtifactIn, _=Depends(insctructor_required))
 
 @router.delete("/{artifact_id}")
 @atomic()
-async def delete_artifact(artifact_id: int, _=Depends(insctructor_required)):
+async def delete_artifact(artifact_id: int, _=Depends(instructor_required)):
     """ Delete an artifact """
     await Artifact.get(id=artifact_id).delete()
     # delete directory with models
@@ -143,7 +143,7 @@ async def get_artifact_model(artifact_id: int):
 
 @router.put("/{artifact_id}/model")
 @atomic()
-async def update_artifact_model(artifact_id: int, model: UploadFile, _=Depends(insctructor_required)):
+async def update_artifact_model(artifact_id: int, model: UploadFile, _=Depends(instructor_required)):
     """ Update the model of an artifact """
     path = f"{MODELS_DIRECTORY}{artifact_id}"
     # create directory if not exist

@@ -102,6 +102,18 @@ class UserInPatch(BaseModel):
         return value
 
 
+class ShortUserOut(BaseModel):
+    """ Model to send User to the API"""
+    id: int
+    username: str
+    firstname: str
+    lastname: str
+
+    class Config:
+        """ Config class for ShortUserOut"""
+        orm_mode = True
+
+
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(
     User, name='UserIn', exclude_readonly=True)

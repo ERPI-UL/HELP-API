@@ -16,7 +16,7 @@ from app.models.user import User, UserCreate, UserinFront, UserInPatch
 from app.types.invite import Invite
 from app.types.pagination import Pagination
 from app.utils import (Permission, get_current_user, get_current_user_in_token,
-                       insctructor_required, sanitizer)
+                       instructor_required, sanitizer)
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ async def create_user(user: UserCreate):
 
 
 @router.get('/', response_model=Pagination)
-async def get_users(page: int = 1, per_page: int = 10, _=Depends(insctructor_required)):
+async def get_users(page: int = 1, per_page: int = 10, _=Depends(instructor_required)):
     """ Return a paginate list of all users"""
     users_count = await User.all().count()
     if users_count < per_page:
@@ -146,7 +146,7 @@ async def update_user(user: UserInPatch, current_user: User = Depends(get_curren
 
 
 @router.post("/invite", tags=["auth"])
-async def invite_user(invite: Invite, user_in_db=Depends(get_current_user), _=Depends(insctructor_required)):
+async def invite_user(invite: Invite, user_in_db=Depends(get_current_user), _=Depends(instructor_required)):
     """ 
     Invite a new user to the platform by sending an email with a link to create an account,
     the user will be able to choose his password

@@ -13,7 +13,7 @@ from app.models.workplace import (ArtifactInstance, ArtifactInstanceIn,
 from app.routers.activities import get_ask_translation_or_first
 from app.types.anchor import Anchor
 from app.types.response import IDResponse, OKResponse
-from app.utils import insctructor_required
+from app.utils import instructor_required
 
 router = APIRouter()
 
@@ -89,7 +89,7 @@ async def get_workplace_languages(workplace_id: int):
 
 
 @router.post("/", response_model=IDResponse)
-async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_required)):
+async def create_workplace(workplace: WorkplaceIn, _=Depends(instructor_required)):
     """ Create a workplace """
     if workplace.anchor is None:
         workplace_db = await WorkPlace.create()
@@ -128,7 +128,7 @@ async def create_workplace(workplace: WorkplaceIn, _=Depends(insctructor_require
 
 
 @router.patch("/{workplace_id}")
-async def update_workplace(workplace_id: int, workplace: WorkplaceInPatch, language_code: str = None, _=Depends(insctructor_required)):
+async def update_workplace(workplace_id: int, workplace: WorkplaceInPatch, language_code: str = None, _=Depends(instructor_required)):
     """ update a workplace by id """
     workplace_db = await WorkPlace.get(id=workplace_id).prefetch_related("texts__language")
     if not language_code:
@@ -164,7 +164,7 @@ async def update_workplace(workplace_id: int, workplace: WorkplaceInPatch, langu
 
 @router.delete("/{workplace_id}")
 @atomic()
-async def delete_workplace(workplace_id, _=Depends(insctructor_required)):
+async def delete_workplace(workplace_id, _=Depends(instructor_required)):
     """ delete a workplace by id """
     # objects that reference this object are also deleted ( cascade )
     if await WorkPlace.get(id=workplace_id).delete():
@@ -174,7 +174,7 @@ async def delete_workplace(workplace_id, _=Depends(insctructor_required)):
 
 
 @router.post("/{workplace_id}/instances", response_model=IDResponse)
-async def create_artifact_instance_in_workplace(workplace_id: int, instance: ArtifactInstanceIn, _=Depends(insctructor_required)):
+async def create_artifact_instance_in_workplace(workplace_id: int, instance: ArtifactInstanceIn, _=Depends(instructor_required)):
     """ Add an artifact to a workplace """
     instance_db = await ArtifactInstance.create(
         workplace=await WorkPlace.get(id=workplace_id),
@@ -190,7 +190,7 @@ async def create_artifact_instance_in_workplace(workplace_id: int, instance: Art
 
 
 @router.patch("/instances/{instance_id}")
-async def update_artifact_instance_in_workplace(instance_id: int, instance: ArtifactInstanceInPatch, _=Depends(insctructor_required)):
+async def update_artifact_instance_in_workplace(instance_id: int, instance: ArtifactInstanceInPatch, _=Depends(instructor_required)):
     """ update an artifact instance in a workplace by id """
     instance_db = await ArtifactInstance.get(id=instance_id)
     if "artifactID" in instance.__fields_set__:
@@ -221,7 +221,7 @@ async def update_artifact_instance_in_workplace(instance_id: int, instance: Arti
 
 
 @router.delete("/instances/{instance_id}")
-async def delete_artifact_instance_in_workplace(instance_id: int, _=Depends(insctructor_required)):
+async def delete_artifact_instance_in_workplace(instance_id: int, _=Depends(instructor_required)):
     """ delete an artifact instance in a workplace by id """
     if await ArtifactInstance.get(id=instance_id).delete():
         return OKResponse(ok="Artifact instance deleted")

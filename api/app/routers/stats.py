@@ -12,13 +12,13 @@ from app.models.statement import (ContextOut, ResultInCreate, ScoreInCreate,
                                   Statement, StatementOut)
 from app.types.stat import ActionStatsOut, ScenarioStats, SessionStat
 from app.utils import (Permission, get_current_user_in_token,
-                       insctructor_required)
+                       instructor_required)
 
 router = APIRouter()
 
 
 @router.get('/activities/{id_activity}', response_model=ScenarioStats)
-async def get_activity_stats(id_activity: int, _=Depends(insctructor_required)):
+async def get_activity_stats(id_activity: int, _=Depends(instructor_required)):
     """
     Get average stats of all sessions of an activity
     """

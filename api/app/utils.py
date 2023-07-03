@@ -38,6 +38,7 @@ MODELS_DIRECTORY = DATA_DIRECTORY+'models/'
 SCENARIOS_DATA_DIRECTORY = DATA_DIRECTORY+'scenarios/'
 ACTIVITY_DATA_DIRECTORY = DATA_DIRECTORY+'activity/'
 ACTION_DATA_DIRECTORY = DATA_DIRECTORY+'actions/'
+RESSOURCES_DATA_DIRECTORY = DATA_DIRECTORY+'ressources/'
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl='auth/token')
 
 ADMIN_USERNAME = getenv_strip('ADMIN_USERNAME')
@@ -119,7 +120,7 @@ async def is_himself(id_user: int, user: UserinFront = Depends(get_current_user_
         )
 
 
-async def insctructor_required(user: UserinFront = Depends(is_instructor_or_above)):
+async def instructor_required(user: UserinFront = Depends(is_instructor_or_above)):
     """ Raise an exception if the user is not an instructor"""
     if not user:
         raise HTTPException(

@@ -12,7 +12,7 @@ from app.models.language import Language
 from app.models.workplace import WorkPlace
 from app.routers.actions import delete_action_ressource_file
 from app.types.response import IDResponse
-from app.utils import insctructor_required
+from app.utils import instructor_required
 
 router = APIRouter()
 
@@ -90,7 +90,7 @@ async def get_action_languages(activity_id: int):
 
 @router.post("/", response_model=IDResponse)
 @atomic()
-async def create_activity(activity: ActivityIn, _=Depends(insctructor_required)):
+async def create_activity(activity: ActivityIn, _=Depends(instructor_required)):
     """ Create an action """
     activity_db = await Activity.create(
         start_id=activity.start,
@@ -109,7 +109,7 @@ async def create_activity(activity: ActivityIn, _=Depends(insctructor_required))
 
 @router.patch("/{activity_id}", response_model=ActivityOut)
 @atomic()
-async def update_activity(activity_id: int, activity: ActivityInPatch, language_code: str = None, _=Depends(insctructor_required)):
+async def update_activity(activity_id: int, activity: ActivityInPatch, language_code: str = None, _=Depends(instructor_required)):
     """ Update an action without specifying all the fields """
     activity_db = await Activity.get(id=activity_id).prefetch_related("texts__language")
     if not language_code:
@@ -136,7 +136,7 @@ async def update_activity(activity_id: int, activity: ActivityInPatch, language_
 
 @router.delete("/{activity_id}", response_model=IDResponse)
 @atomic()
-async def delete_activity(activity_id: int, _=Depends(insctructor_required)):
+async def delete_activity(activity_id: int, _=Depends(instructor_required)):
     """ Delete an action """
     activity = await Activity.get(id=activity_id).prefetch_related("texts")
     await activity.texts.all().delete()

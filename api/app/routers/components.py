@@ -8,7 +8,7 @@ from app.models.componentinstance import (ComponentInstance,
                                           ComponentInstanceOut,
                                           PropertyInstance, PropertyInstanceIn)
 from app.types.response import IDResponse, OKResponse
-from app.utils import insctructor_required
+from app.utils import instructor_required
 
 router = APIRouter()
 
@@ -33,7 +33,7 @@ async def get_component(component_id: int):
 
 @router.post("/")
 @atomic()
-async def create_component(component: ComponentInstanceIn, _=Depends(insctructor_required)):
+async def create_component(component: ComponentInstanceIn, _=Depends(instructor_required)):
     """ Create a component """
     component_db = await ComponentInstance.create(tag=component.tag, type=component.type, script=component.script, blocks=component.blocks, target_id=component.target)
     properties_db = [PropertyInstance(name=property.name, value=property.value, componentInstance=component_db) for property in component.properties]
@@ -43,7 +43,7 @@ async def create_component(component: ComponentInstanceIn, _=Depends(insctructor
 
 @router.patch("/{component_id}", response_model=ComponentInstanceOut)
 @atomic()
-async def patch_component(component_id: int, component: ComponentInstanceInPatch, _=Depends(insctructor_required)):
+async def patch_component(component_id: int, component: ComponentInstanceInPatch, _=Depends(instructor_required)):
     """ Patch a component """
     component_db = await ComponentInstance.get(id=component_id).prefetch_related("properties")
     if "tag" in component.__fields_set__:
@@ -67,7 +67,7 @@ async def patch_component(component_id: int, component: ComponentInstanceInPatch
 
 @router.delete("/{component_id}")
 @atomic()
-async def delete_component(component_id: int, _=Depends(insctructor_required)):
+async def delete_component(component_id: int, _=Depends(instructor_required)):
     """ Delete a component """
     if await ComponentInstance.get(id=component_id).delete():
         return OKResponse(ok="Component deleted")
