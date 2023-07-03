@@ -47,7 +47,7 @@ async def get_ressource_file(ressource_id: int):
 @atomic()
 async def create_ressource(file: UploadFile, user=Depends(get_current_user_in_token)):
     """ Create a ressource"""
-    if user.adminLevel < Permission.INSTRUCTOR:
+    if user.adminLevel < Permission.INSTRUCTOR.value:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to create ressources")
     extension = file.filename.split(".")[-1]
     filename = file.filename
