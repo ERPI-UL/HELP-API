@@ -124,7 +124,7 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         raise HTTPException(status_code=403, detail="You are not allowed to send a statement for another user")
     # FIXME: make an optional chaining function
     statement_db = await Statement.create(
-        actor_id=statement.actor,
+        actor_id=user.id,
         verb=verb_db,
         object_activity_id=statement.object.id if statement.object.objectType == "activity" else None,
         object_agent_id=statement.object.id if statement.object.objectType == "agent" else None,
