@@ -164,7 +164,7 @@ class StatementInCreate(BaseModel):
     context: ContextInCreate = None
     result: ResultInCreate = None
     extensions: dict = None
-    timestamp: datetime | None = None
+    timestamp: Optional[datetime] = None
 
 
 class ObjectOut(BaseModel):

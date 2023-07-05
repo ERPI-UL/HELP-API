@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import BackgroundTasks, Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -143,7 +144,7 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         result_score_min=statement.result.score.min if statement.result is not None else None,
         result_score_max=statement.result.score.max if statement.result is not None else None,
         result_extensions=statement.extensions,
-        timestamp=statement.timestamp
+        timestamp=statement.timestamp if statement.timestamp is not None else datetime.now()
     )
     if statement_db.object_activity_id is not None and statement_db.verb_id == "start":
         # create a session
