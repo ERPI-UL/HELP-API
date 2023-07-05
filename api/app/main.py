@@ -4,6 +4,8 @@ import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 from fastapi_pagination import add_pagination
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
@@ -12,6 +14,7 @@ import app.utils as utils
 from app.routers import (actions, activities, admin, artifacts, auth,
                          components, data, easy, language, performance, stats,
                          targets, users, workplaces)
+from app.utils import get_redis
 
 tags_metadata = [
     {
@@ -140,6 +143,7 @@ async def startup_event():
     await utils.init_db_with_data()
     # launch garbage collector
     await utils.garbage_collector()
+    FastAPICache.init(RedisBackend(await get_redis()), prefix="fastapi-cache")
 
 
 @app.get("/")

@@ -7,6 +7,7 @@ from aiohttp import ClientSession
 from fastapi import (APIRouter, BackgroundTasks, Body, Depends, HTTPException,
                      status)
 from fastapi.responses import FileResponse
+from fastapi_cache.decorator import cache
 
 from app.models.language import Language, LanguageOutWithId
 from app.utils import get_current_user_in_token
@@ -43,6 +44,7 @@ async def cleanup(filename):
 
 
 @router.get('/', response_model=List[LanguageOutWithId], summary="Retourne toutes les langues disponibles dans l'API")
+@cache(expire=3600)
 async def get_languages():
     """ Return all languages """
     return await Language.all()
