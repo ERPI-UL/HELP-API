@@ -1,5 +1,5 @@
-from pprint import pprint
 from datetime import datetime
+
 from fastapi import BackgroundTasks, Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
@@ -58,7 +58,8 @@ async def get_statements(actor_id: int = None, verb: str = None, object_id: int 
                 raw=statement_db.result_score_raw,
                 min=statement_db.result_score_min,
                 max=statement_db.result_score_max
-            )
+            ),
+            extensions=statement_db.result_extensions
         ),
         timestamp=statement_db.timestamp,
         stored=statement_db.stored
@@ -107,7 +108,8 @@ async def get_statement(statement_id: int, user=Depends(get_current_user)):
                 raw=statement_db.result_score_raw,
                 min=statement_db.result_score_min,
                 max=statement_db.result_score_max
-            )
+            ),
+            extensions=statement_db.result_extensions
         ),
         timestamp=statement_db.timestamp,
         stored=statement_db.stored
@@ -127,12 +129,7 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
     if user.id != statement.actor:
         raise HTTPException(status_code=403, detail="You are not allowed to send a statement for another user")
     # FIXME: make an optional chaining function
-    # print(statement)
-    pprint(statement)
-    pprint(platform_db)
-    pprint(language_db)
-    pprint(verb_db)
-    statement_db = Statement(
+    statement_db = await Statement.create(
         actor_id=user.id,
         verb=verb_db,
         object_activity_id=statement.object.id if statement.object.objectType == "activity" else None,
@@ -151,11 +148,9 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         result_score_raw=statement.result.score.raw if statement.result is not None else None,
         result_score_min=statement.result.score.min if statement.result is not None else None,
         result_score_max=statement.result.score.max if statement.result is not None else None,
-        result_extensions=statement.extensions,
+        result_extensions=statement.result.extensions if statement.result.extensions is not None else dict(),
         timestamp=statement.timestamp if statement.timestamp is not None else datetime.now()
     )
-    pprint(statement_db.__dict__)
-    await statement_db.save()
     if statement_db.object_activity_id is not None and statement_db.verb_id == "start":
         # create a session
         session_db = await Session.create(

@@ -163,7 +163,6 @@ class StatementInCreate(BaseModel):
     ] = Field(..., discriminator='objectType')
     context: ContextInCreate = None
     result: ResultInCreate = None
-    extensions: dict = None
     timestamp: Optional[datetime] = None
 
 
@@ -190,7 +189,6 @@ class StatementOut(BaseModel):
     object: ObjectOut
     context: ContextOut = None
     result: ResultInCreate = None
-    extensions: dict = None
     timestamp: datetime | None = None
     stored: datetime | None = None
 
