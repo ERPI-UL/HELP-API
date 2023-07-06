@@ -1,3 +1,4 @@
+from pprint import pprint
 from datetime import datetime
 from fastapi import BackgroundTasks, Depends, HTTPException
 from fastapi.routing import APIRouter
@@ -124,6 +125,8 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
     if user.id != statement.actor:
         raise HTTPException(status_code=403, detail="You are not allowed to send a statement for another user")
     # FIXME: make an optional chaining function
+    # print(statement)
+    pprint(statement)
     statement_db = await Statement.create(
         actor_id=user.id,
         verb=verb_db,
