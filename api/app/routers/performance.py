@@ -122,12 +122,17 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
     verb_db = await Verb.get_or_none(id=statement.verb)
     if verb_db is None:
         raise HTTPException(status_code=404, detail="This verb does not exist in the LRS")
+    if language_db is None:
+        raise HTTPException(status_code=404, detail="This language does not exist in the LRS")
     if user.id != statement.actor:
         raise HTTPException(status_code=403, detail="You are not allowed to send a statement for another user")
     # FIXME: make an optional chaining function
     # print(statement)
     pprint(statement)
-    statement_db = await Statement.create(
+    pprint(platform_db)
+    pprint(language_db)
+    pprint(verb_db)
+    statement_db = Statement(
         actor_id=user.id,
         verb=verb_db,
         object_activity_id=statement.object.id if statement.object.objectType == "activity" else None,
@@ -149,6 +154,8 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         result_extensions=statement.extensions,
         timestamp=statement.timestamp if statement.timestamp is not None else datetime.now()
     )
+    pprint(statement_db.__dict__)
+    await statement_db.save()
     if statement_db.object_activity_id is not None and statement_db.verb_id == "start":
         # create a session
         session_db = await Session.create(
