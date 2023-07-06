@@ -148,7 +148,7 @@ async def create_statement(statement: StatementInCreate, background_tasks: Backg
         result_score_raw=statement.result.score.raw if statement.result is not None else None,
         result_score_min=statement.result.score.min if statement.result is not None else None,
         result_score_max=statement.result.score.max if statement.result is not None else None,
-        result_extensions=statement.result.extensions if statement.result.extensions is not None else dict(),
+        result_extensions=statement.result.extensions if statement.result is not None and statement.result.extensions is not None else dict(),
         timestamp=statement.timestamp if statement.timestamp is not None else datetime.now()
     )
     if statement_db.object_activity_id is not None and statement_db.verb_id == "start":
