@@ -38,5 +38,9 @@
   {
     "name": "view",
     "description": "Indicate that the actor has viewed the object. For instance, when a person views a course, a course module, or a test."
+  },
+  {
+    "name": "repeat",
+    "description": "Indicate that the actor has clicked on the repeat button"
   }
 ]

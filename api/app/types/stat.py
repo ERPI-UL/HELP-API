@@ -30,6 +30,7 @@ class ActionStatsOut(BaseModel):
     skipped: bool  # true if the action is skipped
     interactions: int  # number of interactions with a component in a action
     help: int  # number of help request in a action
+    repeat: int  # number of repeat request in a action
 
 
 class SessionStat(BaseModel):
@@ -41,7 +42,8 @@ class SessionStat(BaseModel):
     end: datetime
     duration: int
     abandoned: bool
-    skipped: float  # number of skipped actions in the session
-    help: float  # number of help request in the session
-    interactions: float  # number of interactions in the session
+    skipped: int  # number of skipped actions in the session
+    help: int  # number of help request in the session
+    repeat: int  # number of repeat request in the session
+    interactions: int  # number of interactions in the session
     actions: list[ActionStatsOut]

@@ -64,10 +64,12 @@ async def get_session_stats(id_session: int, user=Depends(get_current_user_in_to
                 skipped=action_stats.skipped,
                 help=action_stats.help,
                 interactions=action_stats.interactions,
+                repeat=action_stats.repeat,
             ) for action_stats in session.actionStats
         ],
         skipped=sum([1 for action_stats in session.actionStats if action_stats.skipped]),
         help=sum([action_stats.help for action_stats in session.actionStats]),
+        repeat=sum([action_stats.repeat for action_stats in session.actionStats]),
         interactions=sum([action_stats.interactions for action_stats in session.actionStats]),
     )
 
@@ -156,10 +158,8 @@ async def parse_statement(statement: Statement):
                     print("session not found")
                 match statement.verb_id:
                     case "start":
-                        print("start action : ", statement.object_action_id)
                         played_action = await ActionStats.create(session=session, action_id=statement.object_action_id, start=statement.timestamp)
                     case "complete":
-                        print("complete action : ", statement.object_action_id)
                         played_action = await ActionStats.get(session=session, action=statement.object_action_id, completed=False, end__isnull=True, computed=False)
                         played_action.end = statement.timestamp
                         played_action.duration = (played_action.end - played_action.start).total_seconds()
@@ -167,7 +167,6 @@ async def parse_statement(statement: Statement):
                         played_action.computed = True  # object is completed, no need to compute it again ( we should'nt interact with it anymore)
                         await played_action.save()
                     case "skip":
-                        print("skip action : ", statement.object_action_id)
                         played_action = await ActionStats.get(session=session, action=statement.object_action_id, computed=False)
                         played_action.skipped = True
                         played_action.end = statement.timestamp
@@ -176,10 +175,14 @@ async def parse_statement(statement: Statement):
                         session.skipped += 1
                         await played_action.save()
                     case "help":
-                        print("help action : ", statement.object_action_id)
                         played_action = await ActionStats.get(session=session, action=statement.object_action_id, computed=False)
                         played_action.help += 1
                         session.help += 1
+                        await played_action.save()
+                    case "repeat":
+                        played_action = await ActionStats.get(session=session, action=statement.object_action_id, computed=False)
+                        played_action.repeated += 1
+                        session.repeated += 1
                         await played_action.save()
             case "target":
                 match statement.verb_id:
