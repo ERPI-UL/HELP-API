@@ -12,25 +12,13 @@ class ComponentInstance(Model):
     target = fields.ForeignKeyField('models.Target', related_name='componentInstances', on_delete=fields.CASCADE)
     script = fields.TextField()
     blocks = fields.TextField()
-
-
-class PropertyInstance(Model):
-    """ PropertyInstance model , represent a file link to an object"""
-    id = fields.IntField(pk=True)
-    name = fields.CharField(max_length=50)
-    value = fields.CharField(max_length=500)
-    componentInstance = fields.ForeignKeyField('models.ComponentInstance', related_name='properties', on_delete=fields.CASCADE)
-
-    class Meta:
-        """ Meta class for Ressource model"""
-        table = "propertyInstances"
+    properties = fields.JSONField(default=[])
 
 
 class PropertyInstanceIn(BaseModel):
     """ PropertyInstanceIn pydantic model"""
     name: str
-    value: str
-    # componentInstance: int
+    value: bool | int | str | float | list[int] | None
 
 
 class ComponentInstanceIn(BaseModel):
@@ -40,7 +28,7 @@ class ComponentInstanceIn(BaseModel):
     target: int
     script: str
     blocks: str
-    properties: list[PropertyInstanceIn] = []
+    properties: list[PropertyInstanceIn]
 
 
 class ComponentInstanceOut(BaseModel):
@@ -51,36 +39,10 @@ class ComponentInstanceOut(BaseModel):
     target: int
     script: str
     blocks: str
-    properties: list[PropertyInstanceIn] = []
+    properties: list[PropertyInstanceIn]
 
     class Config:
         """ Config class for ComponentInstanceOut model """
-        orm_mode = True
-
-
-class PropertyInstanceInPatch(BaseModel):
-    """ PropertyInstanceInPatch pydantic model"""
-    name: Optional[str]
-    value: Optional[str]
-
-    @validator('name')
-    @classmethod
-    def name_value_validator(cls, value):
-        """ name_value_validator validator for PropertyInstanceInPatch model"""
-        if value is None or value == "":
-            raise ValueError("name value cannot be empty")
-        return value
-
-    @validator('value')
-    @classmethod
-    def value_value_validator(cls, value):
-        """ value_value_validator validator for PropertyInstanceInPatch model"""
-        if value is None:
-            raise ValueError("value value cannot be null")
-        return value
-
-    class Config:
-        """ Config class for PropertyInstanceInPatch model """
         orm_mode = True
 
 
@@ -91,7 +53,7 @@ class ComponentInstanceInPatch(BaseModel):
     target: Optional[int]
     script: Optional[StrictStr]
     blocks: Optional[StrictStr]
-    properties: list[PropertyInstanceInPatch] = []
+    properties: Optional[list[PropertyInstanceIn]]
 
     @validator('tag')
     @classmethod

@@ -1,12 +1,12 @@
 from fastapi import Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fastapi.routing import APIRouter
 from tortoise.transactions import atomic
 
 from app.models.componentinstance import (ComponentInstance,
                                           ComponentInstanceIn,
                                           ComponentInstanceInPatch,
-                                          ComponentInstanceOut,
-                                          PropertyInstance, PropertyInstanceIn)
+                                          ComponentInstanceOut)
 from app.types.response import IDResponse, OKResponse
 from app.utils import instructor_required
 
@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/{component_id}", response_model=ComponentInstanceOut)
 async def get_component(component_id: int):
     """ Get a component"""
-    component = await ComponentInstance.get(id=component_id).prefetch_related("properties")
+    component = await ComponentInstance.get(id=component_id)
     return ComponentInstanceOut(
         id=component.id,
         tag=component.tag,
@@ -24,10 +24,7 @@ async def get_component(component_id: int):
         script=component.script,
         blocks=component.blocks,
         target=component.target_id,
-        properties=[PropertyInstanceIn(
-            name=property.name,
-            value=property.value,
-        ) for property in component.properties]
+        properties=component.properties
     )
 
 
@@ -35,9 +32,7 @@ async def get_component(component_id: int):
 @atomic()
 async def create_component(component: ComponentInstanceIn, _=Depends(instructor_required)):
     """ Create a component """
-    component_db = await ComponentInstance.create(tag=component.tag, type=component.type, script=component.script, blocks=component.blocks, target_id=component.target)
-    properties_db = [PropertyInstance(name=property.name, value=property.value, componentInstance=component_db) for property in component.properties]
-    await PropertyInstance.bulk_create(properties_db)
+    component_db = await ComponentInstance.create(tag=component.tag, type=component.type, script=component.script, blocks=component.blocks, target_id=component.target, properties=jsonable_encoder(component.properties))
     return IDResponse(id=component_db.id)
 
 
@@ -45,7 +40,7 @@ async def create_component(component: ComponentInstanceIn, _=Depends(instructor_
 @atomic()
 async def patch_component(component_id: int, component: ComponentInstanceInPatch, _=Depends(instructor_required)):
     """ Patch a component """
-    component_db = await ComponentInstance.get(id=component_id).prefetch_related("properties")
+    component_db = await ComponentInstance.get(id=component_id)
     if "tag" in component.__fields_set__:
         component_db.tag = component.tag
     if "type" in component.__fields_set__:
@@ -56,12 +51,9 @@ async def patch_component(component_id: int, component: ComponentInstanceInPatch
         component_db.blocks = component.blocks
     if "target" in component.__fields_set__:
         component_db.target_id = component.target
-    await component_db.save()
     if "properties" in component.__fields_set__:
-        properties_db = [PropertyInstance(name=property.name, value=property.value, componentInstance=component_db)
-                         for property in component.properties]
-        await PropertyInstance.filter(componentInstance=component_db).delete()
-        await PropertyInstance.bulk_create(properties_db)
+        component_db.properties = jsonable_encoder(component.properties)
+    await component_db.save()
     return await get_component(component_id)
 
 
