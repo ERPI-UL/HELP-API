@@ -134,7 +134,7 @@ async def delete_ressource(action_id: int, _=Depends(instructor_required)):
 @atomic()
 async def update_action(action_id: int,  action: ActionInPatch, language_code: str = None, _=Depends(instructor_required)):
     """ Update only provided fields """
-    action_db = await Action.get(id=action_id).prefetch_related("texts__language")
+    action_db = await Action.get(id=action_id).prefetch_related("texts__language", "type")
     if not language_code:
         language_code = action_db.texts[0].language.code
     action_text, created = await ActionText.get_or_create(language_id=(await Language.get(code=language_code)).id,
