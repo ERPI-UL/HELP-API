@@ -150,16 +150,13 @@ async def update_action(action_id: int,  action: ActionInPatch, language_code: s
         action_db.next_id = action.next
     if "type" in action.__fields_set__:
         action_db.type = await Type.get(name=action.type)
-        if action.type == "choice":
-            action_db.left_target_action_id = action.choice.left.target
-            action_db.right_target_action_id = action.choice.right.target
-            action_text.left_choice = action.choice.left.name
-            action_text.right_choice = action.choice.right.name
-        else:
-            action_db.left_target_action_id = None
-            action_db.right_target_action_id = None
-            action_text.left_choice = None
-            action_text.right_choice = None
+    if "choice" in action.__fields_set__:
+        if action_db.type.name != "choice" and action.type is not "choice":
+            raise HTTPException(status_code=400, detail="You can only update the choice of a choice action")
+        action_db.left_target_action_id = action.choice.left.target if action.choice.left.target is not None else action_db.left_target_action_id
+        action_db.right_target_action_id = action.choice.right.target if action.choice.right.target is not None else action_db.right_target_action_id
+        action_text.left_choice = action.choice.left.name if action.choice.left.name is not None else action_text.left_choice
+        action_text.right_choice = action.choice.right.name if action.choice.right.name is not None else action_text.right_choice
     if "targets" in action.__fields_set__:
         await action_db.targets.clear()
         targets_to_add = await Target.filter(id__in=action.targets)
