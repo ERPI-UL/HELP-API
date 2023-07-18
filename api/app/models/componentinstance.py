@@ -1,3 +1,4 @@
+from typing import Any
 from typing import Optional
 
 from pydantic import BaseModel, StrictStr, validator
@@ -18,7 +19,7 @@ class ComponentInstance(Model):
 class PropertyInstanceIn(BaseModel):
     """ PropertyInstanceIn pydantic model"""
     name: str
-    value: bool | int | str | float | list[int] | None
+    value: Any
 
 
 class ComponentInstanceIn(BaseModel):
