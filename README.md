@@ -1,10 +1,13 @@
-<h2 align="center">HELP - Web</h2>
-<h3 align="center">Hybrid Extended Learning Platform - Web platform</h3>
+<h2 align="center">HELP - API</h2>
+<h3 align="center">Hybrid Extended Learning Platform - API</h3>
 <p align="center">
     <a href=""><img src="https://img.shields.io/badge/python-3670A0?logo=python&logoColor=ffdd54"/></a>
     <a href=""><img src="https://img.shields.io/badge/FastAPI-005571?logo=fastapi"/></a>
     <a href=""><img src="https://img.shields.io/badge/postgres-%23316192.svg?logo=postgresql&logoColor=white"/></a>
     <a href=""><img src="https://img.shields.io/badge/-Docker-2496ED?logo=docker&logoColor=FFFFFF"/></a>
+</p>
+<p align="center"> Join us on: 
+<a href="https://discord.gg/GeR6cFV9nq"><img src="https://img.shields.io/badge/Discord-%235865F2.svg?logo=discord&logoColor=white"/></a>
 </p>
 
 ## Description
