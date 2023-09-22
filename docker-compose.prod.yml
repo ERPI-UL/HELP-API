@@ -52,13 +52,13 @@ services:
     networks:
       - indico_prod
 
-  web:
-    build: ./app/
-    ports:
-      - 80:8080
-    restart: always
-    networks:
-      - indico_prod
+  # web:
+  #   build: ./app/
+  #   ports:
+  #     - 80:8080
+  #   restart: always
+  #   networks:
+  #     - indico_prod
 
 volumes:
   postgres_data:
