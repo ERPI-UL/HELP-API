@@ -106,6 +106,32 @@ async def create_activity(activity: ActivityIn, _=Depends(instructor_required)):
     )
     return IDResponse(id=activity_db.id)
 
+@router.post("/duplicate/{activity_id}", response_model=IDResponse)
+@atomic()
+async def duplicate_activity(activity_id: int):
+    """ Duplicate an activity """
+    activity_text = await ActivityText.filter(activity_id=activity_id).prefetch_related("language", "activity__artifacts").order_by("id").first()
+    if not activity_text:
+        if not await Activity.exists(id=activity_id):
+            raise HTTPException(status_code=404, detail=f"Activity {activity_id} not found")
+        raise HTTPException(status_code=404, detail="Activity not found in this language")
+    activity =  activity_text.activity
+    action = await (activity.start.first()).first()
+    artifact_ids = []
+    for artifact in activity.artifacts:
+        artifact_ids.append(artifact.id)
+    activity_db = await Activity.create(start_id=action.id)
+    artifact_to_add = await Artifact.filter(id__in=artifact_ids)
+    await activity_db.artifacts.add(*artifact_to_add)
+    language = await Language.get(code=activity_text.language.code)
+    await ActivityText.create(
+        name=activity_text.name + ' (COPY)',
+        description=activity_text.description,
+        language=language,
+        activity=activity_db
+    )
+    return IDResponse(id=activity_db.id)
+
 
 @router.patch("/{activity_id}", response_model=ActivityOut)
 @atomic()
