@@ -4,7 +4,8 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.tortoise import paginate
 from tortoise.transactions import atomic
 
-from app.models.action import Action
+from app.models.action import (Action,ActionText)
+from app.models.target import (Target)
 from app.models.activity import (Activity, ActivityIn, ActivityInPatch,
                                  ActivityOut, ActivityOutTranslated, ActivityText)
 from app.models.artifact import Artifact
@@ -13,6 +14,7 @@ from app.models.workplace import WorkPlace
 from app.routers.actions import delete_action_ressource_file
 from app.types.response import IDResponse
 from app.utils import instructor_required
+from app.models.type import Type
 
 router = APIRouter()
 
@@ -117,10 +119,12 @@ async def duplicate_activity(activity_id: int):
         raise HTTPException(status_code=404, detail="Activity not found in this language")
     activity =  activity_text.activity
     action = await (activity.start.first()).first()
+
     artifact_ids = []
     for artifact in activity.artifacts:
         artifact_ids.append(artifact.id)
-    activity_db = await Activity.create(start_id=action.id)
+ 
+    activity_db = await Activity.create(start_id=(await duplicate_action_chain(action.id)))
     artifact_to_add = await Artifact.filter(id__in=artifact_ids)
     await activity_db.artifacts.add(*artifact_to_add)
     language = await Language.get(code=activity_text.language.code)
@@ -179,3 +183,54 @@ async def delete_action_by_right(action_id: int):
     await action.delete()
     if action.next_id is not None:
         await delete_action_by_right(action.next_id)
+
+async def duplicate_action_chain(action_id, previous_id = None):
+    """
+    Recursively duplicates an action and its subsequent chain of actions,
+    updating the `next` field to maintain the chain structure.
+
+    Args:
+        action_id (int): The ID of the action to start duplicating from.
+
+    Returns:
+        int: The ID of the first duplicated action in the chain.
+    """
+
+    action_to_duplicate = await Action.filter(id=action_id).first()
+
+    if not action_to_duplicate:
+        return None  # Handle case where action not found
+
+    await action_to_duplicate.fetch_related('targets', 'artifact')
+
+    action_db = await Action.create(
+        tag=action_to_duplicate.tag,
+        type=await Type.get(id=action_to_duplicate.type_id),
+        artifact_id=action_to_duplicate.artifact.id,  # Use directly for efficiency
+        x=action_to_duplicate.x,
+        y=action_to_duplicate.y,
+        z=action_to_duplicate.z,
+        previous=previous_id
+    )
+
+    targets_id = []
+    for target in action_to_duplicate.targets:
+        targets_id.append(target.id)
+    targets_to_add = await Target.filter(id__in=targets_id)
+    await action_db.targets.add(*targets_to_add)
+
+    action_text_to_duplicate = await ActionText.filter(action_id=action_to_duplicate.id).first()
+    action_text_db = await ActionText.create(
+        name=action_text_to_duplicate.name,
+        description=action_text_to_duplicate.description,
+        hint=action_text_to_duplicate.hint,
+        language_id=action_text_to_duplicate.language_id,
+        action_id=action_db.id
+    )
+
+    if action_to_duplicate.next_id:
+        next_action_db = await duplicate_action_chain(action_to_duplicate.next_id, action_db)
+        action_db.next = await Action.filter(id=next_action_db).first()
+        await action_db.save()  # Update next field
+
+    return action_db.id  # Return ID of the first duplicated action
