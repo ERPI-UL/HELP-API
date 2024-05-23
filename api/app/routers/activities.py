@@ -184,7 +184,7 @@ async def delete_action_by_right(action_id: int):
     if action.next_id is not None:
         await delete_action_by_right(action.next_id)
 
-async def duplicate_action_chain(action_id, previous_id = None):
+async def duplicate_action_chain(action_id, previous_id = None, id_artifact = None):
     """
     Recursively duplicates an action and its subsequent chain of actions,
     updating the `next` field to maintain the chain structure.
@@ -203,10 +203,13 @@ async def duplicate_action_chain(action_id, previous_id = None):
 
     await action_to_duplicate.fetch_related('targets', 'artifact')
 
+    if action_to_duplicate.artifact:
+        id_artifact = action_to_duplicate.artifact.id
+
     action_db = await Action.create(
         tag=action_to_duplicate.tag,
         type=await Type.get(id=action_to_duplicate.type_id),
-        artifact_id=action_to_duplicate.artifact.id,  # Use directly for efficiency
+        artifact_id = id_artifact,
         x=action_to_duplicate.x,
         y=action_to_duplicate.y,
         z=action_to_duplicate.z,
@@ -229,7 +232,7 @@ async def duplicate_action_chain(action_id, previous_id = None):
     )
 
     if action_to_duplicate.next_id:
-        next_action_db = await duplicate_action_chain(action_to_duplicate.next_id, action_db)
+        next_action_db = await duplicate_action_chain(action_to_duplicate.next_id, action_db, id_artifact)
         action_db.next = await Action.filter(id=next_action_db).first()
         await action_db.save()  # Update next field
 
